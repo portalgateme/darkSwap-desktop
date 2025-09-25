@@ -1,0 +1,64 @@
+{
+  "name": "darkSwap-desktop",
+  "version": "1.0.0",
+  "main": "dist/electron/main.js",
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "cross-env": "^10.0.0",
+    "electron": "^38.1.2",
+    "electron-builder": "^26.0.12",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "dev:next": "next dev ./renderer",
+    "build:next": "next build ./renderer",
+    "dev:electron": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main.js",
+    "start": "electron .",
+    "build": "tsc -p . && npm run build:next && electron-builder",
+    "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\""
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.2",
+    "@mui/material": "^7.3.2",
+    "next": "^15.5.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "build": {
+    "appId": "com.example.electronnextapp",
+    "productName": "ElectronNextApp",
+    "directories": {
+      "buildResources": "assets",
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer/out/**/*",
+      "package.json"
+    ],
+    "extraResources": [],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
+  }
+}
