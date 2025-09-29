@@ -11,10 +11,18 @@ import NetworkSelection from '../Selection/NetworkSelection'
 import { Network } from '../../types'
 import { shorterAddress } from '../../utils/format'
 import { SelectAccountModal } from '../Modal/SelectAccountModal'
+import { DepositModal } from '../Modal/DepositModal'
+import { WithdrawModal } from '../Modal/WithdrawModal'
+
+enum Modal {
+  Deposit = 'DEPOSIT',
+  Withdraw = 'WITHDRAW',
+  WalletSetup = 'WALLET_SETUP',
+  SelectAccount = 'SELECT_ACCOUNT'
+}
 
 export const MainContent = () => {
-  const [openWalletSetup, setOpenWalletSetup] = useState(false)
-  const [openSelectAccount, setOpenSelectAccount] = useState(false)
+  const [openModal, setOpenModal] = useState<Modal | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [selectedNetwork, setSelectedNetwork] = useState<Network>()
   const [selectedAccount, setSelectedAccount] = useState<string>()
@@ -23,86 +31,52 @@ export const MainContent = () => {
     setSelectedNetwork(network)
   }
 
-  const onCloseWalletSetup = () => {
-    setOpenWalletSetup(false)
+  const onCloseModal = () => {
+    setOpenModal(null)
   }
 
   const onOpenWalletSetup = () => {
-    setOpenWalletSetup(true)
+    setOpenModal(Modal.WalletSetup)
   }
 
   const onConnectWallet = () => {
     setIsConnected(true)
-    onCloseWalletSetup()
+    onCloseModal()
   }
 
   const onChangeAccount = (account: string) => {
     setSelectedAccount(account)
-    onCloseSelectAccount()
+    onCloseModal()
   }
 
   const onOpenSelectAccount = () => {
-    setOpenSelectAccount(true)
-  }
-
-  const onCloseSelectAccount = () => {
-    setOpenSelectAccount(false)
+    setOpenModal(Modal.SelectAccount)
   }
 
   const onAddAccount = () => {
-    onCloseSelectAccount()
+    onCloseModal()
+  }
+
+  const onOpenDeposit = () => {
+    setOpenModal(Modal.Deposit)
+  }
+
+  const onConfirmDeposit = () => {
+    // Handle deposit logic here
+    onCloseModal()
+  }
+
+  const onOpenWithdraw = () => {
+    setOpenModal(Modal.Withdraw)
+  }
+
+  const onConfirmWithdraw = () => {
+    // Handle withdraw logic here
+    onCloseModal()
   }
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: '100%',
-        background: '#1D2F23',
-        padding: '20px 40px'
-      }}
-    >
-      {/* Title */}
-      <Stack
-        direction={'row'}
-        justifyContent='space-between'
-        alignItems='center'
-      >
-        <Typography
-          color='#F3F4F6'
-          variant='h3'
-        >
-          Assets Overview
-        </Typography>
-
-        <Stack
-          direction={'row'}
-          spacing={2}
-        >
-          <NetworkSelection
-            selectedNetwork={selectedNetwork}
-            onNetworkChange={onChangeNetwork}
-          />
-
-          <Button
-            variant='contained'
-            startIcon={<AccountBalanceWalletIcon />}
-            sx={{
-              background: '#1E2128',
-              borderRadius: '8px',
-              textTransform: 'capitalize'
-            }}
-            onClick={onOpenSelectAccount}
-          >
-            <Typography variant='body1'>
-              {selectedAccount
-                ? shorterAddress(selectedAccount)
-                : 'Select Account'}
-            </Typography>
-          </Button>
-        </Stack>
-      </Stack>
-
+    <Box>
       {/* Summary Metrics */}
       <Stack
         direction={'row'}
@@ -145,6 +119,7 @@ export const MainContent = () => {
               borderRadius: '8px'
             }}
             endIcon={<FileDownloadOutlinedIcon />}
+            onClick={onOpenDeposit}
           >
             Deposit
           </Button>
@@ -157,6 +132,7 @@ export const MainContent = () => {
               border: '1px solid #68EB8E'
             }}
             endIcon={<FileUploadOutlinedIcon />}
+            onClick={onOpenWithdraw}
           >
             Withdraw
           </Button>
@@ -202,16 +178,21 @@ export const MainContent = () => {
 
       {/* Connected */}
       <WalletSetupModal
-        open={openWalletSetup}
-        onClose={onCloseWalletSetup}
+        open={openModal === Modal.WalletSetup}
+        onClose={onCloseModal}
         onConfirm={onConnectWallet}
       />
 
-      <SelectAccountModal
-        open={openSelectAccount}
-        onClose={onCloseSelectAccount}
-        onSelectAccount={onChangeAccount}
-        onAddAccount={onAddAccount}
+      <DepositModal
+        open={openModal === Modal.Deposit}
+        onClose={onCloseModal}
+        onConfirm={onConfirmDeposit}
+      />
+
+      <WithdrawModal
+        open={openModal === Modal.Withdraw}
+        onClose={onCloseModal}
+        onConfirm={onConfirmWithdraw}
       />
     </Box>
   )

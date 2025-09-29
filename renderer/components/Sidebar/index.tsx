@@ -57,7 +57,7 @@ export const Sidebar = () => {
             </Stack>
           </Link>
 
-          <Link href='/'>
+          <Link href='/orders'>
             <Stack
               direction={'row'}
               spacing={2}
@@ -86,7 +86,7 @@ export const Sidebar = () => {
             </Stack>
           </Link>
 
-          <Link href='/'>
+          <Link href='/history'>
             <Stack
               direction={'row'}
               spacing={2}

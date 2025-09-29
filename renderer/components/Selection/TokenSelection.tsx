@@ -1,8 +1,5 @@
 import React from 'react'
 import {
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Stack,
   Typography,
@@ -11,25 +8,29 @@ import {
   Button,
   SxProps
 } from '@mui/material'
-import { networks } from '../../constants/networkConfig'
-import Image from 'next/image'
-import { Network } from '../../types'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
-interface NetworkSelectionProps {
-  selectedNetwork?: Network
-  onNetworkChange: (network: Network) => void
+import { Account, Token } from '../../types'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import { shorterAddress } from '../../utils/format'
+import { tokenConfig } from '../../constants/tokenConfig'
+import Image from 'next/image'
+
+interface TokenSelection {
+  selectedToken?: Token
+  onTokenChange: (token: Token) => void
   fullWidth?: boolean
   buttonSx?: SxProps
   menuSx?: SxProps
+  sx?: SxProps
 }
 
-const NetworkSelection: React.FC<NetworkSelectionProps> = ({
-  selectedNetwork,
-  onNetworkChange,
+const TokenSelection: React.FC<TokenSelection> = ({
+  selectedToken,
+  onTokenChange,
   fullWidth = false,
   buttonSx,
-  menuSx
+  menuSx,
+  sx
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -40,49 +41,29 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
     setAnchorEl(null)
   }
 
-  const onSelectNetwork = (network: Network) => {
-    onNetworkChange(network)
+  const onSelectToken = (token: Token) => {
+    onTokenChange(token)
     handleClose()
   }
 
   return (
-    <Box sx={{ width: fullWidth ? '100%' : 'fit-content' }}>
+    <Box sx={{ width: fullWidth ? '100%' : 'fit-content', ...sx }}>
       <Button
         variant='contained'
-        startIcon={
-          selectedNetwork &&
-          selectedNetwork.icon && (
-            <Image
-              src={selectedNetwork.icon}
-              alt={selectedNetwork.name}
-              width={24}
-              height={24}
-            />
-          )
-        }
+        endIcon={<KeyboardArrowDownIcon />}
         sx={{
           background: '#1E2128',
           borderRadius: '8px',
           textTransform: 'capitalize',
-          justifyContent: 'flex-start',
-          boxShadow: 'none',
+          justifyContent: 'space-between',
           ...buttonSx
         }}
         fullWidth
         onClick={handleClick}
       >
-        <Stack
-          width={'100%'}
-          direction='row'
-          spacing={1}
-          alignItems='center'
-          justifyContent='space-between'
-        >
-          <Typography variant='body1'>
-            {selectedNetwork ? selectedNetwork.name : 'Select Network'}
-          </Typography>
-          <KeyboardArrowDownIcon />
-        </Stack>
+        <Typography variant='body1'>
+          {selectedToken ? selectedToken.name : 'Select Token'}
+        </Typography>
       </Button>
 
       <Menu
@@ -110,10 +91,10 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
           horizontal: 'left'
         }}
       >
-        {networks.map((network) => (
+        {tokenConfig.map((token, index) => (
           <MenuItem
-            key={network.chainId}
-            onClick={() => onSelectNetwork(network)}
+            key={index}
+            onClick={() => onSelectToken(token)}
             sx={{
               '&:hover': { backgroundColor: '#2A2E33' }
             }}
@@ -124,12 +105,12 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
               alignItems='center'
             >
               <Image
-                src={network.icon}
-                alt={network.name}
+                src={token.logoURI || '/default-token.png'}
+                alt={token.name}
                 width={24}
                 height={24}
               />
-              <Typography>{network.name}</Typography>
+              <Typography>{token.name}</Typography>
             </Stack>
           </MenuItem>
         ))}
@@ -138,4 +119,4 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
   )
 }
 
-export default NetworkSelection
+export default TokenSelection

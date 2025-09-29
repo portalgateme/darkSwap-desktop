@@ -1,8 +1,5 @@
 import React from 'react'
 import {
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Stack,
   Typography,
@@ -11,22 +8,45 @@ import {
   Button,
   SxProps
 } from '@mui/material'
-import { networks } from '../../constants/networkConfig'
-import Image from 'next/image'
-import { Network } from '../../types'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
-interface NetworkSelectionProps {
-  selectedNetwork?: Network
-  onNetworkChange: (network: Network) => void
+import { Account } from '../../types'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import { shorterAddress } from '../../utils/format'
+
+const mockAccounts: Account[] = [
+  {
+    name: 'Account 1',
+    address: '0x96d5a4a41c946f6d180945681aeb6196d7aee6e3',
+    balance: '1.5 ETH'
+  },
+  {
+    name: 'Account 2',
+    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+    balance: '2.0 ETH'
+  },
+  {
+    name: 'Account 3',
+    address: '0x8ff2F0a8D017c79454AA28509a19Ab9753c2DD14',
+    balance: '0.75 ETH'
+  },
+  {
+    name: 'Account 4',
+    address: '0xD5e2d0dD80cDBaf5ea72570267d748db90c04c28',
+    balance: '3.2 ETH'
+  }
+]
+
+interface AccountSelectionProps {
+  selectedAccount?: Account
+  onAccountChange: (account: Account) => void
   fullWidth?: boolean
   buttonSx?: SxProps
   menuSx?: SxProps
 }
 
-const NetworkSelection: React.FC<NetworkSelectionProps> = ({
-  selectedNetwork,
-  onNetworkChange,
+const AccountSelection: React.FC<AccountSelectionProps> = ({
+  selectedAccount,
+  onAccountChange,
   fullWidth = false,
   buttonSx,
   menuSx
@@ -40,8 +60,8 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
     setAnchorEl(null)
   }
 
-  const onSelectNetwork = (network: Network) => {
-    onNetworkChange(network)
+  const onSelectAccount = (account: Account) => {
+    onAccountChange(account)
     handleClose()
   }
 
@@ -49,40 +69,20 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
     <Box sx={{ width: fullWidth ? '100%' : 'fit-content' }}>
       <Button
         variant='contained'
-        startIcon={
-          selectedNetwork &&
-          selectedNetwork.icon && (
-            <Image
-              src={selectedNetwork.icon}
-              alt={selectedNetwork.name}
-              width={24}
-              height={24}
-            />
-          )
-        }
+        endIcon={<KeyboardArrowDownIcon />}
         sx={{
           background: '#1E2128',
           borderRadius: '8px',
           textTransform: 'capitalize',
-          justifyContent: 'flex-start',
-          boxShadow: 'none',
+          justifyContent: fullWidth ? 'space-between' : 'flex-start',
           ...buttonSx
         }}
         fullWidth
         onClick={handleClick}
       >
-        <Stack
-          width={'100%'}
-          direction='row'
-          spacing={1}
-          alignItems='center'
-          justifyContent='space-between'
-        >
-          <Typography variant='body1'>
-            {selectedNetwork ? selectedNetwork.name : 'Select Network'}
-          </Typography>
-          <KeyboardArrowDownIcon />
-        </Stack>
+        <Typography variant='body1'>
+          {selectedAccount ? selectedAccount.name : 'Select Account'}
+        </Typography>
       </Button>
 
       <Menu
@@ -110,26 +110,35 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
           horizontal: 'left'
         }}
       >
-        {networks.map((network) => (
+        {mockAccounts.map((account, index) => (
           <MenuItem
-            key={network.chainId}
-            onClick={() => onSelectNetwork(network)}
+            key={index}
+            onClick={() => onSelectAccount(account)}
             sx={{
               '&:hover': { backgroundColor: '#2A2E33' }
             }}
           >
             <Stack
-              spacing={1}
+              width={'100%'}
               direction='row'
               alignItems='center'
+              justifyContent={'space-between'}
             >
-              <Image
-                src={network.icon}
-                alt={network.name}
-                width={24}
-                height={24}
-              />
-              <Typography>{network.name}</Typography>
+              <Stack
+                direction={'row'}
+                spacing={2}
+                alignItems='center'
+              >
+                <Typography>{account.name}</Typography>
+                <Typography
+                  variant='body2'
+                  color='#BDC1CA'
+                >
+                  ({shorterAddress(account.address)})
+                </Typography>
+              </Stack>
+
+              <Typography>{account.balance}</Typography>
             </Stack>
           </MenuItem>
         ))}
@@ -138,4 +147,4 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
   )
 }
 
-export default NetworkSelection
+export default AccountSelection
