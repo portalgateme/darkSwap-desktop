@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Modal, Stack, Tab, Tabs } from '@mui/material'
 import { LimitOrderForm } from '../Form/LimitOrderForm'
+import { TriggerOrderForm } from '../Form/TriggerOrderForm'
 
 interface PlaceOrderModalProps {
   open: boolean
@@ -83,8 +84,8 @@ export const PlaceOrderModal: React.FC<PlaceOrderModalProps> = ({
 
         {/* Form */}
         {tab === PlaceOrderTab.LIMIT && <LimitOrderForm />}
-        {tab === PlaceOrderTab.STOP_LIMIT && <div>StopLimitOrderForm</div>}
-        {tab === PlaceOrderTab.TAKE_PROFIT && <div>TakeProfitOrderForm</div>}
+        {tab === PlaceOrderTab.STOP_LIMIT && <TriggerOrderForm />}
+        {tab === PlaceOrderTab.TAKE_PROFIT && <TriggerOrderForm />}
       </Stack>
     </Modal>
   )

@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
+import dbInstance from './database'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -24,6 +25,18 @@ async function createWindow() {
     mainWindow = null
   })
 }
+
+dbInstance.getWebSocketClient().startWebSocket()
+
+dbInstance
+  .getAssetPairService()
+  .syncAssetPairs()
+  .then(() => {
+    console.log('Asset pairs synced')
+  })
+  .catch((error) => {
+    console.error('Error syncing asset pairs:', error)
+  })
 
 app.on('ready', createWindow)
 app.on('window-all-closed', () => {

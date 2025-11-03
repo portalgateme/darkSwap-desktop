@@ -9,5 +9,5 @@
     "types": ["node"],
     "jsx": "preserve"
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "darkSwap-client-core"]
 }
