@@ -13,35 +13,23 @@ import { shorterAddress } from '../../utils/format'
 import { SelectAccountModal } from '../Modal/SelectAccountModal'
 import { DepositModal } from '../Modal/DepositModal'
 import { WithdrawModal } from '../Modal/WithdrawModal'
+import { ethers } from 'ethers'
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
 
 enum Modal {
   Deposit = 'DEPOSIT',
   Withdraw = 'WITHDRAW',
-  WalletSetup = 'WALLET_SETUP',
   SelectAccount = 'SELECT_ACCOUNT'
 }
 
 export const MainContent = () => {
   const [openModal, setOpenModal] = useState<Modal | null>(null)
-  const [isConnected, setIsConnected] = useState(false)
-  const [selectedNetwork, setSelectedNetwork] = useState<Network>()
-  const [selectedAccount, setSelectedAccount] = useState<string>()
 
-  const onChangeNetwork = (network: Network) => {
-    setSelectedNetwork(network)
-  }
+  const { selectedAccount, setSelectedAccount, setOpenAddModal } =
+    useAccountContext()
 
   const onCloseModal = () => {
     setOpenModal(null)
-  }
-
-  const onOpenWalletSetup = () => {
-    setOpenModal(Modal.WalletSetup)
-  }
-
-  const onConnectWallet = () => {
-    setIsConnected(true)
-    onCloseModal()
   }
 
   const onChangeAccount = (account: string) => {
@@ -61,8 +49,14 @@ export const MainContent = () => {
     setOpenModal(Modal.Deposit)
   }
 
-  const onConfirmDeposit = () => {
-    // Handle deposit logic here
+  const onConfirmDeposit = async (
+    chainId: number,
+    wallet: string,
+    asset: string,
+    amount: number
+  ) => {
+    //@ts-ignore
+    await window.accountAPI.deposit(chainId, wallet, asset, amount)
     onCloseModal()
   }
 
@@ -70,8 +64,14 @@ export const MainContent = () => {
     setOpenModal(Modal.Withdraw)
   }
 
-  const onConfirmWithdraw = () => {
-    // Handle withdraw logic here
+  const onConfirmWithdraw = async (
+    chainId: number,
+    wallet: string,
+    asset: string,
+    amount: number
+  ) => {
+    // @ts-ignore
+    await window.accountAPI.withdraw(chainId, wallet, asset, amount)
     onCloseModal()
   }
 
@@ -148,7 +148,7 @@ export const MainContent = () => {
         Your Assets
       </Typography>
       {/* Have not connected wallet */}
-      {isConnected ? (
+      {selectedAccount ? (
         <UserAssetTable />
       ) : (
         <Stack
@@ -169,19 +169,12 @@ export const MainContent = () => {
               textTransform: 'capitalize',
               borderRadius: '8px'
             }}
-            onClick={onOpenWalletSetup}
+            onClick={() => setOpenAddModal(true)}
           >
             Connect Wallet
           </Button>
         </Stack>
       )}
-
-      {/* Connected */}
-      <WalletSetupModal
-        open={openModal === Modal.WalletSetup}
-        onClose={onCloseModal}
-        onConfirm={onConnectWallet}
-      />
 
       <DepositModal
         open={openModal === Modal.Deposit}

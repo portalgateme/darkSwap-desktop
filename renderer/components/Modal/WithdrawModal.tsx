@@ -3,11 +3,17 @@ import NetworkSelection from '../Selection/NetworkSelection'
 import { Account, Network, Token } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
+import { useState } from 'react'
 
 interface WithdrawModalProps {
   open: boolean
   onClose: () => void
-  onConfirm?: () => void
+  onConfirm?: (
+    chainId: number,
+    wallet: string,
+    asset: string,
+    amount: number
+  ) => void
 }
 
 export const WithdrawModal = ({
@@ -15,20 +21,56 @@ export const WithdrawModal = ({
   onClose,
   onConfirm
 }: WithdrawModalProps) => {
+  const [data, setData] = useState<{
+    network?: Network
+    account?: string
+    token?: Token
+    amount: string
+  }>({
+    network: undefined,
+    account: undefined,
+    token: undefined,
+    amount: ''
+  })
   const onChangeNetwork = (network: Network) => {
-    console.log('Selected network:', network)
+    setData((prev) => ({ ...prev, network }))
   }
 
-  const onChangeAccount = (account: Account) => {
-    console.log('Selected account:', account)
+  const onChangeAccount = (account: string) => {
+    setData((prev) => ({ ...prev, account }))
   }
 
   const onChangeToken = (token: Token) => {
-    console.log('Selected token:', token)
+    setData((prev) => ({ ...prev, token }))
   }
 
   const onChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Entered amount:', e.target.value)
+    const value = e.target.value
+
+    if (value === '.') {
+      // Prevent starting with a dot
+      setData((prev) => ({ ...prev, amount: '0.' }))
+      return
+    }
+
+    // Validate that the value is numeric (including empty string and decimal numbers)
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setData((prev) => ({ ...prev, amount: value }))
+    }
+  }
+
+  const handleConfirm = () => {
+    if (!data.network || !data.account || !data.token || !data.amount) {
+      console.error('Missing required data for deposit')
+      return
+    }
+    if (!onConfirm) return
+    onConfirm(
+      data.network.chainId,
+      data.account,
+      data.token.address,
+      parseFloat(data.amount)
+    )
   }
   return (
     <Modal
@@ -64,6 +106,7 @@ export const WithdrawModal = ({
         </Typography>
 
         <AccountSelection
+          selectedAccount={data.account}
           onAccountChange={onChangeAccount}
           fullWidth
           buttonSx={{
@@ -73,6 +116,7 @@ export const WithdrawModal = ({
           }}
         />
         <NetworkSelection
+          selectedNetwork={data.network}
           onNetworkChange={onChangeNetwork}
           fullWidth
           buttonSx={{
@@ -90,6 +134,7 @@ export const WithdrawModal = ({
           mt={2}
         >
           <TokenSelection
+            selectedToken={data.token}
             onTokenChange={onChangeToken}
             buttonSx={{
               borderRadius: '10px',
@@ -99,6 +144,7 @@ export const WithdrawModal = ({
           />
 
           <InputBase
+            value={data.amount}
             onChange={onChangeAmount}
             placeholder='Enter amount'
             sx={{
@@ -114,21 +160,6 @@ export const WithdrawModal = ({
           />
         </Stack>
 
-        <InputBase
-          onChange={onChangeAmount}
-          placeholder='Receiving Address'
-          sx={{
-            mt: 2,
-            p: '6px 16px',
-            borderRadius: '10px',
-            background: '#323743',
-            color: '#F3F4F6'
-          }}
-          inputProps={{
-            style: { padding: 0 }
-          }}
-        />
-
         <Button
           variant='contained'
           sx={{
@@ -138,7 +169,7 @@ export const WithdrawModal = ({
             borderRadius: '8px',
             mt: 5
           }}
-          onClick={onConfirm}
+          onClick={handleConfirm}
         >
           Confirm
         </Button>

@@ -11,42 +11,34 @@ import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import { shorterAddress } from '../../utils/format'
+import { useEffect, useState } from 'react'
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
 
-const mockAccounts = [
-  {
-    name: 'Account 1',
-    address: '0x96d5a4a41c946f6d180945681aeb6196d7aee6e3',
-    balance: '1.5 ETH'
-  },
-  {
-    name: 'Account 2',
-    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    balance: '2.0 ETH'
-  },
-  {
-    name: 'Account 3',
-    address: '0x8ff2F0a8D017c79454AA28509a19Ab9753c2DD14',
-    balance: '0.75 ETH'
-  },
-  {
-    name: 'Account 4',
-    address: '0xD5e2d0dD80cDBaf5ea72570267d748db90c04c28',
-    balance: '3.2 ETH'
-  }
-]
 interface SelectAccountModalProps {
   open: boolean
   onClose: () => void
   onSelectAccount?: (account: string) => void
-  onAddAccount?: () => void
 }
 
 export const SelectAccountModal = ({
   open,
   onClose,
-  onSelectAccount,
-  onAddAccount
+  onSelectAccount
 }: SelectAccountModalProps) => {
+  const [search, setSearch] = useState<string>('')
+  const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value)
+  }
+  const { accounts, setOpenAddModal } = useAccountContext()
+
+  const filteredAccounts = accounts.filter((account) =>
+    account.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const onAddAccount = () => {
+    setOpenAddModal(true)
+    onClose()
+  }
   return (
     <Modal
       open={open}
@@ -94,6 +86,8 @@ export const SelectAccountModal = ({
                 color: '#565D6D'
               }
             }}
+            value={search}
+            onChange={onChangeSearch}
           />
         </Stack>
 
@@ -101,7 +95,7 @@ export const SelectAccountModal = ({
           mt={2}
           spacing={2}
         >
-          {mockAccounts.map((account, index) => (
+          {filteredAccounts.map((account, index) => (
             <Stack
               key={index}
               direction={'row'}
@@ -112,9 +106,7 @@ export const SelectAccountModal = ({
                 borderRadius: '4px',
                 background: '#323743'
               }}
-              onClick={() =>
-                onSelectAccount && onSelectAccount(account.address)
-              }
+              onClick={() => onSelectAccount && onSelectAccount(account)}
             >
               {/* Avatar */}
               <Box
@@ -130,13 +122,13 @@ export const SelectAccountModal = ({
                   variant='body2'
                   color='white'
                 >
-                  {account.name}
+                  Account {index + 1}
                 </Typography>
                 <Typography
                   variant='caption'
                   color='#D0D0D0'
                 >
-                  {shorterAddress(account.address)}
+                  {shorterAddress(account)}
                 </Typography>
               </Stack>
 
@@ -145,7 +137,7 @@ export const SelectAccountModal = ({
                 color='white'
                 ml={'auto'}
               >
-                {account.balance}
+                {0}
               </Typography>
             </Stack>
           ))}

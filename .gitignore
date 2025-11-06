@@ -16,3 +16,6 @@ build/
 # Next.js
 renderer/.next
 renderer/out
+
+# Database
+app.db

@@ -10,47 +10,28 @@ import {
 } from '@mui/material'
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined'
 import SwapVertOutlinedIcon from '@mui/icons-material/SwapVertOutlined'
-
-const rows = [
-  {
-    createdAt: '2023-10-01 12:34:56',
-    orderId: 'ORD123456',
-    assetPair: 'BTC/USD',
-    amount: '0.5 BTC',
-    price: '$30,000',
-    network: 'Bitcoin',
-    status: 'Completed'
-  },
-  {
-    createdAt: '2023-10-02 14:20:30',
-    orderId: 'ORD123457',
-    assetPair: 'ETH/USD',
-    amount: '2 ETH',
-    price: '$2,000',
-    network: 'Ethereum',
-    status: 'Pending'
-  },
-  {
-    createdAt: '2023-10-03 09:15:45',
-    orderId: 'ORD123458',
-    assetPair: 'LTC/USD',
-    amount: '10 LTC',
-    price: '$150',
-    network: 'Litecoin',
-    status: 'Failed'
-  },
-  {
-    createdAt: '2023-10-04 11:05:20',
-    orderId: 'ORD123459',
-    assetPair: 'XRP/USD',
-    amount: '500 XRP',
-    price: '$0.50',
-    network: 'Ripple',
-    status: 'Completed'
-  }
-]
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
+import { useEffect, useState } from 'react'
+import { MyAssetsDto, OrderDto } from 'darkswap-client-core'
 
 export const HistoryContent = () => {
+  const { chainId } = useChainContext()
+  const [listData, setListData] = useState<OrderDto[]>([])
+
+  const fetchOrders = async () => {
+    const page = 1
+    const limit = 50
+    // @ts-ignore
+    const orders = await window.orderAPI.getAllOrders(0, page, limit)
+    console.log('Fetched orders:', orders)
+    setListData(orders)
+  }
+
+  useEffect(() => {
+    fetchOrders()
+  }, [chainId])
+
   return (
     <Stack mt={2}>
       {/* Filter */}
@@ -108,7 +89,6 @@ export const HistoryContent = () => {
                 }
               }}
             >
-              <TableCell>Date</TableCell>
               <TableCell>Order Id</TableCell>
               <TableCell>Asset Pair</TableCell>
               <TableCell>Amount</TableCell>
@@ -119,9 +99,28 @@ export const HistoryContent = () => {
           </TableHead>
           {/* Table Body */}
           <TableBody>
-            {rows.map((row, index) => (
+            {listData.length > 0 ? (
+              listData.map((row, index) => (
+                <TableRow
+                  key={index}
+                  sx={{
+                    'tr, th, td': {
+                      border: 'none',
+                      color: '#FFFFFF',
+                      fontSize: '14px'
+                    }
+                  }}
+                >
+                  <TableCell>{row.orderId}</TableCell>
+                  <TableCell>{row.assetPairId}</TableCell>
+                  <TableCell>{row.amountOut}</TableCell>
+                  <TableCell>{row.price}</TableCell>
+                  <TableCell>{row.chainId}</TableCell>
+                  <TableCell>{row.status}</TableCell>
+                </TableRow>
+              ))
+            ) : (
               <TableRow
-                key={index}
                 sx={{
                   'tr, th, td': {
                     border: 'none',
@@ -130,15 +129,15 @@ export const HistoryContent = () => {
                   }
                 }}
               >
-                <TableCell>{row.createdAt}</TableCell>
-                <TableCell>{row.orderId}</TableCell>
-                <TableCell>{row.assetPair}</TableCell>
-                <TableCell>{row.amount}</TableCell>
-                <TableCell>{row.price}</TableCell>
-                <TableCell>{row.network}</TableCell>
-                <TableCell>{row.status}</TableCell>
+                <TableCell
+                  colSpan={6}
+                  align='center'
+                  sx={{ color: '#FFFFFF', fontSize: '14px' }}
+                >
+                  No order history available.
+                </TableCell>
               </TableRow>
-            ))}
+            )}
 
             {/* Add more rows as needed */}
           </TableBody>

@@ -1,7 +1,9 @@
 import { Box, Button, Stack, Typography } from '@mui/material'
 import { Sidebar } from '../Sidebar'
-import NetworkSelection from '../Selection/NetworkSelection'
+
 import { Header } from '../Header'
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
+import { WalletSetupModal } from '../Modal/WalletSetupModal'
 
 export const Layout = ({
   title,
@@ -10,6 +12,7 @@ export const Layout = ({
   title: string
   children: React.ReactNode
 }) => {
+  const { openAddModal, setOpenAddModal, onConnectWallet } = useAccountContext()
   return (
     <Stack
       direction={'row'}
@@ -30,6 +33,12 @@ export const Layout = ({
         <Header title={title} />
         {children}
       </Box>
+
+      <WalletSetupModal
+        open={openAddModal}
+        onClose={() => setOpenAddModal(false)}
+        onConfirm={onConnectWallet}
+      />
     </Stack>
   )
 }

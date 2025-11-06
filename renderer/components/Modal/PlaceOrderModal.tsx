@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Modal, Stack, Tab, Tabs } from '@mui/material'
 import { LimitOrderForm } from '../Form/LimitOrderForm'
 import { TriggerOrderForm } from '../Form/TriggerOrderForm'
@@ -19,6 +19,7 @@ export const PlaceOrderModal: React.FC<PlaceOrderModalProps> = ({
   onClose
 }) => {
   const [tab, setTab] = useState<PlaceOrderTab>(PlaceOrderTab.LIMIT)
+
   return (
     <Modal
       open={open}

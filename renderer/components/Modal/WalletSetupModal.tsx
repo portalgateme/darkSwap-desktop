@@ -1,16 +1,18 @@
 import {
   Button,
+  InputBase,
   Modal,
   Stack,
   TextareaAutosize,
   Typography
 } from '@mui/material'
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined'
+import { useState } from 'react'
 
 interface WalletSetupModalProps {
   open: boolean
   onClose: () => void
-  onConfirm?: () => void
+  onConfirm?: (name: string, privateKey: string) => void
 }
 
 export const WalletSetupModal = ({
@@ -18,6 +20,22 @@ export const WalletSetupModal = ({
   onClose,
   onConfirm
 }: WalletSetupModalProps) => {
+  const [name, setName] = useState('')
+  const [privateKey, setPrivateKey] = useState('')
+
+  const onChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value)
+  }
+
+  const onChangePrivateKey = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPrivateKey(e.target.value)
+  }
+
+  const handleConfirm = () => {
+    if (onConfirm) {
+      onConfirm(name, privateKey)
+    }
+  }
   return (
     <Modal
       open={open}
@@ -49,14 +67,30 @@ export const WalletSetupModal = ({
           color='#F3F4F6'
           mt={4}
         >
-          Private Key / Recovery Phrase
+          Name
         </Typography>
+
+        <InputBase
+          placeholder='Enter the name of wallet'
+          sx={{
+            background: '#2C2F33',
+            color: '#F3F4F6',
+            border: 'none',
+            borderRadius: '10px',
+            padding: '10px',
+            marginTop: '10px',
+            outline: 'none'
+          }}
+          onChange={onChangeName}
+          value={name}
+        />
+
         <Typography
-          variant='body1'
-          color='#BDC1CA'
-          mt={1}
+          variant='h5'
+          color='#F3F4F6'
+          mt={4}
         >
-          Enter your private key or 12/24 word recovery phrase securely.
+          Private Key
         </Typography>
 
         <TextareaAutosize
@@ -71,6 +105,8 @@ export const WalletSetupModal = ({
             marginTop: '10px',
             outline: 'none'
           }}
+          onChange={onChangePrivateKey}
+          value={privateKey}
         />
 
         {/* Alert card */}
@@ -108,7 +144,7 @@ export const WalletSetupModal = ({
             borderRadius: '8px',
             mt: 2
           }}
-          onClick={onConfirm}
+          onClick={handleConfirm}
         >
           Save Wallet
         </Button>

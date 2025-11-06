@@ -3,11 +3,17 @@ import NetworkSelection from '../Selection/NetworkSelection'
 import { Account, Network, Token } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
+import { useState } from 'react'
 
 interface DepositModalProps {
   open: boolean
   onClose: () => void
-  onConfirm?: () => void
+  onConfirm?: (
+    chainId: number,
+    wallet: string,
+    asset: string,
+    amount: number
+  ) => void
 }
 
 export const DepositModal = ({
@@ -15,20 +21,59 @@ export const DepositModal = ({
   onClose,
   onConfirm
 }: DepositModalProps) => {
+  const [data, setData] = useState<{
+    network?: Network
+    account?: string
+    token?: Token
+    amount: string
+  }>({
+    network: undefined,
+    account: undefined,
+    token: undefined,
+    amount: ''
+  })
   const onChangeNetwork = (network: Network) => {
     console.log('Selected network:', network)
+    setData((prev) => ({ ...prev, network }))
   }
 
-  const onChangeAccount = (account: Account) => {
+  const onChangeAccount = (account: string) => {
     console.log('Selected account:', account)
+    setData((prev) => ({ ...prev, account }))
   }
 
   const onChangeToken = (token: Token) => {
     console.log('Selected token:', token)
+    setData((prev) => ({ ...prev, token }))
   }
 
   const onChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Entered amount:', e.target.value)
+    const value = e.target.value
+
+    if (value === '.') {
+      // Prevent starting with a dot
+      setData((prev) => ({ ...prev, amount: '0.' }))
+      return
+    }
+
+    // Validate that the value is numeric (including empty string and decimal numbers)
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setData((prev) => ({ ...prev, amount: value }))
+    }
+  }
+
+  const handleConfirm = () => {
+    if (!data.network || !data.account || !data.token || !data.amount) {
+      console.error('Missing required data for deposit')
+      return
+    }
+    if (!onConfirm) return
+    onConfirm(
+      data.network.chainId,
+      data.account,
+      data.token.address,
+      parseFloat(data.amount)
+    )
   }
   return (
     <Modal
@@ -64,6 +109,7 @@ export const DepositModal = ({
         </Typography>
 
         <AccountSelection
+          selectedAccount={data.account}
           onAccountChange={onChangeAccount}
           fullWidth
           buttonSx={{
@@ -73,6 +119,7 @@ export const DepositModal = ({
           }}
         />
         <NetworkSelection
+          selectedNetwork={data.network}
           onNetworkChange={onChangeNetwork}
           fullWidth
           buttonSx={{
@@ -90,6 +137,7 @@ export const DepositModal = ({
           mt={2}
         >
           <TokenSelection
+            selectedToken={data.token}
             onTokenChange={onChangeToken}
             buttonSx={{
               borderRadius: '10px',
@@ -99,6 +147,7 @@ export const DepositModal = ({
           />
 
           <InputBase
+            value={data.amount}
             onChange={onChangeAmount}
             placeholder='Enter amount'
             sx={{
@@ -123,7 +172,7 @@ export const DepositModal = ({
             borderRadius: '8px',
             mt: 5
           }}
-          onClick={onConfirm}
+          onClick={handleConfirm}
         >
           Save Wallet
         </Button>

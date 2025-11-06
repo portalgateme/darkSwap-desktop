@@ -11,10 +11,10 @@ import {
   Button,
   SxProps
 } from '@mui/material'
-import { networks } from '../../constants/networkConfig'
 import Image from 'next/image'
 import { Network } from '../../types'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
 
 interface NetworkSelectionProps {
   selectedNetwork?: Network
@@ -31,6 +31,7 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
   buttonSx,
   menuSx
 }) => {
+  const { supportedChains } = useChainContext()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -110,7 +111,7 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
           horizontal: 'left'
         }}
       >
-        {networks.map((network) => (
+        {supportedChains.map((network) => (
           <MenuItem
             key={network.chainId}
             onClick={() => onSelectNetwork(network)}

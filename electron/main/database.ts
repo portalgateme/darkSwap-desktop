@@ -2,9 +2,7 @@ import Database from 'better-sqlite3'
 import * as path from 'path'
 import * as fs from 'fs'
 import { DarkSwapClientCore, DarkSwapConfig } from 'darkswap-client-core'
-import yaml from 'js-yaml'
-import { app } from 'electron'
-import { ConfigLoader } from './utils/configUtil'
+import { ConfigLoader } from '../utils/configUtil'
 
 const dbPath = path.join(process.cwd(), 'app.db')
 
@@ -13,7 +11,29 @@ if (!fs.existsSync(dbPath)) {
   fs.writeFileSync(dbPath, '')
 }
 
-const db = new Database(dbPath)
+export const db = new Database(dbPath)
+
+db.prepare(
+  `
+  CREATE TABLE IF NOT EXISTS wallets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    address TEXT,
+    privateKey TEXT,
+    type TEXT
+  )
+`
+).run()
+
+const wallets = db.prepare('SELECT * FROM wallets').all() as Array<{
+  id: number
+  name: string
+  address: string
+  privateKey: string
+  type: 'privateKey' | 'fireblocks'
+}>
+
+console.log('Loaded wallets from DB:', wallets)
 
 const config = ConfigLoader.getInstance().getConfig()
 
@@ -22,7 +42,7 @@ if (!config) {
 }
 
 const darkSwapConfig: DarkSwapConfig = {
-  wallets: config.wallets,
+  wallets: [...config.wallets, ...wallets],
   chainRpcs: config.chainRpcs || [],
   dbFilePath: dbPath,
   bookNodeSocketUrl: config.bookNodeSocketUrl || 'wss://socket.darknode.io',

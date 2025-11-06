@@ -9,41 +9,16 @@ import {
   TableRow
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { PlaceOrderModal } from '../Modal/PlaceOrderModal'
-
-const rows = [
-  {
-    action: 'Buy',
-    status: 'Open',
-    type: 'Limit',
-    amount: '0.5 BTC',
-    price: '$30,000',
-    total: '$15,000',
-    network: 'Bitcoin'
-  },
-  {
-    action: 'Sell',
-    status: 'Completed',
-    type: 'Market',
-    amount: '1 ETH',
-    price: '$2,000',
-    total: '$2,000',
-    network: 'Ethereum'
-  },
-  {
-    action: 'Buy',
-    status: 'Cancelled',
-    type: 'Limit',
-    amount: '100 ADA',
-    price: '$1.20',
-    total: '$120',
-    network: 'Cardano'
-  }
-]
+import { OrderDto } from 'darkswap-client-core'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
 
 export const OrderContent = () => {
   const [openModal, setOpenModal] = React.useState(false)
+  const [listData, setListData] = useState<OrderDto[]>([])
+
+  const { chainId } = useChainContext()
 
   const onOpenModal = () => {
     setOpenModal(true)
@@ -52,6 +27,19 @@ export const OrderContent = () => {
   const onCloseModal = () => {
     setOpenModal(false)
   }
+
+  const fetchOrders = async () => {
+    const page = 1
+    const limit = 50
+    // @ts-ignore
+    const orders = await window.orderAPI.getAllOrders(0, page, limit)
+    console.log('Fetched orders:', orders)
+    setListData(orders)
+  }
+
+  useEffect(() => {
+    fetchOrders()
+  }, [chainId])
 
   return (
     <Stack mt={2}>
@@ -96,7 +84,7 @@ export const OrderContent = () => {
                 }
               }}
             >
-              <TableCell>Action</TableCell>
+              <TableCell>Order Id</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Amount</TableCell>
@@ -107,9 +95,29 @@ export const OrderContent = () => {
           </TableHead>
           {/* Table Body */}
           <TableBody>
-            {rows.map((row, index) => (
+            {listData.length > 0 ? (
+              listData.map((row, index) => (
+                <TableRow
+                  key={index}
+                  sx={{
+                    'tr, th, td': {
+                      border: 'none',
+                      color: '#FFFFFF',
+                      fontSize: '14px'
+                    }
+                  }}
+                >
+                  <TableCell>{row.orderId}</TableCell>
+                  <TableCell>{row.status}</TableCell>
+                  <TableCell>{row.orderType}</TableCell>
+                  <TableCell>{row.amountOut}</TableCell>
+                  <TableCell>{row.price}</TableCell>
+                  <TableCell>{row.amountIn}</TableCell>
+                  <TableCell>{row.chainId}</TableCell>
+                </TableRow>
+              ))
+            ) : (
               <TableRow
-                key={index}
                 sx={{
                   'tr, th, td': {
                     border: 'none',
@@ -118,15 +126,18 @@ export const OrderContent = () => {
                   }
                 }}
               >
-                <TableCell>{row.action}</TableCell>
-                <TableCell>{row.status}</TableCell>
-                <TableCell>{row.type}</TableCell>
-                <TableCell>{row.amount}</TableCell>
-                <TableCell>{row.price}</TableCell>
-                <TableCell>{row.total}</TableCell>
-                <TableCell>{row.network}</TableCell>
+                <TableCell
+                  colSpan={7}
+                  align='center'
+                  sx={{
+                    color: '#FFFFFF',
+                    fontSize: '14px'
+                  }}
+                >
+                  No orders found.
+                </TableCell>
               </TableRow>
-            ))}
+            )}
 
             {/* Add more rows as needed */}
           </TableBody>

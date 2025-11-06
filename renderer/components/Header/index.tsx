@@ -5,18 +5,18 @@ import NetworkSelection from '../Selection/NetworkSelection'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import { shorterAddress } from '../../utils/format'
 import { SelectAccountModal } from '../Modal/SelectAccountModal'
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
 
 interface HeaderProps {
   title: string
 }
 export const Header = ({ title }: HeaderProps) => {
-  const [selectedNetwork, setSelectedNetwork] = useState<Network>()
-  const [selectedAccount, setSelectedAccount] = useState<string>()
   const [openModal, setOpenModal] = useState<boolean>(false)
 
-  const onChangeNetwork = (network: Network) => {
-    setSelectedNetwork(network)
-  }
+  const { selectedAccount, setSelectedAccount, setOpenAddModal } =
+    useAccountContext()
+  const { onChangeChain, currentChain } = useChainContext()
 
   const onOpenSelectAccount = () => {
     setOpenModal(true)
@@ -31,9 +31,6 @@ export const Header = ({ title }: HeaderProps) => {
     onCloseModal()
   }
 
-  const onAddAccount = () => {
-    onCloseModal()
-  }
   return (
     <Stack
       direction={'row'}
@@ -52,8 +49,8 @@ export const Header = ({ title }: HeaderProps) => {
         spacing={2}
       >
         <NetworkSelection
-          selectedNetwork={selectedNetwork}
-          onNetworkChange={onChangeNetwork}
+          selectedNetwork={currentChain}
+          onNetworkChange={onChangeChain}
         />
 
         <Button
@@ -78,7 +75,6 @@ export const Header = ({ title }: HeaderProps) => {
         open={openModal}
         onClose={onCloseModal}
         onSelectAccount={onChangeAccount}
-        onAddAccount={onAddAccount}
       />
     </Stack>
   )

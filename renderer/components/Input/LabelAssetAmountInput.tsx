@@ -1,15 +1,34 @@
 import { InputBase, Stack, Typography } from '@mui/material'
-import { Token } from '../../types'
 import { TokenLabel } from '../Label/TokenLabel'
 
 interface LabelAssetAmountInputProps {
   label: string
-  token: Token
+  token?: string
+  amount: string
+  onChange?: (amount: string) => void
 }
 export const LabelAssetAmountInput: React.FC<LabelAssetAmountInputProps> = ({
   label,
-  token
+  token,
+  amount,
+  onChange
 }) => {
+  const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
+
+    if (value === '.' && onChange) {
+      // Prevent starting with a dot
+      onChange('0.')
+      return
+    }
+
+    // Validate that the value is numeric (including empty string and decimal numbers)
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      if (onChange) {
+        onChange(value)
+      }
+    }
+  }
   return (
     <Stack width={'100%'}>
       <Typography color='#fff'>{label}</Typography>
@@ -25,8 +44,10 @@ export const LabelAssetAmountInput: React.FC<LabelAssetAmountInputProps> = ({
         }}
       >
         <InputBase
+          value={amount}
           placeholder='0.00'
           sx={{ width: '100%', color: '#fff' }}
+          onChange={handleAmountChange}
         />
         <TokenLabel token={token} />
       </Stack>

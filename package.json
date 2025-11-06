@@ -1,7 +1,7 @@
 {
   "name": "darkSwap-desktop",
   "version": "1.0.0",
-  "main": "dist/electron/main.js",
+  "main": "dist/electron/main/main.js",
   "devDependencies": {
     "@electron/rebuild": "^4.0.1",
     "@types/better-sqlite3": "^7.6.12",
@@ -18,7 +18,7 @@
   "scripts": {
     "dev:next": "next dev ./renderer",
     "build:next": "next build ./renderer",
-    "dev:electron": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main.js config=./config.yaml",
+    "dev:electron": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js config=./config.yaml",
     "start": "electron .",
     "build": "tsc -p . && npm run build:next && electron-builder",
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\"",
@@ -30,8 +30,10 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
+    "axios": "^1.13.2",
     "better-sqlite3": "^11.8.0",
     "darkswap-client-core": "./darkSwap-client-core",
+    "ethers": "^6.15.0",
     "js-yaml": "^4.1.0",
     "next": "^15.5.4",
     "react": "^19.1.1",
@@ -39,35 +41,41 @@
     "zod": "^4.1.11"
   },
   "build": {
-    "appId": "com.example.electronnextapp",
-    "productName": "ElectronNextApp",
+    "appId": "com.darkswap.desktop",
+    "productName": "DarkSwap",
     "directories": {
-      "buildResources": "assets",
       "output": "release"
     },
     "files": [
-      "dist/**/*",
+      "dist/**/**/**/*",
       "renderer/out/**/*",
-      "package.json"
+      "package.json",
+      "config.yaml"
     ],
-    "extraResources": [],
-    "mac": {
-      "category": "public.app-category.productivity",
-      "target": [
-        "dmg"
-      ]
-    },
+    "extraResources": [
+      "config.yaml"
+    ],
     "win": {
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "assets/icon.ico"
     },
-    "linux": {
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
+    },
+    "mac": {
       "target": [
-        "AppImage"
+        "dmg"
       ],
-      "category": "Utility"
+      "icon": "assets/icon.icns"
     }
   }
 }

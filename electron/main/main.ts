@@ -1,6 +1,10 @@
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
 import dbInstance from './database'
+import { registerAccountHandlers } from './handlers/accountHandler'
+import { registerAssetPairHandlers } from './handlers/assetPairHandler'
+import { registerOrderHandlers } from './handlers/orderHandler'
+import { registerRPCManagerHandlers } from './handlers/rpcManagerHandler'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -9,7 +13,7 @@ async function createWindow() {
     width: 1440,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, '../preload/preload.js')
     }
   })
 
@@ -26,17 +30,14 @@ async function createWindow() {
   })
 }
 
+// Initialize database and start WebSocket client
 dbInstance.getWebSocketClient().startWebSocket()
 
-dbInstance
-  .getAssetPairService()
-  .syncAssetPairs()
-  .then(() => {
-    console.log('Asset pairs synced')
-  })
-  .catch((error) => {
-    console.error('Error syncing asset pairs:', error)
-  })
+// Register IPC handlers
+registerAccountHandlers()
+registerAssetPairHandlers()
+registerOrderHandlers()
+registerRPCManagerHandlers()
 
 app.on('ready', createWindow)
 app.on('window-all-closed', () => {
