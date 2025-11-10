@@ -37,7 +37,9 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({
     const fetchedAccounts = await window.accountAPI.getWallets()
     console.log('Fetched accounts:', fetchedAccounts)
     setAccounts(fetchedAccounts)
-    setSelectedAccount(fetchedAccounts[0] || null)
+    if (!selectedAccount) {
+      setSelectedAccount(fetchedAccounts[0] || null)
+    }
   }
 
   const onConnectWallet = (name: string, privateKey: string) => {

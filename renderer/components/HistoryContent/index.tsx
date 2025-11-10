@@ -14,10 +14,16 @@ import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { useEffect, useState } from 'react'
 import { MyAssetsDto, OrderDto } from 'darkswap-client-core'
+import { OrderStatusLabel } from '../Label/OrderStatusLabel'
+import { NetworkLabel } from '../Label/NetworkLabel'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
+import { OrderDirection } from '../../types'
+import { ethers } from 'ethers'
 
 export const HistoryContent = () => {
   const { chainId } = useChainContext()
   const [listData, setListData] = useState<OrderDto[]>([])
+  const { list } = useAssetPairContext()
 
   const fetchOrders = async () => {
     const page = 1
@@ -31,6 +37,18 @@ export const HistoryContent = () => {
   useEffect(() => {
     fetchOrders()
   }, [chainId])
+
+  const formatAmountOut = (row: OrderDto) => {
+    const assetPair = list.find((ap) => ap.id === row.assetPairId)
+    if (!assetPair) return row.amountOut.toString()
+
+    const decimalOut =
+      row.orderDirection === OrderDirection.SELL
+        ? assetPair.baseDecimal
+        : assetPair.quoteDecimal
+    const result = ethers.formatUnits(row.amountOut, decimalOut)
+    return result
+  }
 
   return (
     <Stack mt={2}>
@@ -113,10 +131,14 @@ export const HistoryContent = () => {
                 >
                   <TableCell>{row.orderId}</TableCell>
                   <TableCell>{row.assetPairId}</TableCell>
-                  <TableCell>{row.amountOut}</TableCell>
+                  <TableCell>{formatAmountOut(row)}</TableCell>
                   <TableCell>{row.price}</TableCell>
-                  <TableCell>{row.chainId}</TableCell>
-                  <TableCell>{row.status}</TableCell>
+                  <TableCell>
+                    <NetworkLabel chainId={row.chainId} />
+                  </TableCell>
+                  <TableCell>
+                    <OrderStatusLabel status={row.status} />
+                  </TableCell>
                 </TableRow>
               ))
             ) : (

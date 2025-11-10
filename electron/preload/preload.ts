@@ -22,9 +22,9 @@ contextBridge.exposeInMainWorld('accountAPI', {
     ipcRenderer.invoke('account:syncAssets', chainId, wallet),
   syncOneAsset: (chainId: number, wallet: string, asset: string) =>
     ipcRenderer.invoke('account:syncOneAsset', chainId, wallet, asset),
-  deposit: (chainId: number, wallet: string, asset: string, amount: number) =>
+  deposit: (chainId: number, wallet: string, asset: string, amount: string) =>
     ipcRenderer.invoke('account:deposit', chainId, wallet, asset, amount),
-  withdraw: (chainId: number, wallet: string, asset: string, amount: number) =>
+  withdraw: (chainId: number, wallet: string, asset: string, amount: string) =>
     ipcRenderer.invoke('account:withdraw', chainId, wallet, asset, amount)
 })
 

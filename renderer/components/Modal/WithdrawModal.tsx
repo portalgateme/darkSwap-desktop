@@ -4,22 +4,25 @@ import { Account, Network, Token } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
 import { useState } from 'react'
+import { ethers } from 'ethers'
 
 interface WithdrawModalProps {
   open: boolean
   onClose: () => void
+  loading?: boolean
   onConfirm?: (
     chainId: number,
     wallet: string,
     asset: string,
-    amount: number
+    amount: string
   ) => void
 }
 
 export const WithdrawModal = ({
   open,
   onClose,
-  onConfirm
+  onConfirm,
+  loading = false
 }: WithdrawModalProps) => {
   const [data, setData] = useState<{
     network?: Network
@@ -69,7 +72,7 @@ export const WithdrawModal = ({
       data.network.chainId,
       data.account,
       data.token.address,
-      parseFloat(data.amount)
+      ethers.parseUnits(data.amount, data.token.decimals).toString()
     )
   }
   return (
@@ -169,6 +172,7 @@ export const WithdrawModal = ({
             borderRadius: '8px',
             mt: 5
           }}
+          disabled={loading}
           onClick={handleConfirm}
         >
           Confirm

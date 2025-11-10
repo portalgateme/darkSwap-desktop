@@ -15,6 +15,8 @@ import { DepositModal } from '../Modal/DepositModal'
 import { WithdrawModal } from '../Modal/WithdrawModal'
 import { ethers } from 'ethers'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
+import { ca } from 'zod/v4/locales'
+import { set } from 'zod'
 
 enum Modal {
   Deposit = 'DEPOSIT',
@@ -24,6 +26,7 @@ enum Modal {
 
 export const MainContent = () => {
   const [openModal, setOpenModal] = useState<Modal | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const { selectedAccount, setSelectedAccount, setOpenAddModal } =
     useAccountContext()
@@ -53,11 +56,18 @@ export const MainContent = () => {
     chainId: number,
     wallet: string,
     asset: string,
-    amount: number
+    amount: string
   ) => {
-    //@ts-ignore
-    await window.accountAPI.deposit(chainId, wallet, asset, amount)
-    onCloseModal()
+    setLoading(true)
+    try {
+      //@ts-ignore
+      await window.accountAPI.deposit(chainId, wallet, asset, amount)
+      onCloseModal()
+    } catch (error) {
+      console.error('Deposit failed:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const onOpenWithdraw = () => {
@@ -68,11 +78,18 @@ export const MainContent = () => {
     chainId: number,
     wallet: string,
     asset: string,
-    amount: number
+    amount: string
   ) => {
-    // @ts-ignore
-    await window.accountAPI.withdraw(chainId, wallet, asset, amount)
-    onCloseModal()
+    setLoading(true)
+    try {
+      // @ts-ignore
+      await window.accountAPI.withdraw(chainId, wallet, asset, amount)
+      onCloseModal()
+    } catch (error) {
+      console.error('Withdraw failed:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -180,12 +197,14 @@ export const MainContent = () => {
         open={openModal === Modal.Deposit}
         onClose={onCloseModal}
         onConfirm={onConfirmDeposit}
+        loading={loading}
       />
 
       <WithdrawModal
         open={openModal === Modal.Withdraw}
         onClose={onCloseModal}
         onConfirm={onConfirmWithdraw}
+        loading={loading}
       />
     </Box>
   )

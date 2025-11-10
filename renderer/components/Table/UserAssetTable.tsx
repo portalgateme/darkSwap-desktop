@@ -12,6 +12,7 @@ import { MyAssetsDto } from 'darkswap-client-core'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { getTokenFromContract } from '../../utils/getToken'
+import { ethers } from 'ethers'
 
 export function UserAssetTable() {
   const { selectedAccount } = useAccountContext()
@@ -31,6 +32,10 @@ export function UserAssetTable() {
     if (!selectedAccount || !chainId) return
     fetchAssets(chainId, selectedAccount)
   }, [chainId, selectedAccount])
+
+  const formatAmount = (amount: string, decimals: number = 18) => {
+    return ethers.formatUnits(amount, decimals)
+  }
 
   return (
     <TableContainer
@@ -64,12 +69,19 @@ export function UserAssetTable() {
                   component='th'
                   scope='row'
                 >
-                  {getTokenFromContract(row.asset)?.symbol}
+                  {getTokenFromContract(row.asset, chainId)?.symbol}
                 </StyledTableCell>
                 <StyledTableCell align='center'>
-                  {shorterAddress(getTokenFromContract(row.asset)?.address)}
+                  {shorterAddress(
+                    getTokenFromContract(row.asset, chainId)?.address
+                  )}
                 </StyledTableCell>
-                <StyledTableCell align='center'>{row.amount}</StyledTableCell>
+                <StyledTableCell align='center'>
+                  {formatAmount(
+                    row.amount,
+                    getTokenFromContract(row.asset, chainId)?.decimals
+                  )}
+                </StyledTableCell>
                 <StyledTableCell align='right'>
                   {row.lockedAmount}
                 </StyledTableCell>

@@ -55,7 +55,7 @@ export enum OrderType {
   LIMIT_MAKER = 6
 }
 
-export declare enum TimeInForce {
+export enum TimeInForce {
   GTC = 0,
   GTD = 1,
   IOC = 2,
@@ -64,9 +64,19 @@ export declare enum TimeInForce {
   AON_GTD = 9
 }
 
-export declare enum StpMode {
+export enum StpMode {
   NONE = 0,
   EXPIRE_MAKER = 1,
   EXPIRE_TAKER = 2,
   BOTH = 3
+}
+
+export enum OrderStatus {
+  OPEN = 0,
+  MATCHED = 1,
+  BOB_CONFIRMED = 2,
+  SETTLED = 3,
+  CANCELLED = 4,
+  NOT_TRIGGERED = 5,
+  TRIGGERED = 6
 }

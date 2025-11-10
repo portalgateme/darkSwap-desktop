@@ -4,22 +4,25 @@ import { Account, Network, Token } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
 import { useState } from 'react'
+import { ethers } from 'ethers'
 
 interface DepositModalProps {
   open: boolean
   onClose: () => void
+  loading?: boolean
   onConfirm?: (
     chainId: number,
     wallet: string,
     asset: string,
-    amount: number
+    amount: string
   ) => void
 }
 
 export const DepositModal = ({
   open,
   onClose,
-  onConfirm
+  onConfirm,
+  loading = false
 }: DepositModalProps) => {
   const [data, setData] = useState<{
     network?: Network
@@ -72,7 +75,7 @@ export const DepositModal = ({
       data.network.chainId,
       data.account,
       data.token.address,
-      parseFloat(data.amount)
+      ethers.parseUnits(data.amount, data.token.decimals).toString()
     )
   }
   return (
@@ -172,9 +175,10 @@ export const DepositModal = ({
             borderRadius: '8px',
             mt: 5
           }}
+          disabled={loading}
           onClick={handleConfirm}
         >
-          Save Wallet
+          Confirm
         </Button>
       </Stack>
     </Modal>
