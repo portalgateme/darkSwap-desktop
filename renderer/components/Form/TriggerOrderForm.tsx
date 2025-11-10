@@ -21,10 +21,18 @@ import { getMarketPriceFromBinance } from '../../services/orderService'
 import { safeAmountWithDecimals } from '../../utils/safeAmount'
 import { OrderDto } from 'darkswap-client-core'
 import { ethers } from 'ethers'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 
-export const TriggerOrderForm = () => {
+interface TriggerOrderFormProps {
+  onClose: () => void
+}
+
+export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
+  onClose
+}) => {
   const { chainId, currentChain, onChangeChain } = useChainContext()
   const { selectedAccount } = useAccountContext()
+  const { assetPair } = useAssetPairContext()
   const [formData, setFormData] = useState<{
     amountIn: string
     amountOut: string
@@ -44,32 +52,7 @@ export const TriggerOrderForm = () => {
     orderDirection: OrderDirection.SELL,
     triggerPrice: ''
   })
-
-  const [assetPair, setAssetPair] = useState<AssetPairDto>()
-
-  const fetchAssetPairs = async (chainId: number) => {
-    // @ts-ignore
-    const assetPairs = (await window.assetPairAPI.getAssetPairs(
-      chainId
-    )) as AssetPairDto[]
-
-    const currentPair = assetPairs[0]
-    if (!currentPair) return
-    setAssetPair(currentPair)
-    setFormData((prev) => ({
-      ...prev,
-      assetIn: {
-        address: currentPair.baseAddress,
-        decimals: currentPair.baseDecimal,
-        symbol: currentPair.baseSymbol
-      },
-      assetOut: {
-        address: currentPair.quoteAddress,
-        decimals: currentPair.quoteDecimal,
-        symbol: currentPair.quoteSymbol
-      }
-    }))
-  }
+  const [loading, setLoading] = useState(false)
 
   const fetchMarketPrice = async (assetPair: AssetPairDto) => {
     const price = await getMarketPriceFromBinance(
@@ -83,26 +66,41 @@ export const TriggerOrderForm = () => {
 
   useEffect(() => {
     if (!assetPair) return
+    setFormData((prev) => ({
+      ...prev,
+      assetIn: {
+        address: assetPair.quoteAddress,
+        decimals: assetPair.quoteDecimal,
+        symbol: assetPair.quoteSymbol
+      },
+      assetOut: {
+        address: assetPair.baseAddress,
+        decimals: assetPair.baseDecimal,
+        symbol: assetPair.baseSymbol
+      },
+      orderDirection: OrderDirection.SELL
+    }))
+  }, [assetPair])
+
+  useEffect(() => {
+    if (!assetPair) return
     fetchMarketPrice(assetPair)
   }, [assetPair])
 
   useEffect(() => {
-    if (!chainId) return
-    fetchAssetPairs(chainId)
-  }, [chainId])
-
-  useEffect(() => {
-    if (formData.amountIn && formData.price && formData.assetOut) {
-      const amountOut = safeAmountWithDecimals(
-        (parseFloat(formData.amountIn) * parseFloat(formData.price)).toString(),
-        formData.assetOut.decimals
+    if (formData.amountOut && formData.price && formData.assetIn) {
+      const amountIn = safeAmountWithDecimals(
+        (
+          parseFloat(formData.amountOut) * parseFloat(formData.price)
+        ).toString(),
+        formData.assetIn.decimals
       )
       setFormData((prev) => ({
         ...prev,
-        amountOut
+        amountIn
       }))
     }
-  }, [formData.amountIn, formData.price])
+  }, [formData.amountOut, formData.price])
 
   const onPlaceOrder = async () => {
     if (
@@ -113,31 +111,45 @@ export const TriggerOrderForm = () => {
       !formData.assetOut
     )
       return
-    const amountInBN = ethers
-      .parseUnits(formData.amountIn, formData.assetIn.decimals)
-      .toString()
-    const amountOutBN = ethers
-      .parseUnits(formData.amountOut, formData.assetOut.decimals)
-      .toString()
+    try {
+      setLoading(true)
+      const amountInBN = ethers
+        .parseUnits(formData.amountIn, formData.assetIn.decimals)
+        .toString()
+      const amountOutBN = ethers
+        .parseUnits(formData.amountOut, formData.assetOut.decimals)
+        .toString()
 
-    const params: OrderDto = {
-      orderId: crypto.randomUUID(),
-      wallet: selectedAccount,
-      chainId: chainId,
-      assetPairId: assetPair.id,
-      orderDirection: formData.orderDirection,
-      orderType: OrderType.LIMIT,
-      timeInForce: TimeInForce.GTC,
-      stpMode: StpMode.NONE,
-      price: formData.price,
-      amountOut: amountOutBN,
-      amountIn: amountInBN,
-      feeRatio: '0.001'
+      const partialAmountInBN = (
+        ethers.parseUnits(formData.amountIn, formData.assetIn.decimals) /
+        BigInt(100)
+      ).toString() // 1% of amountIn
+
+      const params: OrderDto = {
+        orderId: crypto.randomUUID(),
+        wallet: selectedAccount,
+        chainId: chainId,
+        assetPairId: assetPair.id,
+        orderDirection: formData.orderDirection,
+        orderType: OrderType.LIMIT,
+        timeInForce: TimeInForce.GTC,
+        stpMode: StpMode.NONE,
+        price: formData.price,
+        amountOut: amountOutBN,
+        amountIn: amountInBN,
+        partialAmountIn: partialAmountInBN,
+        feeRatio: '0.001'
+      }
+
+      console.log('Placing order with params:', params)
+      // @ts-ignore
+      await window.orderAPI.createOrder(params)
+      onClose()
+    } catch (error) {
+      console.error('Error placing order:', error)
+    } finally {
+      setLoading(false)
     }
-
-    console.log('Placing order with params:', params)
-    // @ts-ignore
-    await window.orderAPI.createOrder(params)
   }
 
   const switchAsset = () => {
@@ -237,12 +249,12 @@ export const TriggerOrderForm = () => {
 
       <LabelAssetAmountInput
         label='You sell'
-        token={formData.assetIn?.address}
-        amount={formData.amountIn}
+        token={formData.assetOut?.address}
+        amount={formData.amountOut}
         onChange={(amount) =>
           setFormData((prev) => ({
             ...prev,
-            amountIn: amount
+            amountOut: amount
           }))
         }
       />
@@ -262,13 +274,14 @@ export const TriggerOrderForm = () => {
             cursor: 'pointer',
             ':hover': { background: '#3A3E47' }
           }}
+          onClick={switchAsset}
         />
       </Stack>
 
       <LabelAssetAmountInput
         label='You buy'
-        token={formData.assetOut?.address}
-        amount={formData.amountOut}
+        token={formData.assetIn?.address}
+        amount={formData.amountIn}
       />
 
       <Stack
@@ -301,7 +314,8 @@ export const TriggerOrderForm = () => {
             variant='body1'
             color='#BDC1CA'
           >
-            1 ETH = 4000 USDC
+            1 {assetPair?.baseSymbol} = {formData.price}{' '}
+            {assetPair?.quoteSymbol}
           </Typography>
         </Stack>
         <Stack
@@ -350,6 +364,7 @@ export const TriggerOrderForm = () => {
           borderRadius: '8px',
           mt: 5
         }}
+        disabled={loading}
         onClick={onPlaceOrder}
       >
         Place Order

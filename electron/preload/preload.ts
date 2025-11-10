@@ -69,5 +69,6 @@ contextBridge.exposeInMainWorld('rpcManagerAPI', {
       walletAddress,
       chainId
     ),
-  reloadProviders: () => ipcRenderer.invoke('rpcManager:reloadProviders')
+  reloadProviders: () => ipcRenderer.invoke('rpcManager:reloadProviders'),
+  getAllProviders: () => ipcRenderer.invoke('rpcManager:getAllProviders')
 })

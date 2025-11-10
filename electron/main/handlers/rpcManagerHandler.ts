@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import dbInstance from '../database'
+import dbInstance, { config } from '../database'
 
 export const registerRPCManagerHandlers = () => {
   // get Provider
@@ -34,5 +34,10 @@ export const registerRPCManagerHandlers = () => {
   ipcMain.handle('rpcManager:reloadProviders', () => {
     dbInstance.getRpcManager().reloadProviders()
     return true
+  })
+
+  ipcMain.handle('rpcManager:getAllProviders', () => {
+    const providers = config ? config.chainRpcs : []
+    return providers
   })
 }

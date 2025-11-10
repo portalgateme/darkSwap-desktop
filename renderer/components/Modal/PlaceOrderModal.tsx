@@ -84,9 +84,13 @@ export const PlaceOrderModal: React.FC<PlaceOrderModalProps> = ({
         </Tabs>
 
         {/* Form */}
-        {tab === PlaceOrderTab.LIMIT && <LimitOrderForm />}
-        {tab === PlaceOrderTab.STOP_LIMIT && <TriggerOrderForm />}
-        {tab === PlaceOrderTab.TAKE_PROFIT && <TriggerOrderForm />}
+        {tab === PlaceOrderTab.LIMIT && <LimitOrderForm onClose={onClose} />}
+        {tab === PlaceOrderTab.STOP_LIMIT && (
+          <TriggerOrderForm onClose={onClose} />
+        )}
+        {tab === PlaceOrderTab.TAKE_PROFIT && (
+          <TriggerOrderForm onClose={onClose} />
+        )}
       </Stack>
     </Modal>
   )

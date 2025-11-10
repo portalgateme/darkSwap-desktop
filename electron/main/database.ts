@@ -35,7 +35,7 @@ const wallets = db.prepare('SELECT * FROM wallets').all() as Array<{
 
 console.log('Loaded wallets from DB:', wallets)
 
-const config = ConfigLoader.getInstance().getConfig()
+export const config = ConfigLoader.getInstance().getConfig()
 
 if (!config) {
   throw new Error('Failed to load configuration')

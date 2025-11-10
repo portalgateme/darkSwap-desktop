@@ -15,7 +15,7 @@ import { OrderDto } from 'darkswap-client-core'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { OrderStatusLabel } from '../Label/OrderStatusLabel'
 import { OrderDirection, OrderType } from '../../types'
-import { supportedChains } from '../../constants/networkConfig'
+
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { ethers } from 'ethers'
 import { NetworkLabel } from '../Label/NetworkLabel'

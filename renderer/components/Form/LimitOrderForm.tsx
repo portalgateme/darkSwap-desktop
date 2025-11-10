@@ -21,7 +21,11 @@ import { OrderDto } from 'darkswap-client-core'
 import { safeAmountWithDecimals } from '../../utils/safeAmount'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 
-export const LimitOrderForm = () => {
+interface LimitOrderFormProps {
+  onClose: () => void
+}
+
+export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
   const { chainId, currentChain, onChangeChain } = useChainContext()
   const { selectedAccount } = useAccountContext()
   const { assetPair } = useAssetPairContext()
@@ -135,6 +139,7 @@ export const LimitOrderForm = () => {
       console.log('Placing order with params:', params)
       // @ts-ignore
       await window.orderAPI.createOrder(params)
+      onClose()
     } catch (error) {
       console.error('Error placing order:', error)
     } finally {
