@@ -18,11 +18,22 @@ async function createWindow() {
   })
 
   if (process.env.NODE_ENV === 'development') {
+    // DEV mode: chạy Next.js dev server
     await mainWindow.loadURL('http://localhost:3000')
     mainWindow.webContents.openDevTools()
   } else {
-    const indexPath = path.join(__dirname, '../../renderer/out/index.html')
-    mainWindow.loadFile(indexPath)
+    // PRODUCTION mode: load file tĩnh đã được build sẵn
+    console.log('App is packaged:', app.isPackaged)
+    console.log('Resources path:', process.resourcesPath)
+
+    const indexPath = path.join(
+      app.isPackaged
+        ? path.join(process.resourcesPath, 'renderer/out') // đường dẫn trong app đóng gói
+        : path.join(__dirname, '../../renderer/out'),
+      'index.html'
+    )
+
+    await mainWindow.loadFile(indexPath)
   }
 
   mainWindow.on('closed', () => {

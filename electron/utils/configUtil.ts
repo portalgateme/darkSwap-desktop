@@ -5,6 +5,8 @@ import { z } from 'zod'
 import { ConfigSchema, Config } from './configValidator'
 import { ethers } from 'ethers'
 import { DarkSwapConfig } from 'darkswap-client-core'
+import { app } from 'electron'
+import * as path from 'path'
 
 export class ConfigLoader {
   private config?: Config = undefined
@@ -27,14 +29,9 @@ export class ConfigLoader {
 
   private loadConfig() {
     try {
-      const cliConfigPath = this.parseCommandLineArgs()
-      if (!cliConfigPath) {
-        throw new Error(
-          'Config file path not specified, please use --config parameter to specify the config file path'
-        )
-      }
-
-      const configPath = cliConfigPath
+      const configPath = app.isPackaged
+        ? path.join(process.resourcesPath, 'config.yaml')
+        : path.join(process.cwd(), 'config.yaml')
 
       const fileContent = fs.readFileSync(configPath, 'utf8')
       this.config = yaml.load(fileContent) as Config

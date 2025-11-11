@@ -3,15 +3,15 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { DarkSwapClientCore, DarkSwapConfig } from 'darkswap-client-core'
 import { ConfigLoader } from '../utils/configUtil'
+import { app } from 'electron'
 
-const dbPath = path.join(process.cwd(), 'app.db')
+const userDataPath = app.getPath('userData')
+if (!fs.existsSync(userDataPath))
+  fs.mkdirSync(userDataPath, { recursive: true })
 
-// Nếu chưa có file DB thì tạo
-if (!fs.existsSync(dbPath)) {
-  fs.writeFileSync(dbPath, '')
-}
-
-export const db = new Database(dbPath)
+const dbPath = path.join(userDataPath, 'app.db')
+console.log('SQLite path:', dbPath)
+export const db = new Database(dbPath, { verbose: console.log })
 
 db.prepare(
   `

@@ -2,28 +2,19 @@
   "name": "darkSwap-desktop",
   "version": "1.0.0",
   "main": "dist/electron/main/main.js",
-  "devDependencies": {
-    "@electron/rebuild": "^4.0.1",
-    "@types/better-sqlite3": "^7.6.12",
-    "@types/js-yaml": "^4.0.9",
-    "@types/node": "^24.5.2",
-    "@types/react": "^19.1.13",
-    "@types/react-dom": "^19.1.9",
-    "cross-env": "^10.0.0",
-    "electron": "^38.1.2",
-    "electron-builder": "^26.0.12",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
-  },
   "scripts": {
-    "dev:next": "next dev ./renderer",
-    "build:next": "next build ./renderer",
-    "dev:electron": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js config=./config.yaml",
-    "start": "electron .",
-    "build": "tsc -p . && npm run build:next && electron-builder",
+    "// dev": "=========== DEVELOPMENT MODE ===========",
+    "dev:next": "cross-env NODE_ENV=development next dev renderer",
+    "dev:electron": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js",
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\"",
-    "rebuild": "electron-rebuild",
-    "postinstall": "electron-rebuild"
+    "// build": "=========== PRODUCTION BUILD ===========",
+    "build:ts": "tsc -p .",
+    "build:next": "next build renderer",
+    "rebuild:native": "electron-builder install-app-deps",
+    "build:prod": "yarn build:ts && yarn build:next && yarn rebuild:native && electron-builder",
+    "// misc": "=========== UTILITIES ===========",
+    "postinstall": "electron-builder install-app-deps",
+    "start": "electron ."
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -40,19 +31,38 @@
     "react-dom": "^19.1.1",
     "zod": "^4.1.11"
   },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.1",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "concurrently": "^9.1.0",
+    "cross-env": "^10.0.0",
+    "electron": "^38.1.2",
+    "electron-builder": "^26.0.12",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
   "build": {
     "appId": "com.darkswap.desktop",
     "productName": "DarkSwap",
     "directories": {
       "output": "release"
     },
+    "asarUnpack": [
+      "**/node_modules/better-sqlite3/**"
+    ],
     "files": [
-      "dist/**/**/**/*",
-      "renderer/out/**/*",
-      "package.json",
-      "config.yaml"
+      "dist/**/*",
+      "package.json"
     ],
     "extraResources": [
+      {
+        "from": "renderer/out",
+        "to": "renderer/out"
+      },
       "config.yaml"
     ],
     "win": {
