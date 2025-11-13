@@ -1,10 +1,16 @@
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
+import serve from 'electron-serve'
 import dbInstance from './database'
 import { registerAccountHandlers } from './handlers/accountHandler'
 import { registerAssetPairHandlers } from './handlers/assetPairHandler'
 import { registerOrderHandlers } from './handlers/orderHandler'
 import { registerRPCManagerHandlers } from './handlers/rpcManagerHandler'
+
+// Configure electron-serve để serve static files
+const appServe = app.isPackaged
+  ? serve({ directory: path.join(__dirname, '../renderer/out') })
+  : null
 
 let mainWindow: BrowserWindow | null = null
 
@@ -22,18 +28,13 @@ async function createWindow() {
     await mainWindow.loadURL('http://localhost:3000')
     mainWindow.webContents.openDevTools()
   } else {
-    // PRODUCTION mode: load file tĩnh đã được build sẵn
-    console.log('App is packaged:', app.isPackaged)
-    console.log('Resources path:', process.resourcesPath)
-
-    const indexPath = path.join(
-      app.isPackaged
-        ? path.join(process.resourcesPath, 'renderer/out') // đường dẫn trong app đóng gói
-        : path.join(__dirname, '../../renderer/out'),
-      'index.html'
-    )
-
-    await mainWindow.loadFile(indexPath)
+    if (!mainWindow || !appServe) return
+    // PRODUCTION mode: sử dụng electron-serve
+    appServe(mainWindow).then(() => {
+      if (!mainWindow) return
+      mainWindow.loadURL('app://-')
+    })
+    mainWindow.webContents.openDevTools() // Mở DevTools trong production để debug
   }
 
   mainWindow.on('closed', () => {
