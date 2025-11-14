@@ -1,6 +1,6 @@
 import { Button, InputBase, Modal, Stack, Typography } from '@mui/material'
 import NetworkSelection from '../Selection/NetworkSelection'
-import { Account, Network, Token } from '../../types'
+import { Account, Network, Token, Wallet } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
 import { useState } from 'react'
@@ -12,7 +12,7 @@ interface WithdrawModalProps {
   loading?: boolean
   onConfirm?: (
     chainId: number,
-    wallet: string,
+    wallet: Wallet,
     asset: string,
     amount: string
   ) => void
@@ -26,7 +26,7 @@ export const WithdrawModal = ({
 }: WithdrawModalProps) => {
   const [data, setData] = useState<{
     network?: Network
-    account?: string
+    account?: Wallet
     token?: Token
     amount: string
   }>({
@@ -39,7 +39,7 @@ export const WithdrawModal = ({
     setData((prev) => ({ ...prev, network }))
   }
 
-  const onChangeAccount = (account: string) => {
+  const onChangeAccount = (account: Wallet) => {
     setData((prev) => ({ ...prev, account }))
   }
 

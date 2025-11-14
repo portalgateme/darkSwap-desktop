@@ -1,5 +1,5 @@
 import { Button, Stack, Typography } from '@mui/material'
-import { Network } from '../../types'
+import { Network, Wallet } from '../../types'
 import { useState } from 'react'
 import NetworkSelection from '../Selection/NetworkSelection'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
@@ -26,7 +26,7 @@ export const Header = ({ title }: HeaderProps) => {
     setOpenModal(false)
   }
 
-  const onChangeAccount = (account: string) => {
+  const onChangeAccount = (account: Wallet) => {
     setSelectedAccount(account)
     onCloseModal()
   }
@@ -65,7 +65,7 @@ export const Header = ({ title }: HeaderProps) => {
         >
           <Typography variant='body1'>
             {selectedAccount
-              ? shorterAddress(selectedAccount)
+              ? shorterAddress(selectedAccount.address)
               : 'Select Account'}
           </Typography>
         </Button>

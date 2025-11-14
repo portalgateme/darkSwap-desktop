@@ -22,20 +22,29 @@ export const WalletSetupModal = ({
 }: WalletSetupModalProps) => {
   const [name, setName] = useState('')
   const [privateKey, setPrivateKey] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const onChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value)
+    setError(null)
   }
 
   const onChangePrivateKey = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPrivateKey(e.target.value)
+    setError(null)
   }
 
   const handleConfirm = () => {
+    if (!name || !privateKey) {
+      setError('Please fill in all fields.')
+      return
+    }
     if (onConfirm) {
       onConfirm(name, privateKey)
     }
   }
+
+  const buttonDisabled = !name || !privateKey
   return (
     <Modal
       open={open}
@@ -144,10 +153,21 @@ export const WalletSetupModal = ({
             borderRadius: '8px',
             mt: 2
           }}
+          disabled={buttonDisabled}
           onClick={handleConfirm}
         >
           Save Wallet
         </Button>
+
+        {error && (
+          <Typography
+            variant='body2'
+            color='red'
+            mt={2}
+          >
+            {error}
+          </Typography>
+        )}
       </Stack>
     </Modal>
   )

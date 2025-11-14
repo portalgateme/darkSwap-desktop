@@ -13,11 +13,14 @@ import SearchIcon from '@mui/icons-material/Search'
 import { shorterAddress } from '../../utils/format'
 import { useEffect, useState } from 'react'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
+import { Wallet } from '../../types'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
+import { ethers } from 'ethers'
 
 interface SelectAccountModalProps {
   open: boolean
   onClose: () => void
-  onSelectAccount?: (account: string) => void
+  onSelectAccount?: (account: Wallet) => void
 }
 
 export const SelectAccountModal = ({
@@ -30,14 +33,23 @@ export const SelectAccountModal = ({
     setSearch(e.target.value)
   }
   const { accounts, setOpenAddModal } = useAccountContext()
+  const { currentChain } = useChainContext()
 
   const filteredAccounts = accounts.filter((account) =>
-    account.toLowerCase().includes(search.toLowerCase())
+    account.name.toLowerCase().includes(search.toLowerCase())
   )
 
   const onAddAccount = () => {
     setOpenAddModal(true)
     onClose()
+  }
+
+  const balanceOfWallet = async (address: string) => {
+    if (!currentChain) return 0
+    const balance = await new ethers.JsonRpcProvider(
+      currentChain.rpcUrl
+    ).getBalance(address)
+    return ethers.formatEther(balance)
   }
   return (
     <Modal
@@ -122,13 +134,13 @@ export const SelectAccountModal = ({
                   variant='body2'
                   color='white'
                 >
-                  Account {index + 1}
+                  {account.name}
                 </Typography>
                 <Typography
                   variant='caption'
                   color='#D0D0D0'
                 >
-                  {shorterAddress(account)}
+                  {shorterAddress(account.address)}
                 </Typography>
               </Stack>
 
@@ -137,7 +149,7 @@ export const SelectAccountModal = ({
                 color='white'
                 ml={'auto'}
               >
-                {0}
+                {balanceOfWallet(account.address)}
               </Typography>
             </Stack>
           ))}

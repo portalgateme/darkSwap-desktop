@@ -25,7 +25,7 @@ export const Layout = ({
       <Box
         sx={{
           width: '100%',
-          height: '100%',
+          height: 'calc(100vh - 40px)', // Adjusted height to fit within viewport minus padding
           background: '#1D2F23',
           padding: '20px 40px'
         }}

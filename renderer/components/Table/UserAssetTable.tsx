@@ -30,7 +30,7 @@ export function UserAssetTable() {
   }
   useEffect(() => {
     if (!selectedAccount || !chainId) return
-    fetchAssets(chainId, selectedAccount)
+    fetchAssets(chainId, selectedAccount.address)
   }, [chainId, selectedAccount])
 
   const formatAmount = (amount: string, decimals: number = 18) => {

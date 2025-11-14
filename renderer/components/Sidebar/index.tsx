@@ -10,11 +10,15 @@ export const Sidebar = () => {
       sx={{
         width: 300,
         bgcolor: '#0C1114',
-        height: '100%',
+        height: 'calc(100vh - 32px)', // Adjusted height to fit within viewport minus padding
         padding: 2
       }}
     >
-      <Stack>
+      <Stack
+        sx={{
+          height: '100%'
+        }}
+      >
         <Box
           width={200}
           height={40}

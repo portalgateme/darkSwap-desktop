@@ -1,6 +1,6 @@
 import { Button, InputBase, Modal, Stack, Typography } from '@mui/material'
 import NetworkSelection from '../Selection/NetworkSelection'
-import { Account, Network, Token } from '../../types'
+import { Account, Network, Token, Wallet } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
 import { useState } from 'react'
@@ -12,7 +12,7 @@ interface DepositModalProps {
   loading?: boolean
   onConfirm?: (
     chainId: number,
-    wallet: string,
+    wallet: Wallet,
     asset: string,
     amount: string
   ) => void
@@ -26,7 +26,7 @@ export const DepositModal = ({
 }: DepositModalProps) => {
   const [data, setData] = useState<{
     network?: Network
-    account?: string
+    account?: Wallet
     token?: Token
     amount: string
   }>({
@@ -40,7 +40,7 @@ export const DepositModal = ({
     setData((prev) => ({ ...prev, network }))
   }
 
-  const onChangeAccount = (account: string) => {
+  const onChangeAccount = (account: Wallet) => {
     console.log('Selected account:', account)
     setData((prev) => ({ ...prev, account }))
   }
