@@ -4,7 +4,7 @@ import dbInstance, { db } from '../database'
 export function registerAccountHandlers() {
   ipcMain.handle('account:getWallets', async (event) => {
     console.log('Handling account:getWallets')
-    const result = await dbInstance.getAssetManager().getWallets()
+    const result = await db.prepare('SELECT * FROM wallets').all()
     return result
   })
 

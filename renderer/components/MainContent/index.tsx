@@ -8,7 +8,7 @@ import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import { WalletSetupModal } from '../Modal/WalletSetupModal'
 import { UserAssetTable } from '../Table/UserAssetTable'
 import NetworkSelection from '../Selection/NetworkSelection'
-import { Network } from '../../types'
+import { Network, Wallet } from '../../types'
 import { shorterAddress } from '../../utils/format'
 import { SelectAccountModal } from '../Modal/SelectAccountModal'
 import { DepositModal } from '../Modal/DepositModal'
@@ -35,11 +35,6 @@ export const MainContent = () => {
     setOpenModal(null)
   }
 
-  const onChangeAccount = (account: string) => {
-    setSelectedAccount(account)
-    onCloseModal()
-  }
-
   const onOpenSelectAccount = () => {
     setOpenModal(Modal.SelectAccount)
   }
@@ -54,14 +49,14 @@ export const MainContent = () => {
 
   const onConfirmDeposit = async (
     chainId: number,
-    wallet: string,
+    wallet: Wallet,
     asset: string,
     amount: string
   ) => {
     setLoading(true)
     try {
       //@ts-ignore
-      await window.accountAPI.deposit(chainId, wallet, asset, amount)
+      await window.accountAPI.deposit(chainId, wallet.address, asset, amount)
       onCloseModal()
     } catch (error) {
       console.error('Deposit failed:', error)
@@ -76,14 +71,14 @@ export const MainContent = () => {
 
   const onConfirmWithdraw = async (
     chainId: number,
-    wallet: string,
+    wallet: Wallet,
     asset: string,
     amount: string
   ) => {
     setLoading(true)
     try {
       // @ts-ignore
-      await window.accountAPI.withdraw(chainId, wallet, asset, amount)
+      await window.accountAPI.withdraw(chainId, wallet.address, asset, amount)
       onCloseModal()
     } catch (error) {
       console.error('Withdraw failed:', error)

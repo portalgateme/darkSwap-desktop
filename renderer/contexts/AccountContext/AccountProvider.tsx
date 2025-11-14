@@ -6,11 +6,12 @@ import React, {
   useState,
   useEffect
 } from 'react'
+import { Wallet } from '../../types'
 
 interface AccountContextType {
-  selectedAccount: string | null
-  accounts: string[]
-  setSelectedAccount: (account: string | null) => void
+  selectedAccount: Wallet | null
+  accounts: Wallet[]
+  setSelectedAccount: (account: Wallet | null) => void
   openAddModal: boolean
   setOpenAddModal: (open: boolean) => void
   onConnectWallet: (name: string, privateKey: string) => void
@@ -28,8 +29,8 @@ export const AccountContext = createContext<AccountContextType>({
 export const AccountProvider: React.FC<{ children: ReactNode }> = ({
   children
 }) => {
-  const [accounts, setAccounts] = useState<string[]>([])
-  const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
+  const [accounts, setAccounts] = useState<Wallet[]>([])
+  const [selectedAccount, setSelectedAccount] = useState<Wallet | null>(null)
   const [openAddModal, setOpenAddModal] = useState<boolean>(false)
 
   const fetchAccounts = async () => {
@@ -42,17 +43,18 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({
     }
   }
 
-  const onConnectWallet = (name: string, privateKey: string) => {
+  const onConnectWallet = async (name: string, privateKey: string) => {
     const address = ethers.computeAddress(`0x${privateKey}`)
 
     // @ts-ignore
-    const { id } = window.accountAPI.addWallet(
+    const { id } = await window.accountAPI.addWallet(
       name,
       address,
       privateKey,
       'privateKey'
     )
     console.log('Added wallet with id:', id)
+    await fetchAccounts()
     setOpenAddModal(false)
   }
   useEffect(() => {

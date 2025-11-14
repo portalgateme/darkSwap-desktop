@@ -60,6 +60,16 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
     }))
   }
 
+  const onChangeSwitch = async (checked: boolean) => {
+    if (checked && assetPair) {
+      await fetchMarketPrice(assetPair)
+    }
+    setFormData((prev) => ({
+      ...prev,
+      useMarketPrice: checked
+    }))
+  }
+
   useEffect(() => {
     if (!assetPair) return
     setFormData((prev) => ({
@@ -122,7 +132,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
 
       const params: OrderDto = {
         orderId: crypto.randomUUID(),
-        wallet: selectedAccount,
+        wallet: selectedAccount.address,
         chainId: chainId,
         assetPairId: assetPair.id,
         orderDirection: formData.orderDirection,
@@ -160,6 +170,8 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       amountOut: prev.amountIn
     }))
   }
+
+  const btnDisabled = !formData.amountOut || !formData.price || loading
 
   return (
     <Stack>
@@ -249,12 +261,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       >
         <IOSSwitchButton
           checked={formData.useMarketPrice}
-          onChange={() =>
-            setFormData({
-              ...formData,
-              useMarketPrice: !formData.useMarketPrice
-            })
-          }
+          onChange={() => onChangeSwitch(!formData.useMarketPrice)}
           label='Use Market Price'
         />
 
@@ -324,9 +331,9 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
           mt: 5
         }}
         onClick={onPlaceOrder}
-        disabled={loading}
+        disabled={btnDisabled}
       >
-        Place Order
+        Create Order
       </Button>
     </Stack>
   )

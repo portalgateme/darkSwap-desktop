@@ -127,7 +127,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
 
       const params: OrderDto = {
         orderId: crypto.randomUUID(),
-        wallet: selectedAccount,
+        wallet: selectedAccount.address,
         chainId: chainId,
         assetPairId: assetPair.id,
         orderDirection: formData.orderDirection,
@@ -165,6 +165,9 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
       amountOut: prev.amountIn
     }))
   }
+
+  const btnDisabled =
+    !formData.amountOut || !formData.price || loading || !formData.triggerPrice
 
   return (
     <Stack>
@@ -364,10 +367,10 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
           borderRadius: '8px',
           mt: 5
         }}
-        disabled={loading}
+        disabled={btnDisabled}
         onClick={onPlaceOrder}
       >
-        Place Order
+        Create Order
       </Button>
     </Stack>
   )

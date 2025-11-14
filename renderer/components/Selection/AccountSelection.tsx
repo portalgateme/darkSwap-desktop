@@ -9,14 +9,14 @@ import {
   SxProps
 } from '@mui/material'
 
-import { Account } from '../../types'
+import { Wallet } from '../../types'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { shorterAddress } from '../../utils/format'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 
 interface AccountSelectionProps {
-  selectedAccount?: string
-  onAccountChange: (account: string) => void
+  selectedAccount?: Wallet
+  onAccountChange: (account: Wallet) => void
   fullWidth?: boolean
   buttonSx?: SxProps
   menuSx?: SxProps
@@ -39,7 +39,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
     setAnchorEl(null)
   }
 
-  const onSelectAccount = (account: string) => {
+  const onSelectAccount = (account: Wallet) => {
     onAccountChange(account)
     handleClose()
   }
@@ -60,7 +60,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
         onClick={handleClick}
       >
         <Typography variant='body1'>
-          {selectedAccount ? selectedAccount : 'Select Account'}
+          {selectedAccount ? selectedAccount.name : 'Select Account'}
         </Typography>
       </Button>
 
@@ -107,7 +107,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
                 variant='body2'
                 color='#BDC1CA'
               >
-                ({shorterAddress(account)})
+                ({shorterAddress(account.address)})
               </Typography>
             </Stack>
           </MenuItem>
