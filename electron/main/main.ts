@@ -44,6 +44,7 @@ async function createWindow() {
 
 // Initialize database and start WebSocket client
 dbInstance.getWebSocketClient().startWebSocket()
+dbInstance.getAssetPairService().syncAssetPairs()
 
 // Register IPC handlers
 registerAccountHandlers()
