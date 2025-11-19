@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Button, Stack, Typography } from '@mui/material'
 import Image from 'next/image'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -17,6 +17,11 @@ import { ethers } from 'ethers'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { ca } from 'zod/v4/locales'
 import { set } from 'zod'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
+import { MyAssetsDto } from 'darkswap-client-core'
+import { getTokenFromContract } from '../../utils/getToken'
+import { useTokenBalance } from '../../hooks/useTokenBalance'
+import { getMarketPriceFromBinance } from '../../services/orderService'
 
 enum Modal {
   Deposit = 'DEPOSIT',
@@ -28,10 +33,48 @@ export const MainContent = () => {
   const [openModal, setOpenModal] = useState<Modal | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const { selectedAccount, setSelectedAccount, setOpenAddModal } =
-    useAccountContext()
+  const { chainId, provider } = useChainContext()
+  const [listData, setListData] = useState<MyAssetsDto>()
+  const [error, setError] = useState<string | null>(null)
+  const [portfolio, setPortfolio] = useState<string>()
+
+  const { selectedAccount, setOpenAddModal } = useAccountContext()
+  const { getBalance } = useTokenBalance()
+
+  const calculatePortfolioValue = async (assets: MyAssetsDto) => {
+    let totalValue = 0
+    const quoteSymbol = 'USDC' // Assuming USDC as the quote currency
+    for (const asset of assets.assets) {
+      const token = getTokenFromContract(asset.asset, assets.chainId)
+      if (token) {
+        const balance = ethers.formatUnits(asset.amount, token.decimals)
+        const price = await getMarketPriceFromBinance(
+          token.symbol + quoteSymbol
+        )
+        totalValue += parseFloat(balance) * parseFloat(price)
+      }
+    }
+    setPortfolio(`$${totalValue.toFixed(2)}`)
+  }
+
+  const fetchAssets = async (chainId: number, address: string) => {
+    // @ts-ignore
+    const assets = await window.accountAPI.getAssetsByChainIdAndWallet(
+      chainId,
+      address
+    )
+    console.log('Fetched assets:', assets)
+    setListData(assets)
+    await calculatePortfolioValue(assets)
+  }
+
+  useEffect(() => {
+    if (!selectedAccount || !chainId) return
+    fetchAssets(chainId, selectedAccount.address)
+  }, [chainId, selectedAccount])
 
   const onCloseModal = () => {
+    setError(null)
     setOpenModal(null)
   }
 
@@ -53,13 +96,29 @@ export const MainContent = () => {
     asset: string,
     amount: string
   ) => {
+    setError(null)
     setLoading(true)
     try {
+      const token = getTokenFromContract(asset, chainId)
+      if (!token) {
+        throw new Error('Asset not found in user portfolio')
+      }
+      const balance = await getBalance(chainId, wallet.address, asset)
+      const formatBalance = ethers.formatUnits(balance, token.decimals)
+
+      if (parseFloat(amount) > parseFloat(formatBalance)) {
+        throw new Error('Insufficient balance for deposit')
+      }
       //@ts-ignore
       await window.accountAPI.deposit(chainId, wallet.address, asset, amount)
+      await fetchAssets(chainId, wallet.address)
       onCloseModal()
     } catch (error) {
       console.error('Deposit failed:', error)
+      setError(
+        'Deposit failed: ' +
+          (error instanceof Error ? error.message : String(error))
+      )
     } finally {
       setLoading(false)
     }
@@ -75,13 +134,33 @@ export const MainContent = () => {
     asset: string,
     amount: string
   ) => {
+    if (!listData) return
+    setError(null)
     setLoading(true)
     try {
+      // Check balance before withdrawing
+      const token = getTokenFromContract(asset, chainId)
+      if (!token) {
+        throw new Error('Asset not found in user portfolio')
+      }
+      const balance =
+        listData.assets.find((a) => a.asset === asset)?.amount || '0'
+      const formatBalance = ethers.formatUnits(balance, token.decimals)
+
+      if (parseFloat(amount) > parseFloat(formatBalance)) {
+        throw new Error('Insufficient balance for withdrawal')
+      }
+
       // @ts-ignore
       await window.accountAPI.withdraw(chainId, wallet.address, asset, amount)
+      await fetchAssets(chainId, wallet.address)
       onCloseModal()
     } catch (error) {
       console.error('Withdraw failed:', error)
+      setError(
+        'Withdraw failed: ' +
+          (error instanceof Error ? error.message : String(error))
+      )
     } finally {
       setLoading(false)
     }
@@ -113,7 +192,7 @@ export const MainContent = () => {
             color='#F3F4F6'
             variant='h4'
           >
-            $54,896.72
+            {portfolio}
           </Typography>
         </Stack>
 
@@ -161,7 +240,7 @@ export const MainContent = () => {
       </Typography>
       {/* Have not connected wallet */}
       {selectedAccount ? (
-        <UserAssetTable />
+        <UserAssetTable listData={listData} />
       ) : (
         <Stack
           width={'100%'}
@@ -193,6 +272,7 @@ export const MainContent = () => {
         onClose={onCloseModal}
         onConfirm={onConfirmDeposit}
         loading={loading}
+        error={error}
       />
 
       <WithdrawModal
@@ -200,6 +280,7 @@ export const MainContent = () => {
         onClose={onCloseModal}
         onConfirm={onConfirmWithdraw}
         loading={loading}
+        error={error}
       />
     </Box>
   )

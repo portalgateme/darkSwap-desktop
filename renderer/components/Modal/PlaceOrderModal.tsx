@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Stack, Tab, Tabs } from '@mui/material'
 import { LimitOrderForm } from '../Form/LimitOrderForm'
 import { TriggerOrderForm } from '../Form/TriggerOrderForm'
+import { OrderType } from '../../types'
 
 interface PlaceOrderModalProps {
   open: boolean
@@ -86,10 +87,16 @@ export const PlaceOrderModal: React.FC<PlaceOrderModalProps> = ({
         {/* Form */}
         {tab === PlaceOrderTab.LIMIT && <LimitOrderForm onClose={onClose} />}
         {tab === PlaceOrderTab.STOP_LIMIT && (
-          <TriggerOrderForm onClose={onClose} />
+          <TriggerOrderForm
+            onClose={onClose}
+            orderType={OrderType.STOP_LOSS_LIMIT}
+          />
         )}
         {tab === PlaceOrderTab.TAKE_PROFIT && (
-          <TriggerOrderForm onClose={onClose} />
+          <TriggerOrderForm
+            onClose={onClose}
+            orderType={OrderType.TAKE_PROFIT_LIMIT}
+          />
         )}
       </Stack>
     </Modal>

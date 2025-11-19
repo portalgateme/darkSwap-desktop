@@ -14,24 +14,12 @@ import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { getTokenFromContract } from '../../utils/getToken'
 import { ethers } from 'ethers'
 
-export function UserAssetTable() {
-  const { selectedAccount } = useAccountContext()
-  const { chainId } = useChainContext()
-  const [listData, setListData] = useState<MyAssetsDto>()
+interface UserAssetTableProps {
+  listData?: MyAssetsDto
+}
 
-  const fetchAssets = async (chainId: number, address: string) => {
-    // @ts-ignore
-    const assets = await window.accountAPI.getAssetsByChainIdAndWallet(
-      chainId,
-      address
-    )
-    console.log('Fetched assets:', assets)
-    setListData(assets)
-  }
-  useEffect(() => {
-    if (!selectedAccount || !chainId) return
-    fetchAssets(chainId, selectedAccount.address)
-  }, [chainId, selectedAccount])
+export function UserAssetTable({ listData }: UserAssetTableProps) {
+  const { chainId } = useChainContext()
 
   const formatAmount = (amount: string, decimals: number = 18) => {
     return ethers.formatUnits(amount, decimals)

@@ -7,10 +7,12 @@ import React, {
 } from 'react'
 import { Network } from '../../types'
 import { chains } from '../../constants/networkConfig'
+import { ethers, Provider } from 'ethers'
 
 interface ChainContextType {
   chainId?: number
   currentChain?: Network
+  provider?: Provider
   supportedChains: Network[]
   onChangeChain: (chainId: Network) => void
 }
@@ -18,6 +20,7 @@ interface ChainContextType {
 export const ChainContext = createContext<ChainContextType>({
   chainId: undefined,
   currentChain: undefined,
+  provider: undefined,
   supportedChains: [],
   onChangeChain: () => {}
 })
@@ -28,6 +31,7 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({
   const [chainId, setChainId] = useState<number>()
   const [currentChain, setCurrentChain] = useState<Network>()
   const [supportedChains, setSupportedChains] = useState<Network[]>([])
+  const [provider, setProvider] = useState<Provider>()
 
   const getSupportChains = async () => {
     const supportedChains =
@@ -59,12 +63,19 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({
       const defaultChain = supportedChains[0]
       setChainId(defaultChain.chainId)
       setCurrentChain(defaultChain)
+      setProvider(new ethers.JsonRpcProvider(defaultChain.rpcUrl))
     })
   }, [])
 
   return (
     <ChainContext.Provider
-      value={{ chainId, onChangeChain, supportedChains, currentChain }}
+      value={{
+        chainId,
+        onChangeChain,
+        supportedChains,
+        currentChain,
+        provider
+      }}
     >
       {children}
     </ChainContext.Provider>

@@ -47,6 +47,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
     useMarketPrice: false,
     orderDirection: OrderDirection.SELL
   })
+  const [marketPrice, setMarketPrice] = useState<string>('')
 
   const [loading, setLoading] = useState(false)
 
@@ -58,16 +59,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       ...prev,
       price: parseFloat(price).toFixed(2)
     }))
-  }
-
-  const onChangeSwitch = async (checked: boolean) => {
-    if (checked && assetPair) {
-      await fetchMarketPrice(assetPair)
-    }
-    setFormData((prev) => ({
-      ...prev,
-      useMarketPrice: checked
-    }))
+    setMarketPrice(parseFloat(price).toFixed(2))
   }
 
   useEffect(() => {
@@ -108,6 +100,20 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
     }
   }, [formData.amountOut, formData.price])
 
+  const handleClose = () => {
+    // Reset form data if needed
+    setFormData({
+      amountIn: '',
+      amountOut: '',
+      price: '',
+      assetIn: undefined,
+      assetOut: undefined,
+      useMarketPrice: false,
+      orderDirection: OrderDirection.SELL
+    })
+    onClose()
+  }
+
   const onPlaceOrder = async () => {
     if (
       !selectedAccount ||
@@ -136,7 +142,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
         chainId: chainId,
         assetPairId: assetPair.id,
         orderDirection: formData.orderDirection,
-        orderType: OrderType.LIMIT,
+        orderType: formData.useMarketPrice ? OrderType.MARKET : OrderType.LIMIT,
         timeInForce: TimeInForce.GTC,
         stpMode: StpMode.NONE,
         price: formData.price,
@@ -149,7 +155,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       console.log('Placing order with params:', params)
       // @ts-ignore
       await window.orderAPI.createOrder(params)
-      onClose()
+      handleClose()
     } catch (error) {
       console.error('Error placing order:', error)
     } finally {
@@ -172,6 +178,31 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
   }
 
   const btnDisabled = !formData.amountOut || !formData.price || loading
+  const onCheckUseMarketPrice = (checked: boolean) => {
+    setFormData({
+      ...formData,
+      useMarketPrice: checked
+    })
+    if (checked && assetPair) {
+      fetchMarketPrice(assetPair)
+    }
+  }
+
+  const onChangeLimitPrice = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Validate input to allow only numbers and decimal point
+    const value = e.target.value
+    const regex = /^\d*\.?\d*$/
+
+    // User input '.' should be treated as '0.'
+    if (value === '.') {
+      setFormData({ ...formData, price: '0.' })
+      return
+    }
+
+    if (value === '' || regex.test(value)) {
+      setFormData({ ...formData, price: value })
+    }
+  }
 
   return (
     <Stack>
@@ -188,6 +219,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
         direction='row'
         alignItems={'center'}
         justifyContent={'space-between'}
+        spacing={4}
         sx={{
           background: '#262A33',
           borderRadius: '8px',
@@ -199,19 +231,19 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       >
         <Typography color='#F3F4F6B8'>Limit Price</Typography>
         <Stack
+          flex={1}
           direction={'row'}
           spacing={1}
           alignItems='center'
         >
           <InputBase
             value={formData.price}
-            onChange={(e) =>
-              setFormData({ ...formData, price: e.target.value })
-            }
+            onChange={onChangeLimitPrice}
             // text right to left for input
             sx={{
               color: '#F3F4F6B8',
-              direction: 'rtl'
+              direction: 'rtl',
+              width: '100%'
             }}
           />
           <Typography color='#F3F4F6B8'>{assetPair?.id}</Typography>
@@ -261,7 +293,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       >
         <IOSSwitchButton
           checked={formData.useMarketPrice}
-          onChange={() => onChangeSwitch(!formData.useMarketPrice)}
+          onChange={() => onCheckUseMarketPrice(!formData.useMarketPrice)}
           label='Use Market Price'
         />
 
@@ -280,8 +312,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
             variant='body1'
             color='#BDC1CA'
           >
-            1 {assetPair?.baseSymbol} = {formData.price}{' '}
-            {assetPair?.quoteSymbol}
+            1 {assetPair?.baseSymbol} = {marketPrice} {assetPair?.quoteSymbol}
           </Typography>
         </Stack>
         <Stack

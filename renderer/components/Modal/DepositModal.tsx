@@ -3,13 +3,14 @@ import NetworkSelection from '../Selection/NetworkSelection'
 import { Account, Network, Token, Wallet } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 
 interface DepositModalProps {
   open: boolean
   onClose: () => void
   loading?: boolean
+  error: string | null
   onConfirm?: (
     chainId: number,
     wallet: Wallet,
@@ -22,7 +23,8 @@ export const DepositModal = ({
   open,
   onClose,
   onConfirm,
-  loading = false
+  loading = false,
+  error = null
 }: DepositModalProps) => {
   const [data, setData] = useState<{
     network?: Network
@@ -35,6 +37,17 @@ export const DepositModal = ({
     token: undefined,
     amount: ''
   })
+
+  useEffect(() => {
+    if (!open) {
+      setData({
+        network: undefined,
+        account: undefined,
+        token: undefined,
+        amount: ''
+      })
+    }
+  }, [open])
   const onChangeNetwork = (network: Network) => {
     console.log('Selected network:', network)
     setData((prev) => ({ ...prev, network }))
@@ -78,6 +91,9 @@ export const DepositModal = ({
       ethers.parseUnits(data.amount, data.token.decimals).toString()
     )
   }
+
+  const btnDisabled =
+    !data.network || !data.account || !data.token || !data.amount || loading
   return (
     <Modal
       open={open}
@@ -166,6 +182,16 @@ export const DepositModal = ({
           />
         </Stack>
 
+        {error && (
+          <Typography
+            color='error'
+            variant='body2'
+            sx={{ mt: 2 }}
+          >
+            {error}
+          </Typography>
+        )}
+
         <Button
           variant='contained'
           sx={{
@@ -175,7 +201,7 @@ export const DepositModal = ({
             borderRadius: '8px',
             mt: 5
           }}
-          disabled={loading}
+          disabled={btnDisabled}
           onClick={handleConfirm}
         >
           Confirm
