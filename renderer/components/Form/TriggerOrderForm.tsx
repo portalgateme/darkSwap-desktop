@@ -22,13 +22,16 @@ import { safeAmountWithDecimals } from '../../utils/safeAmount'
 import { OrderDto } from 'darkswap-client-core'
 import { ethers } from 'ethers'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
+import { handleOrderType } from '../../utils/handleOrderType'
 
 interface TriggerOrderFormProps {
   onClose: () => void
+  orderType: OrderType
 }
 
 export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
-  onClose
+  onClose,
+  orderType
 }) => {
   const { chainId, currentChain, onChangeChain } = useChainContext()
   const { selectedAccount } = useAccountContext()
@@ -53,6 +56,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
     triggerPrice: ''
   })
   const [loading, setLoading] = useState(false)
+  const [marketPrice, setMarketPrice] = useState<string>('')
 
   const fetchMarketPrice = async (assetPair: AssetPairDto) => {
     const price = await getMarketPriceFromBinance(
@@ -62,6 +66,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
       ...prev,
       price: parseFloat(price).toFixed(2)
     }))
+    setMarketPrice(parseFloat(price).toFixed(2))
   }
 
   useEffect(() => {
@@ -102,6 +107,21 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
     }
   }, [formData.amountOut, formData.price])
 
+  const handleClose = () => {
+    // Reset form data if needed
+    setFormData({
+      amountIn: '',
+      amountOut: '',
+      price: '',
+      assetIn: undefined,
+      assetOut: undefined,
+      useMarketPrice: false,
+      orderDirection: OrderDirection.SELL,
+      triggerPrice: ''
+    })
+    onClose()
+  }
+
   const onPlaceOrder = async () => {
     if (
       !selectedAccount ||
@@ -131,20 +151,21 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
         chainId: chainId,
         assetPairId: assetPair.id,
         orderDirection: formData.orderDirection,
-        orderType: OrderType.LIMIT,
+        orderType: handleOrderType(orderType, formData.useMarketPrice),
         timeInForce: TimeInForce.GTC,
         stpMode: StpMode.NONE,
         price: formData.price,
         amountOut: amountOutBN,
         amountIn: amountInBN,
         partialAmountIn: partialAmountInBN,
+        orderTriggerPrice: formData.triggerPrice,
         feeRatio: '0.001'
       }
 
       console.log('Placing order with params:', params)
       // @ts-ignore
       await window.orderAPI.createOrder(params)
-      onClose()
+      handleClose()
     } catch (error) {
       console.error('Error placing order:', error)
     } finally {
@@ -166,8 +187,50 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
     }))
   }
 
+  const onCheckUseMarketPrice = (checked: boolean) => {
+    setFormData({
+      ...formData,
+      useMarketPrice: checked
+    })
+    if (checked && assetPair) {
+      fetchMarketPrice(assetPair)
+    }
+  }
+
   const btnDisabled =
     !formData.amountOut || !formData.price || loading || !formData.triggerPrice
+
+  const onChangeLimitPrice = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Validate input to allow only numbers and decimal point
+    const value = e.target.value
+    const regex = /^\d*\.?\d*$/
+
+    // User input '.' should be treated as '0.'
+    if (value === '.') {
+      setFormData({ ...formData, price: '0.' })
+      return
+    }
+
+    if (value === '' || regex.test(value)) {
+      setFormData({ ...formData, price: value })
+    }
+  }
+
+  const onChangeTriggerPrice = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Validate input to allow only numbers and decimal point
+    const value = e.target.value
+    const regex = /^\d*\.?\d*$/
+
+    // User input '.' should be treated as '0.'
+    if (value === '.') {
+      setFormData({ ...formData, triggerPrice: '0.' })
+      return
+    }
+
+    if (value === '' || regex.test(value)) {
+      setFormData({ ...formData, triggerPrice: value })
+    }
+  }
 
   return (
     <Stack>
@@ -185,6 +248,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
         direction='row'
         alignItems={'center'}
         justifyContent={'space-between'}
+        spacing={4}
         sx={{
           background: '#262A33',
           borderRadius: '8px',
@@ -198,16 +262,16 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
           direction={'row'}
           spacing={1}
           alignItems='center'
+          flex={1}
         >
           <InputBase
             value={formData.price}
-            onChange={(e) =>
-              setFormData({ ...formData, price: e.target.value })
-            }
+            onChange={onChangeLimitPrice}
             // text right to left for input
             sx={{
               color: '#F3F4F6B8',
-              direction: 'rtl'
+              direction: 'rtl',
+              width: '100%'
             }}
           />
           <Typography color='#F3F4F6B8'>USDC/ETH</Typography>
@@ -219,6 +283,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
         direction='row'
         alignItems={'center'}
         justifyContent={'space-between'}
+        spacing={4}
         sx={{
           background: '#262A33',
           borderRadius: '8px',
@@ -233,17 +298,17 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
           direction={'row'}
           spacing={1}
           alignItems='center'
+          flex={1}
         >
           <InputBase
             placeholder='Amount'
             value={formData.triggerPrice}
-            onChange={(e) =>
-              setFormData({ ...formData, triggerPrice: e.target.value })
-            }
+            onChange={onChangeTriggerPrice}
             // text right to left for input
             sx={{
               color: '#F3F4F6B8',
-              direction: 'rtl'
+              direction: 'rtl',
+              width: '100%'
             }}
           />
           <Typography color='#F3F4F6B8'>{assetPair?.id}</Typography>
@@ -293,12 +358,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
       >
         <IOSSwitchButton
           checked={formData.useMarketPrice}
-          onChange={() =>
-            setFormData({
-              ...formData,
-              useMarketPrice: !formData.useMarketPrice
-            })
-          }
+          onChange={() => onCheckUseMarketPrice(!formData.useMarketPrice)}
           label='Use Market Price'
         />
 
@@ -317,8 +377,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
             variant='body1'
             color='#BDC1CA'
           >
-            1 {assetPair?.baseSymbol} = {formData.price}{' '}
-            {assetPair?.quoteSymbol}
+            1 {assetPair?.baseSymbol} = {marketPrice} {assetPair?.quoteSymbol}
           </Typography>
         </Stack>
         <Stack

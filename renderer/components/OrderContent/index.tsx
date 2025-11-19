@@ -1,11 +1,13 @@
 import {
   Button,
+  Pagination,
   Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
@@ -14,7 +16,7 @@ import { PlaceOrderModal } from '../Modal/PlaceOrderModal'
 import { OrderDto } from 'darkswap-client-core'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { OrderStatusLabel } from '../Label/OrderStatusLabel'
-import { OrderDirection, OrderType } from '../../types'
+import { OrderDirection, OrderStatus, OrderType } from '../../types'
 
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { ethers } from 'ethers'
@@ -43,6 +45,11 @@ export const OrderContent = () => {
   const [openModal, setOpenModal] = React.useState(false)
   const [listData, setListData] = useState<OrderDto[]>([])
   const { list } = useAssetPairContext()
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    status: OrderStatus.OPEN
+  })
 
   const { chainId } = useChainContext()
 
@@ -51,21 +58,24 @@ export const OrderContent = () => {
   }
 
   const onCloseModal = () => {
+    fetchOrders(pagination.status, pagination.page, pagination.limit)
     setOpenModal(false)
   }
 
-  const fetchOrders = async () => {
-    const page = 1
-    const limit = 50
+  const fetchOrders = async (
+    status: OrderStatus,
+    page: number,
+    limit: number
+  ) => {
     // @ts-ignore
-    const orders = await window.orderAPI.getAllOrders(0, page, limit)
+    const orders = await window.orderAPI.getAllOrders(status, page, limit)
     console.log('Fetched orders:', orders)
     setListData(orders)
   }
 
   useEffect(() => {
-    fetchOrders()
-  }, [chainId])
+    fetchOrders(pagination.status, pagination.page, pagination.limit)
+  }, [chainId, pagination.page, pagination.limit, pagination.status])
 
   const formatAmountOut = (row: OrderDto) => {
     const assetPair = list.find((ap) => ap.id === row.assetPairId)
@@ -91,6 +101,16 @@ export const OrderContent = () => {
     return result
   }
 
+  const handlePageChange = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    value: number
+  ) => {
+    console.log('Page changed to:', value)
+    setPagination((prev) => ({ ...prev, page: value + 1 }))
+  }
+
+  console.log('Rendering OrderContent with listData:', pagination, listData)
+
   return (
     <Stack mt={2}>
       <Stack
@@ -112,7 +132,6 @@ export const OrderContent = () => {
           Place Order
         </Button>
       </Stack>
-
       {/* Table */}
       <TableContainer
         sx={{
@@ -198,6 +217,29 @@ export const OrderContent = () => {
         </Table>
       </TableContainer>
 
+      <Stack
+        mt={2}
+        alignItems='center'
+      >
+        <TablePagination
+          component='div'
+          count={-1} // Unknown total count
+          page={pagination.page - 1}
+          onPageChange={handlePageChange}
+          rowsPerPage={pagination.limit}
+          onRowsPerPageChange={(event) =>
+            setPagination((prev) => ({
+              ...prev,
+              limit: parseInt(event.target.value, 10),
+              page: 1
+            }))
+          }
+          rowsPerPageOptions={[5, 10]}
+          sx={{
+            color: 'white'
+          }}
+        />
+      </Stack>
       <PlaceOrderModal
         open={openModal}
         onClose={onCloseModal}

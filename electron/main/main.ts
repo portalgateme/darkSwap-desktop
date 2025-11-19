@@ -24,17 +24,14 @@ async function createWindow() {
   })
 
   if (process.env.NODE_ENV === 'development') {
-    // DEV mode: chạy Next.js dev server
     await mainWindow.loadURL('http://localhost:3000')
     mainWindow.webContents.openDevTools()
   } else {
     if (!mainWindow || !appServe) return
-    // PRODUCTION mode: sử dụng electron-serve
     appServe(mainWindow).then(() => {
       if (!mainWindow) return
       mainWindow.loadURL('app://-')
     })
-    mainWindow.webContents.openDevTools() // Mở DevTools trong production để debug
   }
 
   mainWindow.on('closed', () => {

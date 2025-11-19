@@ -3,13 +3,14 @@ import NetworkSelection from '../Selection/NetworkSelection'
 import { Account, Network, Token, Wallet } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 
 interface WithdrawModalProps {
   open: boolean
   onClose: () => void
   loading?: boolean
+  error: string | null
   onConfirm?: (
     chainId: number,
     wallet: Wallet,
@@ -22,7 +23,8 @@ export const WithdrawModal = ({
   open,
   onClose,
   onConfirm,
-  loading = false
+  loading = false,
+  error = null
 }: WithdrawModalProps) => {
   const [data, setData] = useState<{
     network?: Network
@@ -35,6 +37,18 @@ export const WithdrawModal = ({
     token: undefined,
     amount: ''
   })
+
+  useEffect(() => {
+    if (!open) {
+      setData({
+        network: undefined,
+        account: undefined,
+        token: undefined,
+        amount: ''
+      })
+    }
+  }, [open])
+
   const onChangeNetwork = (network: Network) => {
     setData((prev) => ({ ...prev, network }))
   }
@@ -75,6 +89,9 @@ export const WithdrawModal = ({
       ethers.parseUnits(data.amount, data.token.decimals).toString()
     )
   }
+
+  const btnDisabled =
+    !data.network || !data.account || !data.token || !data.amount || loading
   return (
     <Modal
       open={open}
@@ -163,6 +180,16 @@ export const WithdrawModal = ({
           />
         </Stack>
 
+        {error && (
+          <Typography
+            color='error'
+            variant='body2'
+            sx={{ mt: 2 }}
+          >
+            {error}
+          </Typography>
+        )}
+
         <Button
           variant='contained'
           sx={{
@@ -172,7 +199,7 @@ export const WithdrawModal = ({
             borderRadius: '8px',
             mt: 5
           }}
-          disabled={loading}
+          disabled={btnDisabled}
           onClick={handleConfirm}
         >
           Confirm
