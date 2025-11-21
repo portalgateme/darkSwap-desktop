@@ -2,8 +2,27 @@ import { Box, Stack, Typography } from '@mui/material'
 import Image from 'next/image'
 import Link from 'next/link'
 import HistoryIcon from '@mui/icons-material/History'
+import CheckIcon from '@mui/icons-material/Check'
+import { useState } from 'react'
+
+const darkpoolResourceLinks = {
+  testnetGuide:
+    'https://testnet.thesingularity.network/?utm_source=testnet&utm_medium=link&utm_campaign=darkpool_testnetguide',
+
+  faucet: 'https://thesingularity.network/redirect/faucet',
+  pointDashboard:
+    'https://app.thesingularity.network/season2?utm_source=testnetpoints&utm_medium=link&utm_campaign=points_dashboard_testnet'
+}
 
 export const Sidebar = () => {
+  const [copiedItem, setCopiedItem] = useState<string | null>(null)
+
+  const handleExternalLink = (url: string, itemKey: string) => {
+    navigator.clipboard.writeText(url)
+    setCopiedItem(itemKey)
+    setTimeout(() => setCopiedItem(null), 2000)
+  }
+
   return (
     <Stack
       justifyContent={'space-between'}
@@ -135,6 +154,13 @@ export const Sidebar = () => {
           alignItems='center'
           spacing={1}
           justifyContent={'space-between'}
+          onClick={() =>
+            handleExternalLink(
+              darkpoolResourceLinks.testnetGuide,
+              'testnetGuide'
+            )
+          }
+          sx={{ cursor: 'pointer' }}
         >
           <Typography
             variant='body2'
@@ -143,12 +169,16 @@ export const Sidebar = () => {
             Testnet Guide
           </Typography>
 
-          <Image
-            src={'/images/link.png'}
-            alt='Link Icon'
-            width={16}
-            height={16}
-          />
+          {copiedItem === 'testnetGuide' ? (
+            <CheckIcon sx={{ color: '#68EB8E', fontSize: 16 }} />
+          ) : (
+            <Image
+              src={'/images/link.png'}
+              alt='Link Icon'
+              width={16}
+              height={16}
+            />
+          )}
         </Stack>
         <Stack
           width={'100%'}
@@ -156,6 +186,12 @@ export const Sidebar = () => {
           alignItems='center'
           spacing={1}
           justifyContent={'space-between'}
+          onClick={() =>
+            handleExternalLink(darkpoolResourceLinks.faucet, 'faucet')
+          }
+          sx={{
+            cursor: 'pointer'
+          }}
         >
           <Typography
             variant='body2'
@@ -164,12 +200,16 @@ export const Sidebar = () => {
             Get Sepolia ETH
           </Typography>
 
-          <Image
-            src={'/images/link.png'}
-            alt='Link Icon'
-            width={16}
-            height={16}
-          />
+          {copiedItem === 'faucet' ? (
+            <CheckIcon sx={{ color: '#68EB8E', fontSize: 16 }} />
+          ) : (
+            <Image
+              src={'/images/link.png'}
+              alt='Link Icon'
+              width={16}
+              height={16}
+            />
+          )}
         </Stack>
         <Stack
           width={'100%'}
@@ -177,6 +217,15 @@ export const Sidebar = () => {
           alignItems='center'
           spacing={1}
           justifyContent={'space-between'}
+          onClick={() =>
+            handleExternalLink(
+              darkpoolResourceLinks.pointDashboard,
+              'pointDashboard'
+            )
+          }
+          sx={{
+            cursor: 'pointer'
+          }}
         >
           <Typography
             variant='body2'
@@ -184,13 +233,16 @@ export const Sidebar = () => {
           >
             Points Dashboard
           </Typography>
-
-          <Image
-            src={'/images/link.png'}
-            alt='Link Icon'
-            width={16}
-            height={16}
-          />
+          {copiedItem === 'pointDashboard' ? (
+            <CheckIcon sx={{ color: '#68EB8E', fontSize: 16 }} />
+          ) : (
+            <Image
+              src={'/images/link.png'}
+              alt='Link Icon'
+              width={16}
+              height={16}
+            />
+          )}
         </Stack>
       </Stack>
     </Stack>

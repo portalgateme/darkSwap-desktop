@@ -17,7 +17,7 @@ let mainWindow: BrowserWindow | null = null
 async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1440,
-    height: 800,
+    height: 900,
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js')
     }

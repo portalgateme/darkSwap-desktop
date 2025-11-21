@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   MenuItem,
   Stack,
@@ -103,12 +103,15 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
               alignItems='center'
               justifyContent={'space-between'}
             >
+              <Typography>{account.name}</Typography>
               <Typography
                 variant='body2'
                 color='#BDC1CA'
               >
                 ({shorterAddress(account.address)})
               </Typography>
+
+              {/* <Typography>{account}</Typography> TODO: Should be show balance */}
             </Stack>
           </MenuItem>
         ))}

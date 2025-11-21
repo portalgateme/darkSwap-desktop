@@ -63,9 +63,23 @@ const TokenSelection: React.FC<TokenSelection> = ({
         fullWidth
         onClick={handleClick}
       >
-        <Typography variant='body1'>
-          {selectedToken ? selectedToken.name : 'Select Token'}
-        </Typography>
+        <Stack
+          direction='row'
+          spacing={1}
+          alignItems='center'
+        >
+          {selectedToken && (
+            <Image
+              src={selectedToken.logoURI || '/tokens/default-token.svg'}
+              alt={selectedToken.symbol}
+              width={24}
+              height={24}
+            />
+          )}
+          <Typography variant='body1'>
+            {selectedToken ? selectedToken.name : 'Select Token'}
+          </Typography>
+        </Stack>
       </Button>
 
       <Menu
