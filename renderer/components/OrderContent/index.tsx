@@ -1,5 +1,6 @@
 import {
   Button,
+  Menu,
   Pagination,
   Stack,
   Table,
@@ -21,6 +22,7 @@ import { OrderDirection, OrderStatus, OrderType } from '../../types'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { ethers } from 'ethers'
 import { NetworkLabel } from '../Label/NetworkLabel'
+import { MenuItem } from '@mui/material'
 
 const orderType = (type: OrderType) => {
   switch (type) {
@@ -50,6 +52,7 @@ export const OrderContent = () => {
     limit: 10,
     status: OrderStatus.OPEN
   })
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const { chainId } = useChainContext()
 
@@ -111,6 +114,16 @@ export const OrderContent = () => {
 
   console.log('Rendering OrderContent with listData:', pagination, listData)
 
+  const listStatuses = new Array<OrderStatus>(
+    OrderStatus.OPEN,
+    OrderStatus.MATCHED,
+    OrderStatus.CANCELLED,
+    OrderStatus.SETTLED,
+    OrderStatus.NOT_TRIGGERED,
+    OrderStatus.TRIGGERED,
+    OrderStatus.BOB_CONFIRMED
+  )
+
   return (
     <Stack mt={2}>
       <Stack
@@ -154,7 +167,59 @@ export const OrderContent = () => {
               }}
             >
               <TableCell>Order Id</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>
+                <Button
+                  variant='text'
+                  onClick={(event) => setAnchorEl(event.currentTarget)}
+                  sx={{
+                    color: '#68EB8E',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    '&:hover': {
+                      backgroundColor: 'rgba(104, 235, 142, 0.1)'
+                    }
+                  }}
+                >
+                  Status ▼
+                </Button>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={() => setAnchorEl(null)}
+                  PaperProps={{
+                    sx: {
+                      backgroundColor: '#2A2D37',
+                      border: '1px solid #68EB8E',
+                      borderRadius: '8px',
+                      minWidth: '120px'
+                    }
+                  }}
+                >
+                  {listStatuses.map((status) => (
+                    <MenuItem
+                      key={status}
+                      onClick={() => {
+                        setPagination((prev) => ({
+                          ...prev,
+                          status: status as OrderStatus,
+                          page: 1
+                        }))
+                        setAnchorEl(null)
+                      }}
+                      sx={{
+                        color:
+                          pagination.status === status ? '#68EB8E' : '#FFFFFF',
+                        '&:hover': {
+                          backgroundColor: '#3A3D47'
+                        }
+                      }}
+                    >
+                      <OrderStatusLabel status={status} />
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Amount</TableCell>
               <TableCell>Price</TableCell>
@@ -237,6 +302,13 @@ export const OrderContent = () => {
           rowsPerPageOptions={[5, 10]}
           sx={{
             color: 'white'
+          }}
+          slotProps={{
+            actions: {
+              nextButton: {
+                disabled: listData.length < pagination.limit
+              }
+            }
           }}
         />
       </Stack>

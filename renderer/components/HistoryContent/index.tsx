@@ -54,7 +54,7 @@ export const HistoryContent = () => {
     <Stack mt={2}>
       {/* Filter */}
 
-      <Stack
+      {/* <Stack
         width={'100%'}
         direction='row'
         justifyContent='flex-end'
@@ -85,7 +85,7 @@ export const HistoryContent = () => {
         >
           Sort
         </Button>
-      </Stack>
+      </Stack> */}
       {/* Table */}
       <TableContainer
         sx={{

@@ -22,6 +22,7 @@ import { MyAssetsDto } from 'darkswap-client-core'
 import { getTokenFromContract } from '../../utils/getToken'
 import { useTokenBalance } from '../../hooks/useTokenBalance'
 import { getMarketPriceFromBinance } from '../../services/orderService'
+import { useGetAssets } from '../../hooks/useGetAssets'
 
 enum Modal {
   Deposit = 'DEPOSIT',
@@ -33,13 +34,13 @@ export const MainContent = () => {
   const [openModal, setOpenModal] = useState<Modal | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const { chainId, provider } = useChainContext()
-  const [listData, setListData] = useState<MyAssetsDto>()
   const [error, setError] = useState<string | null>(null)
   const [portfolio, setPortfolio] = useState<string>()
 
   const { selectedAccount, setOpenAddModal } = useAccountContext()
   const { getBalance } = useTokenBalance()
+  const { listData, fetchAssets } = useGetAssets()
+  const { chainId } = useChainContext()
 
   const calculatePortfolioValue = async (assets: MyAssetsDto) => {
     let totalValue = 0
@@ -57,21 +58,13 @@ export const MainContent = () => {
     setPortfolio(`$${totalValue.toFixed(2)}`)
   }
 
-  const fetchAssets = async (chainId: number, address: string) => {
-    // @ts-ignore
-    const assets = await window.accountAPI.getAssetsByChainIdAndWallet(
-      chainId,
-      address
-    )
-    console.log('Fetched assets:', assets)
-    setListData(assets)
-    await calculatePortfolioValue(assets)
-  }
-
   useEffect(() => {
-    if (!selectedAccount || !chainId) return
-    fetchAssets(chainId, selectedAccount.address)
-  }, [chainId, selectedAccount])
+    if (listData) {
+      calculatePortfolioValue(listData)
+    } else {
+      setPortfolio('$0.00')
+    }
+  }, [listData])
 
   const onCloseModal = () => {
     setError(null)
@@ -91,24 +84,14 @@ export const MainContent = () => {
   }
 
   const onConfirmDeposit = async (
-    chainId: number,
     wallet: Wallet,
     asset: string,
-    amount: string
+    amount: string,
+    chainId: number
   ) => {
     setError(null)
     setLoading(true)
     try {
-      const token = getTokenFromContract(asset, chainId)
-      if (!token) {
-        throw new Error('Asset not found in user portfolio')
-      }
-      const balance = await getBalance(chainId, wallet.address, asset)
-      const formatBalance = ethers.formatUnits(balance, token.decimals)
-
-      if (parseFloat(amount) > parseFloat(formatBalance)) {
-        throw new Error('Insufficient balance for deposit')
-      }
       //@ts-ignore
       await window.accountAPI.deposit(chainId, wallet.address, asset, amount)
       await fetchAssets(chainId, wallet.address)
@@ -129,28 +112,15 @@ export const MainContent = () => {
   }
 
   const onConfirmWithdraw = async (
-    chainId: number,
     wallet: Wallet,
     asset: string,
-    amount: string
+    amount: string,
+    chainId: number
   ) => {
-    if (!listData) return
+    if (!listData || !chainId) return
     setError(null)
     setLoading(true)
     try {
-      // Check balance before withdrawing
-      const token = getTokenFromContract(asset, chainId)
-      if (!token) {
-        throw new Error('Asset not found in user portfolio')
-      }
-      const balance =
-        listData.assets.find((a) => a.asset === asset)?.amount || '0'
-      const formatBalance = ethers.formatUnits(balance, token.decimals)
-
-      if (parseFloat(amount) > parseFloat(formatBalance)) {
-        throw new Error('Insufficient balance for withdrawal')
-      }
-
       // @ts-ignore
       await window.accountAPI.withdraw(chainId, wallet.address, asset, amount)
       await fetchAssets(chainId, wallet.address)

@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Button,
   InputBase,
@@ -121,14 +122,7 @@ export const SelectAccountModal = ({
               onClick={() => onSelectAccount && onSelectAccount(account)}
             >
               {/* Avatar */}
-              <Box
-                sx={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: '#565D6D'
-                }}
-              />
+              <Avatar>{account.name.substring(0, 2)}</Avatar>
               <Stack ml={2}>
                 <Typography
                   variant='body2'

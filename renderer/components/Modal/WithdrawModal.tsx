@@ -3,8 +3,10 @@ import NetworkSelection from '../Selection/NetworkSelection'
 import { Account, Network, Token, Wallet } from '../../types'
 import AccountSelection from '../Selection/AccountSelection'
 import TokenSelection from '../Selection/TokenSelection'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ethers } from 'ethers'
+import { useGetAssets } from '../../hooks/useGetAssets'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
 
 interface WithdrawModalProps {
   open: boolean
@@ -12,10 +14,10 @@ interface WithdrawModalProps {
   loading?: boolean
   error: string | null
   onConfirm?: (
-    chainId: number,
     wallet: Wallet,
     asset: string,
-    amount: string
+    amount: string,
+    chainId: number
   ) => void
 }
 
@@ -27,21 +29,27 @@ export const WithdrawModal = ({
   error = null
 }: WithdrawModalProps) => {
   const [data, setData] = useState<{
-    network?: Network
     account?: Wallet
     token?: Token
     amount: string
+    network?: Network
   }>({
-    network: undefined,
     account: undefined,
     token: undefined,
-    amount: ''
+    amount: '',
+    network: undefined
   })
+
+  const { listData, fetchAssets } = useGetAssets()
+
+  useEffect(() => {
+    if (!data.account || !data.network) return
+    fetchAssets(data.network.chainId, data.account.address)
+  }, [data.account, data.network])
 
   useEffect(() => {
     if (!open) {
       setData({
-        network: undefined,
         account: undefined,
         token: undefined,
         amount: ''
@@ -49,9 +57,13 @@ export const WithdrawModal = ({
     }
   }, [open])
 
-  const onChangeNetwork = (network: Network) => {
-    setData((prev) => ({ ...prev, network }))
-  }
+  const balanceToken = useMemo(() => {
+    if (!data.token || !listData) return '0'
+    const asset = listData.assets.find(
+      (asset) => asset.asset.toLowerCase() === data.token!.address.toLowerCase()
+    )
+    return asset ? ethers.formatUnits(asset.amount, data.token.decimals) : '0'
+  }, [data.token, listData])
 
   const onChangeAccount = (account: Wallet) => {
     setData((prev) => ({ ...prev, account }))
@@ -59,6 +71,10 @@ export const WithdrawModal = ({
 
   const onChangeToken = (token: Token) => {
     setData((prev) => ({ ...prev, token }))
+  }
+
+  const onChangeNetwork = (network: Network) => {
+    setData((prev) => ({ ...prev, network }))
   }
 
   const onChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,21 +93,26 @@ export const WithdrawModal = ({
   }
 
   const handleConfirm = () => {
-    if (!data.network || !data.account || !data.token || !data.amount) {
+    if (!data.account || !data.token || !data.amount || !data.network) {
       console.error('Missing required data for deposit')
       return
     }
     if (!onConfirm) return
     onConfirm(
-      data.network.chainId,
       data.account,
       data.token.address,
-      ethers.parseUnits(data.amount, data.token.decimals).toString()
+      ethers.parseUnits(data.amount, data.token.decimals).toString(),
+      data.network.chainId
     )
   }
 
   const btnDisabled =
-    !data.network || !data.account || !data.token || !data.amount || loading
+    !data.account ||
+    !data.token ||
+    !data.amount ||
+    loading ||
+    Number(data.amount) === 0 ||
+    data.amount > balanceToken
   return (
     <Modal
       open={open}
@@ -179,6 +200,15 @@ export const WithdrawModal = ({
             }}
           />
         </Stack>
+        {balanceToken && data.token && (
+          <Typography
+            variant='body2'
+            color='#BDC1CA'
+            sx={{ mt: 1, alignSelf: 'flex-end' }}
+          >
+            Balance: {balanceToken} {data.token.symbol}
+          </Typography>
+        )}
 
         {error && (
           <Typography
