@@ -6,48 +6,46 @@ import {
   TableBody,
   TableCell,
   TableRow,
-  Button
+  Button,
+  TablePagination
 } from '@mui/material'
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined'
 import SwapVertOutlinedIcon from '@mui/icons-material/SwapVertOutlined'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { useEffect, useState } from 'react'
-import { MyAssetsDto, OrderDto } from 'darkswap-client-core'
+import { MyAssetsDto, OrderDto, OrderEventDto } from 'darkswap-client-core'
 import { OrderStatusLabel } from '../Label/OrderStatusLabel'
 import { NetworkLabel } from '../Label/NetworkLabel'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { OrderDirection } from '../../types'
 import { ethers } from 'ethers'
+import { shorterAddress } from '../../utils/format'
 
 export const HistoryContent = () => {
   const { chainId } = useChainContext()
-  const [listData, setListData] = useState<OrderDto[]>([])
-  const { list } = useAssetPairContext()
+  const [listData, setListData] = useState<OrderEventDto[]>([])
+  const [pagination, setPagination] = useState({ page: 1, limit: 10 })
 
-  const fetchOrders = async () => {
-    const page = 1
-    const limit = 50
+  const fetchOrders = async (page: number, limit: number) => {
     // @ts-ignore
-    const orders = await window.orderAPI.getAllOrders(0, page, limit)
+    const orders = await window.orderAPI.getOrderEventsByPage(page, limit)
     console.log('Fetched orders:', orders)
     setListData(orders)
   }
 
   useEffect(() => {
-    fetchOrders()
-  }, [chainId])
+    fetchOrders(pagination.page, pagination.limit)
+  }, [chainId, pagination.page, pagination.limit])
 
-  const formatAmountOut = (row: OrderDto) => {
-    const assetPair = list.find((ap) => ap.id === row.assetPairId)
-    if (!assetPair) return row.amountOut.toString()
-
-    const decimalOut =
-      row.orderDirection === OrderDirection.SELL
-        ? assetPair.baseDecimal
-        : assetPair.quoteDecimal
-    const result = ethers.formatUnits(row.amountOut, decimalOut)
-    return result
+  const handlePageChange = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPagination((prev) => ({
+      ...prev,
+      page: newPage + 1
+    }))
   }
 
   return (
@@ -108,11 +106,10 @@ export const HistoryContent = () => {
               }}
             >
               <TableCell>Order Id</TableCell>
-              <TableCell>Asset Pair</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Network</TableCell>
+              <TableCell>Date</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Network</TableCell>
+              <TableCell>Wallet</TableCell>
             </TableRow>
           </TableHead>
           {/* Table Body */}
@@ -130,15 +127,15 @@ export const HistoryContent = () => {
                   }}
                 >
                   <TableCell>{row.orderId}</TableCell>
-                  <TableCell>{row.assetPairId}</TableCell>
-                  <TableCell>{formatAmountOut(row)}</TableCell>
-                  <TableCell>{row.price}</TableCell>
-                  <TableCell>
-                    <NetworkLabel chainId={row.chainId} />
-                  </TableCell>
+                  <TableCell>{row.createdAt.toString()}</TableCell>
                   <TableCell>
                     <OrderStatusLabel status={row.status} />
                   </TableCell>
+
+                  <TableCell>
+                    <NetworkLabel chainId={row.chainId} />
+                  </TableCell>
+                  <TableCell>{shorterAddress(row.wallet)}</TableCell>
                 </TableRow>
               ))
             ) : (
@@ -165,6 +162,37 @@ export const HistoryContent = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Stack
+        mt={1}
+        alignItems='center'
+      >
+        <TablePagination
+          component='div'
+          count={-1} // Unknown total count
+          page={pagination.page - 1}
+          onPageChange={handlePageChange}
+          rowsPerPage={pagination.limit}
+          onRowsPerPageChange={(event) =>
+            setPagination((prev) => ({
+              ...prev,
+              limit: parseInt(event.target.value, 10),
+              page: 1
+            }))
+          }
+          rowsPerPageOptions={[5, 10]}
+          sx={{
+            color: 'white'
+          }}
+          slotProps={{
+            actions: {
+              nextButton: {
+                disabled: listData.length < pagination.limit
+              }
+            }
+          }}
+        />
+      </Stack>
     </Stack>
   )
 }

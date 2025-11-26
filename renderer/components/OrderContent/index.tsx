@@ -17,7 +17,12 @@ import { PlaceOrderModal } from '../Modal/PlaceOrderModal'
 import { OrderDto } from 'darkswap-client-core'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { OrderStatusLabel } from '../Label/OrderStatusLabel'
-import { OrderDirection, OrderStatus, OrderType } from '../../types'
+import {
+  OrderDirection,
+  OrderEvents,
+  OrderStatus,
+  OrderType
+} from '../../types'
 
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { ethers } from 'ethers'
@@ -45,14 +50,14 @@ const orderType = (type: OrderType) => {
 
 export const OrderContent = () => {
   const [openModal, setOpenModal] = React.useState(false)
-  const [listData, setListData] = useState<OrderDto[]>([])
+  const [listData, setListData] = useState<OrderEvents[]>([])
   const { list } = useAssetPairContext()
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
-    status: OrderStatus.OPEN
+    limit: 10
   })
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [loading, setLoading] = useState(false)
 
   const { chainId } = useChainContext()
 
@@ -61,24 +66,20 @@ export const OrderContent = () => {
   }
 
   const onCloseModal = () => {
-    fetchOrders(pagination.status, pagination.page, pagination.limit)
+    fetchOrders(pagination.page, pagination.limit)
     setOpenModal(false)
   }
 
-  const fetchOrders = async (
-    status: OrderStatus,
-    page: number,
-    limit: number
-  ) => {
+  const fetchOrders = async (page: number, limit: number) => {
     // @ts-ignore
-    const orders = await window.orderAPI.getAllOrders(status, page, limit)
+    const orders = await window.orderAPI.getAllOrders(page, limit)
     console.log('Fetched orders:', orders)
     setListData(orders)
   }
 
   useEffect(() => {
-    fetchOrders(pagination.status, pagination.page, pagination.limit)
-  }, [chainId, pagination.page, pagination.limit, pagination.status])
+    fetchOrders(pagination.page, pagination.limit)
+  }, [chainId, pagination.page, pagination.limit])
 
   const formatAmountOut = (row: OrderDto) => {
     const assetPair = list.find((ap) => ap.id === row.assetPairId)
@@ -124,6 +125,28 @@ export const OrderContent = () => {
     OrderStatus.BOB_CONFIRMED
   )
 
+  const onCancelOrder = async (order: OrderDto) => {
+    try {
+      setLoading(true)
+      // @ts-ignore
+      await window.orderAPI.cancelOrder({
+        chainId: order.chainId,
+        wallet: order.wallet,
+        orderId: order.orderId
+      })
+      fetchOrders(pagination.page, pagination.limit)
+    } catch (error) {
+      console.error('Error cancelling order:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const isCancelable = (status?: OrderStatus) => {
+    if (status === undefined) return false
+    return status === OrderStatus.OPEN || status === OrderStatus.NOT_TRIGGERED
+  }
+
   return (
     <Stack mt={2}>
       <Stack
@@ -150,7 +173,9 @@ export const OrderContent = () => {
         sx={{
           background: '#1E2128',
           borderRadius: '10px',
-          mt: 2
+          mt: 2,
+          maxHeight: '640px',
+          overflowY: 'auto'
         }}
       >
         <Table>
@@ -166,65 +191,14 @@ export const OrderContent = () => {
                 }
               }}
             >
-              <TableCell>Order Id</TableCell>
-              <TableCell>
-                <Button
-                  variant='text'
-                  onClick={(event) => setAnchorEl(event.currentTarget)}
-                  sx={{
-                    color: '#68EB8E',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: 'rgba(104, 235, 142, 0.1)'
-                    }
-                  }}
-                >
-                  Status ▼
-                </Button>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={() => setAnchorEl(null)}
-                  PaperProps={{
-                    sx: {
-                      backgroundColor: '#2A2D37',
-                      border: '1px solid #68EB8E',
-                      borderRadius: '8px',
-                      minWidth: '120px'
-                    }
-                  }}
-                >
-                  {listStatuses.map((status) => (
-                    <MenuItem
-                      key={status}
-                      onClick={() => {
-                        setPagination((prev) => ({
-                          ...prev,
-                          status: status as OrderStatus,
-                          page: 1
-                        }))
-                        setAnchorEl(null)
-                      }}
-                      sx={{
-                        color:
-                          pagination.status === status ? '#68EB8E' : '#FFFFFF',
-                        '&:hover': {
-                          backgroundColor: '#3A3D47'
-                        }
-                      }}
-                    >
-                      <OrderStatusLabel status={status} />
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Amount</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Total</TableCell>
               <TableCell>Network</TableCell>
+              <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
           {/* Table Body */}
@@ -237,13 +211,14 @@ export const OrderContent = () => {
                     'tr, th, td': {
                       border: 'none',
                       color: '#FFFFFF',
-                      fontSize: '14px'
+                      fontSize: '14px',
+                      paddingTop: '8px'
                     }
                   }}
                 >
-                  <TableCell>{row.orderId}</TableCell>
+                  <TableCell>{row.events[0].createdAt.toString()}</TableCell>
                   <TableCell>
-                    <OrderStatusLabel status={row.status} />
+                    <OrderStatusLabel status={row.events[0].status} />
                   </TableCell>
                   <TableCell>{orderType(row.orderType)}</TableCell>
                   <TableCell>{formatAmountOut(row)}</TableCell>
@@ -251,6 +226,28 @@ export const OrderContent = () => {
                   <TableCell>{formatAmountIn(row)}</TableCell>
                   <TableCell>
                     <NetworkLabel chainId={row.chainId} />
+                  </TableCell>
+                  <TableCell>
+                    {isCancelable(row.events[0].status) && (
+                      <Button
+                        variant='outlined'
+                        sx={{
+                          borderColor: '#FF4D4D',
+                          color: '#FF4D4D',
+                          textTransform: 'capitalize',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                            borderColor: '#FF4D4D'
+                          }
+                        }}
+                        onClick={() => onCancelOrder(row)}
+                        disabled={loading}
+                      >
+                        Cancel
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
@@ -283,7 +280,7 @@ export const OrderContent = () => {
       </TableContainer>
 
       <Stack
-        mt={2}
+        mt={1}
         alignItems='center'
       >
         <TablePagination

@@ -20,8 +20,22 @@ export const registerOrderHandlers = () => {
   })
 
   // getAllOrders
-  ipcMain.handle('order:getAllOrders', async (event, status, page, limit) => {
-    return await dbInstance.getOrderManager().getAllOrders(status, page, limit)
+  ipcMain.handle('order:getAllOrders', async (event, page, limit) => {
+    const list = await dbInstance.getOrderManager().getOrdersByPage(page, limit)
+
+    return await Promise.all(
+      list.map(async (order) => {
+        if (!order.id) return null
+        const result = await dbInstance
+          .getOrderManager()
+          .getOrderEvents(order.orderId.toString())
+
+        return {
+          ...order,
+          events: result
+        }
+      })
+    )
   })
 
   // getOrderById
@@ -48,4 +62,9 @@ export const registerOrderHandlers = () => {
         .getIncrementalOrderEvents(lastEventId)
     }
   )
+
+  // getOrderEventsByPage
+  ipcMain.handle('order:getOrderEventsByPage', async (event, page, limit) => {
+    return await dbInstance.getOrderManager().getOrderEventsByPage(page, limit)
+  })
 }

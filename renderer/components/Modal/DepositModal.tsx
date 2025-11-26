@@ -237,6 +237,19 @@ export const DepositModal = ({
         >
           Confirm
         </Button>
+        <Button
+          variant='outlined'
+          sx={{
+            border: '1px solid #68EB8E',
+            color: '#68EB8E',
+            textTransform: 'capitalize',
+            borderRadius: '8px',
+            mt: 1
+          }}
+          onClick={onClose}
+        >
+          Close
+        </Button>
       </Stack>
     </Modal>
   )

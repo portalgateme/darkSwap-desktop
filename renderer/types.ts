@@ -1,3 +1,5 @@
+import { OrderDto, OrderEventDto } from 'darkswap-client-core'
+
 export interface Network {
   name: string
   chainId: number
@@ -79,4 +81,8 @@ export enum OrderStatus {
   CANCELLED = 4,
   NOT_TRIGGERED = 5,
   TRIGGERED = 6
+}
+
+export interface OrderEvents extends OrderDto {
+  events: OrderEventDto[]
 }
