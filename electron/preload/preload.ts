@@ -54,7 +54,9 @@ contextBridge.exposeInMainWorld('orderAPI', {
   getOrderEvents: (orderId: string) =>
     ipcRenderer.invoke('order:getOrderEvents', orderId),
   getIncrementalOrderEvents: (lastEventId: number) =>
-    ipcRenderer.invoke('order:getIncrementalOrderEvents', lastEventId)
+    ipcRenderer.invoke('order:getIncrementalOrderEvents', lastEventId),
+  getOrderEventsByPage: (page: number, limit: number) =>
+    ipcRenderer.invoke('order:getOrderEventsByPage', page, limit)
 })
 
 // RPC Manager APIs

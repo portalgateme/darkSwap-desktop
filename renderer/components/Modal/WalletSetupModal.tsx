@@ -30,7 +30,9 @@ export const WalletSetupModal = ({
   }
 
   const onChangePrivateKey = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPrivateKey(e.target.value)
+    const key = e.target.value.trim()
+
+    setPrivateKey(key)
     setError(null)
   }
 
@@ -40,11 +42,22 @@ export const WalletSetupModal = ({
       return
     }
     if (onConfirm) {
-      onConfirm(name, privateKey)
+      const key = !privateKey.startsWith('0x') ? '0x' + privateKey : privateKey
+      onConfirm(name, key)
     }
   }
 
-  const buttonDisabled = !name || !privateKey
+  // Validate private key format (basic check)
+  const isValidPrivateKey = (key: string) => {
+    // If private key not start with 0x, add it
+    if (!key.startsWith('0x')) {
+      key = '0x' + key
+    }
+    // Basic check: length and hex format
+    return /^0x[a-fA-F0-9]{64}$/.test(key)
+  }
+
+  const buttonDisabled = !name || !privateKey || !isValidPrivateKey(privateKey)
   return (
     <Modal
       open={open}
@@ -157,6 +170,19 @@ export const WalletSetupModal = ({
           onClick={handleConfirm}
         >
           Save Wallet
+        </Button>
+        <Button
+          variant='outlined'
+          sx={{
+            borderColor: '#68EB8E',
+            color: '#68EB8E',
+            textTransform: 'capitalize',
+            borderRadius: '8px',
+            mt: 2
+          }}
+          onClick={onClose}
+        >
+          Close
         </Button>
 
         {error && (

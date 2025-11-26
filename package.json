@@ -4,9 +4,10 @@
   "main": "dist/main/main.js",
   "scripts": {
     "// dev": "=========== DEVELOPMENT MODE ===========",
+    "dev:remove-old": "rm -rf dist && rm -rf renderer/.next renderer/next-env.d.ts",
     "dev:next": "cross-env NODE_ENV=development next dev renderer",
     "dev:electron": "tsc -p . && cross-env NODE_ENV=development electron ./dist/main/main.js",
-    "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\"",
+    "dev": "npm run dev:remove-old && concurrently \"npm run dev:next\" \"npm run dev:electron\"",
     "// build": "=========== PRODUCTION BUILD ===========",
     "build:remove-old": "rm -rf dist && rm -rf renderer/.next renderer/next-env.d.ts && rm -rf release",
     "build:ts": "tsc -p .",

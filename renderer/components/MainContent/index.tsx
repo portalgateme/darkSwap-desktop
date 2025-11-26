@@ -224,11 +224,14 @@ export const MainContent = () => {
         >
           <Button
             variant='contained'
+            size='large'
             sx={{
               background: '#68EB8E',
               color: '#000',
               textTransform: 'capitalize',
-              borderRadius: '8px'
+              borderRadius: '8px',
+              fontSize: '20px',
+              fontWeight: 600
             }}
             onClick={() => setOpenAddModal(true)}
           >

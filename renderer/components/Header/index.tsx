@@ -66,7 +66,7 @@ export const Header = ({ title }: HeaderProps) => {
           <Typography variant='body1'>
             {selectedAccount
               ? shorterAddress(selectedAccount.address)
-              : 'Select Account'}
+              : 'Connect Wallet'}
           </Typography>
         </Button>
       </Stack>
