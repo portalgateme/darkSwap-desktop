@@ -27,15 +27,20 @@ export const HistoryContent = () => {
   const [listData, setListData] = useState<OrderEventDto[]>([])
   const [pagination, setPagination] = useState({ page: 1, limit: 10 })
 
-  const fetchOrders = async (page: number, limit: number) => {
+  const fetchOrders = async (chainId: number, page: number, limit: number) => {
     // @ts-ignore
-    const orders = await window.orderAPI.getOrderEventsByPage(page, limit)
+    const orders = await window.orderAPI.getOrderEventsByPage(
+      chainId,
+      page,
+      limit
+    )
     console.log('Fetched orders:', orders)
     setListData(orders)
   }
 
   useEffect(() => {
-    fetchOrders(pagination.page, pagination.limit)
+    if (!chainId) return
+    fetchOrders(chainId, pagination.page, pagination.limit)
   }, [chainId, pagination.page, pagination.limit])
 
   const handlePageChange = (
