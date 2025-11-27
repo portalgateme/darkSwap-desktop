@@ -66,19 +66,21 @@ export const OrderContent = () => {
   }
 
   const onCloseModal = () => {
-    fetchOrders(pagination.page, pagination.limit)
+    if (!chainId) return
+    fetchOrders(chainId, pagination.page, pagination.limit)
     setOpenModal(false)
   }
 
-  const fetchOrders = async (page: number, limit: number) => {
+  const fetchOrders = async (chainId: number, page: number, limit: number) => {
     // @ts-ignore
-    const orders = await window.orderAPI.getAllOrders(page, limit)
+    const orders = await window.orderAPI.getAllOrders(chainId, page, limit)
     console.log('Fetched orders:', orders)
     setListData(orders)
   }
 
   useEffect(() => {
-    fetchOrders(pagination.page, pagination.limit)
+    if (!chainId) return
+    fetchOrders(chainId, pagination.page, pagination.limit)
   }, [chainId, pagination.page, pagination.limit])
 
   const formatAmountOut = (row: OrderDto) => {
@@ -134,7 +136,7 @@ export const OrderContent = () => {
         wallet: order.wallet,
         orderId: order.orderId
       })
-      fetchOrders(pagination.page, pagination.limit)
+      fetchOrders(order.chainId, pagination.page, pagination.limit)
     } catch (error) {
       console.error('Error cancelling order:', error)
     } finally {

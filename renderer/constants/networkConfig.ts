@@ -42,6 +42,12 @@ export const chains: Network[] = [
     chainId: 31339,
     rpcUrl: 'https://app.dev.portalgate.me:38545',
     icon: '/chain/base.svg'
+  },
+  {
+    name: 'Horizen Testnet',
+    chainId: 845320009,
+    rpcUrl: 'https://horizen-rpc-testnet.appchain.base.org/',
+    icon: '/chain/horizen.svg'
   }
 ]
 
@@ -49,5 +55,6 @@ export enum ChainId {
   MAINNET = 1,
   SEPOLIA = 11155111,
   HARDHAT = 31337,
-  HARDHAT_BASE = 31339
+  HARDHAT_BASE = 31339,
+  HORIZEN_TESTNET = 845320009
 }

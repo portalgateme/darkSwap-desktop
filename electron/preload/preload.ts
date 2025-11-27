@@ -45,8 +45,8 @@ contextBridge.exposeInMainWorld('orderAPI', {
     ipcRenderer.invoke('order:cancelOrder', cancelOrderDto),
   updateOrderPrice: (updatePriceDto: UpdatePriceDto) =>
     ipcRenderer.invoke('order:updateOrderPrice', updatePriceDto),
-  getAllOrders: (status: number, page: number, limit: number) =>
-    ipcRenderer.invoke('order:getAllOrders', status, page, limit),
+  getAllOrders: (chainId: number, page: number, limit: number) =>
+    ipcRenderer.invoke('order:getAllOrders', chainId, page, limit),
   getOrderById: (orderId: string) =>
     ipcRenderer.invoke('order:getOrderById', orderId),
   getAssetPairs: (chainId: number) =>
@@ -55,8 +55,8 @@ contextBridge.exposeInMainWorld('orderAPI', {
     ipcRenderer.invoke('order:getOrderEvents', orderId),
   getIncrementalOrderEvents: (lastEventId: number) =>
     ipcRenderer.invoke('order:getIncrementalOrderEvents', lastEventId),
-  getOrderEventsByPage: (page: number, limit: number) =>
-    ipcRenderer.invoke('order:getOrderEventsByPage', page, limit)
+  getOrderEventsByPage: (chainId: number, page: number, limit: number) =>
+    ipcRenderer.invoke('order:getOrderEventsByPage', chainId, page, limit)
 })
 
 // RPC Manager APIs

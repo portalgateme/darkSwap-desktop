@@ -67,6 +67,7 @@ const NetworkSelection: React.FC<NetworkSelectionProps> = ({
           textTransform: 'capitalize',
           justifyContent: 'flex-start',
           boxShadow: 'none',
+          minWidth: '220px',
           ...buttonSx
         }}
         fullWidth
