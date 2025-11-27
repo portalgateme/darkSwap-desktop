@@ -42,7 +42,10 @@ export const WalletSetupModal = ({
       return
     }
     if (onConfirm) {
-      const key = !privateKey.startsWith('0x') ? '0x' + privateKey : privateKey
+      // Remove 0x prefix if exists
+      const key = !privateKey.startsWith('0x')
+        ? privateKey
+        : privateKey.slice(2)
       onConfirm(name, key)
     }
   }
