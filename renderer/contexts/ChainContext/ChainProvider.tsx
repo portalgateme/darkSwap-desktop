@@ -53,6 +53,7 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({
   const onChangeChain = (newChain: Network) => {
     setChainId(newChain.chainId)
     setCurrentChain(newChain)
+    setProvider(new ethers.JsonRpcProvider(newChain.rpcUrl))
   }
 
   useEffect(() => {
