@@ -1,26 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Button, Stack, Typography } from '@mui/material'
-import Image from 'next/image'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
-import { WalletSetupModal } from '../Modal/WalletSetupModal'
 import { UserAssetTable } from '../Table/UserAssetTable'
-import NetworkSelection from '../Selection/NetworkSelection'
 import { Network, Wallet } from '../../types'
-import { shorterAddress } from '../../utils/format'
-import { SelectAccountModal } from '../Modal/SelectAccountModal'
 import { DepositModal } from '../Modal/DepositModal'
 import { WithdrawModal } from '../Modal/WithdrawModal'
 import { ethers } from 'ethers'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
-import { ca } from 'zod/v4/locales'
-import { set } from 'zod'
-import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { MyAssetsDto } from 'darkswap-client-core'
 import { getTokenFromContract } from '../../utils/getToken'
-import { useTokenBalance } from '../../hooks/useTokenBalance'
 import { getMarketPriceFromBinance } from '../../services/orderService'
 import { useGetAssets } from '../../hooks/useGetAssets'
 
@@ -38,9 +27,7 @@ export const MainContent = () => {
   const [portfolio, setPortfolio] = useState<string>()
 
   const { selectedAccount, setOpenAddModal } = useAccountContext()
-  const { getBalance } = useTokenBalance()
   const { listData, fetchAssets } = useGetAssets()
-  const { chainId } = useChainContext()
 
   const calculatePortfolioValue = async (assets: MyAssetsDto) => {
     let totalValue = 0
@@ -69,14 +56,6 @@ export const MainContent = () => {
   const onCloseModal = () => {
     setError(null)
     setOpenModal(null)
-  }
-
-  const onOpenSelectAccount = () => {
-    setOpenModal(Modal.SelectAccount)
-  }
-
-  const onAddAccount = () => {
-    onCloseModal()
   }
 
   const onOpenDeposit = () => {
