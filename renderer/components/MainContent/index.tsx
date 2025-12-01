@@ -10,8 +10,13 @@ import { ethers } from 'ethers'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { MyAssetsDto } from 'darkswap-client-core'
 import { getTokenFromContract } from '../../utils/getToken'
-import { getMarketPriceFromBinance } from '../../services/orderService'
+import {
+  getMarketPriceFromBinance,
+  getMarketPriceFromLlama
+} from '../../services/orderService'
 import { useGetAssets } from '../../hooks/useGetAssets'
+import SyncIcon from '@mui/icons-material/Sync'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
 
 enum Modal {
   Deposit = 'DEPOSIT',
@@ -27,20 +32,24 @@ export const MainContent = () => {
   const [portfolio, setPortfolio] = useState<string>()
 
   const { selectedAccount, setOpenAddModal } = useAccountContext()
-  const { listData, fetchAssets } = useGetAssets()
+  const { chainId, currentChain } = useChainContext()
+  const { listData, fetchAssets, syncAssets } = useGetAssets()
 
   const calculatePortfolioValue = async (assets: MyAssetsDto) => {
+    if (!currentChain) return
     let totalValue = 0
-    const quoteSymbol = 'USDC' // Assuming USDC as the quote currency
+    const defaultChainName = currentChain.isTestnet
+      ? 'ethereum'
+      : currentChain.name.toLowerCase()
     for (const asset of assets.assets) {
-      const token = getTokenFromContract(asset.asset, assets.chainId)
-      if (token) {
-        const balance = ethers.formatUnits(asset.amount, token.decimals)
-        const price = await getMarketPriceFromBinance(
-          token.symbol + quoteSymbol
-        )
-        totalValue += parseFloat(balance) * parseFloat(price)
-      }
+      const token = await getTokenFromContract(
+        asset.asset,
+        currentChain.chainId
+      )
+      if (!token) continue
+      const balance = ethers.formatUnits(asset.amount, token.decimals)
+      const price = await getMarketPriceFromLlama(defaultChainName, asset.asset)
+      totalValue += parseFloat(balance) * price
     }
     setPortfolio(`$${totalValue.toFixed(2)}`)
   }
@@ -79,6 +88,24 @@ export const MainContent = () => {
       console.error('Deposit failed:', error)
       setError(
         'Deposit failed: ' +
+          (error instanceof Error ? error.message : String(error))
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onSyncAssets = async () => {
+    if (!selectedAccount || !chainId) return
+    setLoading(true)
+    setError(null)
+    try {
+      //@ts-ignore
+      await syncAssets(selectedAccount.address, chainId)
+    } catch (error) {
+      console.error('Sync assets failed:', error)
+      setError(
+        'Sync assets failed: ' +
           (error instanceof Error ? error.message : String(error))
       )
     } finally {
@@ -160,6 +187,7 @@ export const MainContent = () => {
             }}
             endIcon={<FileDownloadOutlinedIcon />}
             onClick={onOpenDeposit}
+            disabled={loading}
           >
             Deposit
           </Button>
@@ -173,20 +201,43 @@ export const MainContent = () => {
             }}
             endIcon={<FileUploadOutlinedIcon />}
             onClick={onOpenWithdraw}
+            disabled={loading}
           >
             Withdraw
           </Button>
         </Stack>
       </Stack>
       {/* Assets Table */}
-      <Typography
-        variant='h5'
-        color='#F3F4F6'
+      <Stack
+        width={'100%'}
+        direction={'row'}
+        alignItems={'center'}
+        justifyContent={'space-between'}
         mt={4}
         mb={2}
       >
-        Your Assets
-      </Typography>
+        <Typography
+          variant='h5'
+          color='#F3F4F6'
+        >
+          Your Assets
+        </Typography>
+
+        <SyncIcon
+          sx={{
+            fill: '#F3F4F6',
+            cursor: 'pointer',
+            animation: loading ? 'spin 1s linear infinite' : 'none',
+            '@keyframes spin': {
+              '0%': { transform: 'rotate(0deg)' },
+              '100%': { transform: 'rotate(-360deg)' }
+            },
+            '&:hover': { rotate: '-180deg', transition: '0.3s' }
+          }}
+          onClick={onSyncAssets}
+        />
+      </Stack>
+
       {/* Have not connected wallet */}
       {selectedAccount ? (
         <UserAssetTable listData={listData} />

@@ -27,7 +27,6 @@ import {
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { ethers } from 'ethers'
 import { NetworkLabel } from '../Label/NetworkLabel'
-import { MenuItem } from '@mui/material'
 
 const orderType = (type: OrderType) => {
   switch (type) {
@@ -56,8 +55,8 @@ export const OrderContent = () => {
     page: 1,
     limit: 10
   })
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [loading, setLoading] = useState(false)
+
+  const [loading, setLoading] = useState<string | boolean>(false)
 
   const { chainId } = useChainContext()
 
@@ -129,7 +128,7 @@ export const OrderContent = () => {
 
   const onCancelOrder = async (order: OrderDto) => {
     try {
-      setLoading(true)
+      setLoading(order.orderId)
       // @ts-ignore
       await window.orderAPI.cancelOrder({
         chainId: order.chainId,
@@ -166,6 +165,7 @@ export const OrderContent = () => {
           }}
           startIcon={<AddIcon />}
           onClick={onOpenModal}
+          disabled={!!loading}
         >
           Place Order
         </Button>
@@ -233,21 +233,27 @@ export const OrderContent = () => {
                     {isCancelable(row.events[0].status) && (
                       <Button
                         variant='outlined'
+                        color='error'
                         sx={{
-                          borderColor: '#FF4D4D',
-                          color: '#FF4D4D',
                           textTransform: 'capitalize',
                           borderRadius: '8px',
                           fontSize: '12px',
                           '&:hover': {
                             backgroundColor: 'rgba(255, 77, 77, 0.1)',
                             borderColor: '#FF4D4D'
+                          },
+                          '&.Mui-disabled': {
+                            border: 'none'
+                          },
+                          '& .MuiCircularProgress-root': {
+                            color: '#68EB8E'
                           }
                         }}
                         onClick={() => onCancelOrder(row)}
-                        disabled={loading}
+                        disabled={!!loading}
+                        loading={loading === row.orderId}
                       >
-                        Cancel
+                        {'Cancel'}
                       </Button>
                     )}
                   </TableCell>

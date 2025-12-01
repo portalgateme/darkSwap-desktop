@@ -5,6 +5,7 @@ export interface Network {
   chainId: number
   rpcUrl: string
   icon: string
+  isTestnet?: boolean
 }
 
 export interface Account {

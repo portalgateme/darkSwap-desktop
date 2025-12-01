@@ -424,10 +424,14 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
           color: '#000',
           textTransform: 'capitalize',
           borderRadius: '8px',
-          mt: 5
+          mt: 5,
+          '& .MuiCircularProgress-root': {
+            color: '#68EB8E'
+          }
         }}
-        disabled={btnDisabled}
         onClick={onPlaceOrder}
+        disabled={btnDisabled}
+        loading={loading}
       >
         Create Order
       </Button>
