@@ -29,25 +29,29 @@ export const chains: Network[] = [
     name: 'Sepolia',
     chainId: 11155111,
     rpcUrl: 'https://0xrpc.io/sep',
-    icon: '/chain/ethereum.png'
+    icon: '/chain/ethereum.png',
+    isTestnet: true
   },
   {
     name: 'Hardhat',
     chainId: 31337,
     rpcUrl: 'http://app.dev.portalgate.me:18544',
-    icon: '/chain/ethereum.png'
+    icon: '/chain/ethereum.png',
+    isTestnet: true
   },
   {
     name: 'HardhatBase',
     chainId: 31339,
     rpcUrl: 'https://app.dev.portalgate.me:38545',
-    icon: '/chain/base.svg'
+    icon: '/chain/base.svg',
+    isTestnet: true
   },
   {
     name: 'Horizen Testnet',
     chainId: 845320009,
     rpcUrl: 'https://horizen-rpc-testnet.appchain.base.org/',
-    icon: '/chain/horizen.svg'
+    icon: '/chain/horizen.svg',
+    isTestnet: true
   }
 ]
 

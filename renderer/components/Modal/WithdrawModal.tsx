@@ -227,10 +227,14 @@ export const WithdrawModal = ({
             color: '#000',
             textTransform: 'capitalize',
             borderRadius: '8px',
-            mt: 5
+            mt: 5,
+            '& .MuiCircularProgress-root': {
+              color: '#68EB8E'
+            }
           }}
           disabled={btnDisabled}
           onClick={handleConfirm}
+          loading={loading}
         >
           Confirm
         </Button>

@@ -19,10 +19,22 @@ export const useGetAssets = () => {
     setListData(assets)
   }
 
+  const syncAssets = async (address: string, chainId: number) => {
+    if (!selectedAccount || !chainId) return
+
+    try {
+      //@ts-ignore
+      await window.accountAPI.syncAssets(chainId, address)
+      await fetchAssets(chainId, address)
+    } catch (error) {
+      console.error('Sync assets failed:', error)
+    }
+  }
+
   useEffect(() => {
     if (!selectedAccount || !chainId) return
     fetchAssets(chainId, selectedAccount.address)
   }, [chainId, selectedAccount])
 
-  return { listData, fetchAssets }
+  return { listData, fetchAssets, syncAssets }
 }

@@ -12,3 +12,21 @@ export const getMarketPriceFromBinance = async (symbol: string) => {
     throw e
   }
 }
+
+export const getMarketPriceFromLlama = async (
+  networkName: string,
+  tokenAddress: string
+): Promise<number> => {
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: `https://coins.llama.fi/prices/current/${networkName}:${tokenAddress}`
+    })
+    return response.data.coins[`${networkName}:${tokenAddress}`]
+      ? response.data.coins[`${networkName}:${tokenAddress}`].price
+      : 0
+  } catch (e) {
+    console.error('Error getting market price from Llama', e)
+    throw e
+  }
+}
