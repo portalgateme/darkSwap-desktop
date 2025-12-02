@@ -61,15 +61,24 @@ if (!config) {
   throw new Error('Failed to load configuration')
 }
 
+const apiKey = configs.find((c) => c.key === 'api_key')?.value || ''
+
 const darkSwapConfig: DarkSwapConfig = {
   wallets: [...config.wallets, ...wallets],
   chainRpcs: config.chainRpcs || [],
   dbFilePath: dbPath,
   bookNodeSocketUrl: config.bookNodeSocketUrl || 'wss://socket.darknode.io',
   bookNodeApiUrl: config.bookNodeApiUrl || 'https://api.darknode.io/api',
-  bookNodeApiKey: configs.find((c) => c.key === 'api_key')?.value || ''
+  bookNodeApiKey: apiKey
   // config.bookNodeApiKey || '8f3f1f4e-6b3c-4f0a-9d3a-2e5b5e5e5e5e'
 }
 const instance = new DarkSwapClientCore(darkSwapConfig, db)
+
+// Initialize database and start WebSocket client
+if (apiKey) {
+  console.log('Starting DarkSwapClientCore with API Key')
+  instance.getWebSocketClient().startWebSocket()
+  instance.getAssetPairService().syncAssetPairs()
+}
 
 export default instance

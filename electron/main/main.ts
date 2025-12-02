@@ -1,7 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
 import serve from 'electron-serve'
-import dbInstance from './database'
 import { registerAccountHandlers } from './handlers/accountHandler'
 import { registerAssetPairHandlers } from './handlers/assetPairHandler'
 import { registerOrderHandlers } from './handlers/orderHandler'
@@ -39,10 +38,6 @@ async function createWindow() {
     mainWindow = null
   })
 }
-
-// Initialize database and start WebSocket client
-dbInstance.getWebSocketClient().startWebSocket()
-dbInstance.getAssetPairService().syncAssetPairs()
 
 // Register IPC handlers
 registerConfigHandlers()
