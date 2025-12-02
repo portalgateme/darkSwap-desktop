@@ -6,6 +6,7 @@ import { registerAccountHandlers } from './handlers/accountHandler'
 import { registerAssetPairHandlers } from './handlers/assetPairHandler'
 import { registerOrderHandlers } from './handlers/orderHandler'
 import { registerRPCManagerHandlers } from './handlers/rpcManagerHandler'
+import { registerConfigHandlers } from './handlers/configHandler'
 
 // Configure electron-serve để serve static files
 const appServe = app.isPackaged
@@ -44,6 +45,7 @@ dbInstance.getWebSocketClient().startWebSocket()
 dbInstance.getAssetPairService().syncAssetPairs()
 
 // Register IPC handlers
+registerConfigHandlers()
 registerAccountHandlers()
 registerAssetPairHandlers()
 registerOrderHandlers()
