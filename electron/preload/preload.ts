@@ -74,3 +74,12 @@ contextBridge.exposeInMainWorld('rpcManagerAPI', {
   reloadProviders: () => ipcRenderer.invoke('rpcManager:reloadProviders'),
   getAllProviders: () => ipcRenderer.invoke('rpcManager:getAllProviders')
 })
+
+// Config APIs
+contextBridge.exposeInMainWorld('configAPI', {
+  getConfigs: () => ipcRenderer.invoke('config:getConfigs'),
+  setConfigs: (configs: { [key: string]: string }) =>
+    ipcRenderer.invoke('config:setConfigs', configs),
+  healthCheck: (apiKey: string) =>
+    ipcRenderer.invoke('config:healthCheck', apiKey)
+})

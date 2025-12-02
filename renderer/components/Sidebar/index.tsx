@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import HistoryIcon from '@mui/icons-material/History'
 import CheckIcon from '@mui/icons-material/Check'
+import SettingsIcon from '@mui/icons-material/Settings'
 import { useState } from 'react'
 
 const darkpoolResourceLinks = {
@@ -13,6 +14,29 @@ const darkpoolResourceLinks = {
   pointDashboard:
     'https://app.thesingularity.network/season2?utm_source=testnetpoints&utm_medium=link&utm_campaign=points_dashboard_testnet'
 }
+
+const menus = [
+  {
+    title: 'Account Overview',
+    icon: '/images/overview.png',
+    link: '/'
+  },
+  {
+    title: 'Place Order & Order List',
+    icon: '/images/order-list.png',
+    link: '/orders'
+  },
+  {
+    title: 'Order History',
+    icon: <HistoryIcon sx={{ color: '#FFFFFF', fontSize: 16 }} />,
+    link: '/history'
+  },
+  {
+    title: 'Settings',
+    icon: <SettingsIcon sx={{ color: '#FFFFFF', fontSize: 16 }} />,
+    link: '/settings'
+  }
+]
 
 export const Sidebar = () => {
   const [copiedItem, setCopiedItem] = useState<string | null>(null)
@@ -52,86 +76,43 @@ export const Sidebar = () => {
         </Box>
 
         <Stack spacing={1}>
-          <Link href='/'>
-            <Stack
-              direction={'row'}
-              spacing={2}
-              alignItems='center'
-              sx={{
-                padding: 1,
-                borderRadius: 1,
-                ':hover': {
-                  backgroundColor: '#262A33'
-                }
-              }}
+          {menus.map((menu) => (
+            <Link
+              key={menu.title}
+              href={menu.link}
             >
-              <Image
-                src={'/images/overview.png'}
-                alt='Home Icon'
-                width={16}
-                height={16}
-              />
-              <Typography
-                variant='body1'
-                color='#fff'
+              <Stack
+                direction={'row'}
+                spacing={2}
+                alignItems='center'
+                sx={{
+                  padding: 1,
+                  borderRadius: 1,
+                  ':hover': {
+                    backgroundColor: '#262A33'
+                  }
+                }}
               >
-                Account Overview
-              </Typography>
-            </Stack>
-          </Link>
+                {typeof menu.icon === 'string' ? (
+                  <Image
+                    src={menu.icon}
+                    alt={`${menu.title} Icon`}
+                    width={16}
+                    height={16}
+                  />
+                ) : (
+                  menu.icon
+                )}
 
-          <Link href='/orders'>
-            <Stack
-              direction={'row'}
-              spacing={2}
-              alignItems='center'
-              sx={{
-                padding: 1,
-                borderRadius: 1,
-                ':hover': {
-                  backgroundColor: '#262A33'
-                }
-              }}
-            >
-              <Image
-                src={'/images/order-list.png'}
-                alt='Home Icon'
-                width={16}
-                height={16}
-              />
-
-              <Typography
-                variant='body1'
-                color='#fff'
-              >
-                Place Order & Order List
-              </Typography>
-            </Stack>
-          </Link>
-
-          <Link href='/history'>
-            <Stack
-              direction={'row'}
-              spacing={2}
-              alignItems='center'
-              sx={{
-                padding: 1,
-                borderRadius: 1,
-                ':hover': {
-                  backgroundColor: '#262A33'
-                }
-              }}
-            >
-              <HistoryIcon sx={{ color: '#fff', fontSize: 16 }} />
-
-              <Typography
-                variant='body1'
-                color='#fff'
-              >
-                Order History
-              </Typography>
-            </Stack>
-          </Link>
+                <Typography
+                  variant='body1'
+                  color='#fff'
+                >
+                  {menu.title}
+                </Typography>
+              </Stack>
+            </Link>
+          ))}
         </Stack>
       </Stack>
 
