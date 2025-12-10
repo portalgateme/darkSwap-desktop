@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Button, Stack, Typography } from '@mui/material'
+import { Box, Button, Stack, Tooltip, Typography } from '@mui/material'
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import { UserAssetTable } from '../Table/UserAssetTable'
@@ -17,6 +17,7 @@ import {
 import { useGetAssets } from '../../hooks/useGetAssets'
 import SyncIcon from '@mui/icons-material/Sync'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
+import InfoOutlineIcon from '@mui/icons-material/InfoOutline'
 
 enum Modal {
   Deposit = 'DEPOSIT',
@@ -223,19 +224,28 @@ export const MainContent = () => {
           Your Assets
         </Typography>
 
-        <SyncIcon
-          sx={{
-            fill: '#F3F4F6',
-            cursor: 'pointer',
-            animation: loading ? 'spin 1s linear infinite' : 'none',
-            '@keyframes spin': {
-              '0%': { transform: 'rotate(0deg)' },
-              '100%': { transform: 'rotate(-360deg)' }
-            },
-            '&:hover': { rotate: '-180deg', transition: '0.3s' }
-          }}
-          onClick={onSyncAssets}
-        />
+        <Stack
+          direction={'row'}
+          spacing={0.5}
+          alignItems={'center'}
+        >
+          <Tooltip title='Sync your Total Portfolio Value to the latest amount'>
+            <InfoOutlineIcon sx={{ color: '#68EB8E', fontSize: '20px' }} />
+          </Tooltip>
+          <SyncIcon
+            sx={{
+              fill: '#F3F4F6',
+              cursor: 'pointer',
+              animation: loading ? 'spin 1s linear infinite' : 'none',
+              '@keyframes spin': {
+                '0%': { transform: 'rotate(0deg)' },
+                '100%': { transform: 'rotate(-360deg)' }
+              },
+              '&:hover': { rotate: '-180deg', transition: '0.3s' }
+            }}
+            onClick={onSyncAssets}
+          />
+        </Stack>
       </Stack>
 
       {/* Have not connected wallet */}

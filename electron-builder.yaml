@@ -1,5 +1,5 @@
 appId: 'com.darkswap.desktop'
-productName: 'DarkSwap'
+productName: 'Darkswap'
 directories:
   output: 'release'
 asarUnpack:

@@ -22,7 +22,7 @@ const menus = [
     link: '/'
   },
   {
-    title: 'Place Order & Order List',
+    title: 'Order Management',
     icon: '/images/order-list.png',
     link: '/orders'
   },
@@ -117,7 +117,7 @@ export const Sidebar = () => {
       </Stack>
 
       {/* Resources */}
-      <Stack
+      {/* <Stack
         width={'100%'}
         spacing={1}
       >
@@ -225,7 +225,7 @@ export const Sidebar = () => {
             />
           )}
         </Stack>
-      </Stack>
+      </Stack> */}
     </Stack>
   )
 }
