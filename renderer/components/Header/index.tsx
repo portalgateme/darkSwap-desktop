@@ -40,6 +40,7 @@ export const Header = ({ title }: HeaderProps) => {
       <Typography
         color='#F3F4F6'
         variant='h3'
+        fontWeight={700}
       >
         {title}
       </Typography>
