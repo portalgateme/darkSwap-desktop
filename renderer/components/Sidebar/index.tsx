@@ -117,7 +117,7 @@ export const Sidebar = () => {
       </Stack>
 
       {/* Resources */}
-      <Stack
+      {/* <Stack
         width={'100%'}
         spacing={1}
       >
@@ -225,7 +225,7 @@ export const Sidebar = () => {
             />
           )}
         </Stack>
-      </Stack>
+      </Stack> */}
     </Stack>
   )
 }
