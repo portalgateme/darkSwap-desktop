@@ -22,7 +22,7 @@ const menus = [
     link: '/'
   },
   {
-    title: 'Place Order & Order List',
+    title: 'Order Management',
     icon: '/images/order-list.png',
     link: '/orders'
   },
