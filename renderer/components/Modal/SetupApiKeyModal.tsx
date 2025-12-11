@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -17,22 +17,29 @@ interface SetupApiKeyModalProps {
   open: boolean
   onClose: () => void
   onSubmit: (apiKey: string) => void
+  loading?: boolean
 }
 
 const SetupApiKeyModal: React.FC<SetupApiKeyModalProps> = ({
   open,
   onClose,
-  onSubmit
+  onSubmit,
+  loading = false
 }) => {
   const [apiKey, setApiKey] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
+
+  useEffect(() => {
+    if (!open) {
+      setApiKey('')
+      setShowApiKey(false)
+    }
+  }, [open])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (apiKey.trim()) {
       onSubmit(apiKey.trim())
-      setApiKey('')
-      onClose()
     }
   }
 
@@ -93,6 +100,7 @@ const SetupApiKeyModal: React.FC<SetupApiKeyModalProps> = ({
               border: '1px solid #68EB8E',
               color: '#68EB8E'
             }}
+            disabled={loading}
           >
             Cancel
           </Button>
@@ -107,6 +115,7 @@ const SetupApiKeyModal: React.FC<SetupApiKeyModalProps> = ({
                 color: '#68EB8E'
               }
             }}
+            loading={loading}
           >
             Save API Key
           </Button>

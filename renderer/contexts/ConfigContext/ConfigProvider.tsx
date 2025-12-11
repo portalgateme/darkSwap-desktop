@@ -8,12 +8,14 @@ import React, {
 
 interface ConfigContextType {
   apiKey?: string
+  verifyApiKey?: (apiKey: string) => Promise<boolean>
   saveApiKey: (apiKey: string) => Promise<void>
   saveConfigs: (newConfig: { [key: string]: string }) => Promise<void>
 }
 
 export const ConfigContext = createContext<ConfigContextType>({
   apiKey: undefined,
+  verifyApiKey: async () => false,
   saveApiKey: async () => {},
   saveConfigs: async () => {}
 })
@@ -37,6 +39,11 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({
   }
 
   const saveApiKey = async (apiKey: string) => {
+    const isValid = await verifyApiKey(apiKey)
+    if (!isValid) {
+      alert('Invalid API key. Please try again.')
+      return
+    }
     // @ts-ignore
     await window.configAPI.setConfigs({ api_key: apiKey })
     await fetchConfigs()
@@ -48,13 +55,29 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({
     await fetchConfigs()
   }
 
+  const verifyApiKey = async (apiKey: string) => {
+    try {
+      // @ts-ignore
+      const result = await window.configAPI.healthCheck(apiKey)
+      console.log('health check result', result)
+      if (result.healthy) {
+        return true
+      } else {
+        return false
+      }
+    } catch (error) {
+      console.error('Error verifying API key:', error)
+      return false
+    }
+  }
+
   useEffect(() => {
     fetchConfigs()
   }, [])
 
   return (
     <ConfigContext.Provider
-      value={{ apiKey: config.apiKey, saveApiKey, saveConfigs }}
+      value={{ apiKey: config.apiKey, saveApiKey, saveConfigs, verifyApiKey }}
     >
       {children}
     </ConfigContext.Provider>
