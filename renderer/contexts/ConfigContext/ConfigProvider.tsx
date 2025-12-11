@@ -11,13 +11,15 @@ interface ConfigContextType {
   verifyApiKey?: (apiKey: string) => Promise<boolean>
   saveApiKey: (apiKey: string) => Promise<void>
   saveConfigs: (newConfig: { [key: string]: string }) => Promise<void>
+  isAuthenticated: boolean
 }
 
 export const ConfigContext = createContext<ConfigContextType>({
   apiKey: undefined,
   verifyApiKey: async () => false,
   saveApiKey: async () => {},
-  saveConfigs: async () => {}
+  saveConfigs: async () => {},
+  isAuthenticated: false
 })
 
 export const ConfigProvider: React.FC<{ children: ReactNode }> = ({
@@ -26,6 +28,7 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({
   const [config, setConfig] = useState<{ apiKey?: string }>({
     apiKey: undefined
   })
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const fetchConfigs = async () => {
     // @ts-ignore
@@ -72,12 +75,28 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({
   }
 
   useEffect(() => {
+    if (config.apiKey) {
+      verifyApiKey(config.apiKey).then((isValid) => {
+        setIsAuthenticated(isValid)
+      })
+    } else {
+      setIsAuthenticated(false)
+    }
+  }, [config.apiKey])
+
+  useEffect(() => {
     fetchConfigs()
   }, [])
 
   return (
     <ConfigContext.Provider
-      value={{ apiKey: config.apiKey, saveApiKey, saveConfigs, verifyApiKey }}
+      value={{
+        apiKey: config.apiKey,
+        saveApiKey,
+        saveConfigs,
+        verifyApiKey,
+        isAuthenticated
+      }}
     >
       {children}
     </ConfigContext.Provider>

@@ -1,9 +1,18 @@
 import { VisibilityOff, Visibility } from '@mui/icons-material'
-import { Button, InputBase, Stack, Tooltip, Typography } from '@mui/material'
+import {
+  Button,
+  IconButton,
+  InputBase,
+  Stack,
+  Tooltip,
+  Typography
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 import SaveIcon from '@mui/icons-material/Save'
 import { useConfigContext } from '../../contexts/ConfigContext/hooks'
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline'
+import CheckIcon from '@mui/icons-material/Check'
+import CloseIcon from '@mui/icons-material/Close'
 
 export const SettingContent = () => {
   const [formConfig, setFormConfig] = useState<{ apiKey?: string }>({})
@@ -22,10 +31,16 @@ export const SettingContent = () => {
 
   const onSaveChanges = async () => {
     await saveConfigs({ api_key: formConfig.apiKey || '' })
+    setVerified(null)
   }
 
   const onDiscardChanges = () => {
     setFormConfig({ apiKey })
+    setVerified(null)
+  }
+
+  const onClearApiKey = () => {
+    setFormConfig((prev) => ({ ...prev, apiKey: '' }))
     setVerified(null)
   }
 
@@ -38,10 +53,8 @@ export const SettingContent = () => {
       const result = await window.configAPI.healthCheck(formConfig.apiKey)
       console.log('health check result', result)
       if (result.healthy) {
-        alert('API key is valid!')
         setVerified(true)
       } else {
-        alert(`API key is invalid`)
         setVerified(false)
       }
     } catch (error) {
@@ -118,27 +131,37 @@ export const SettingContent = () => {
             />
           )}
         </Stack>
-        <Button
-          size='small'
-          variant='contained'
-          sx={{
-            background: '#68EB8E',
-            color: '#0A0A0A',
+        {!verified ? (
+          verified === null ? (
+            <Button
+              size='small'
+              variant='contained'
+              sx={{
+                background: '#68EB8E',
+                color: '#0A0A0A',
 
-            '&.Mui-disabled': {
-              border: 'none',
-              background: 'inherit'
-            },
+                '&.Mui-disabled': {
+                  border: 'none',
+                  background: 'inherit'
+                },
 
-            '& .MuiCircularProgress-root': {
-              color: '#68EB8E'
-            }
-          }}
-          onClick={onVerifyApiKey}
-          loading={loading}
-        >
-          Verify
-        </Button>
+                '& .MuiCircularProgress-root': {
+                  color: '#68EB8E'
+                }
+              }}
+              onClick={onVerifyApiKey}
+              loading={loading}
+            >
+              Verify
+            </Button>
+          ) : (
+            <IconButton onClick={onClearApiKey}>
+              <CloseIcon sx={{ color: '#FF6B6B' }} />
+            </IconButton>
+          )
+        ) : (
+          <CheckIcon sx={{ color: '#68EB8E' }} />
+        )}
       </Stack>
 
       {/* Button group */}
@@ -166,7 +189,7 @@ export const SettingContent = () => {
           }}
           startIcon={<SaveIcon />}
           onClick={onSaveChanges}
-          disabled={loading}
+          disabled={loading || !verified}
         >
           Save Changes
         </Button>
