@@ -1,16 +1,18 @@
 import {
   Button,
+  InputBase,
   Modal,
   Stack,
   TextareaAutosize,
   Typography
 } from '@mui/material'
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined'
+import { useState } from 'react'
 
 interface WalletSetupModalProps {
   open: boolean
   onClose: () => void
-  onConfirm?: () => void
+  onConfirm?: (name: string, privateKey: string) => void
 }
 
 export const WalletSetupModal = ({
@@ -18,6 +20,47 @@ export const WalletSetupModal = ({
   onClose,
   onConfirm
 }: WalletSetupModalProps) => {
+  const [name, setName] = useState('')
+  const [privateKey, setPrivateKey] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const onChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value)
+    setError(null)
+  }
+
+  const onChangePrivateKey = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const key = e.target.value.trim()
+
+    setPrivateKey(key)
+    setError(null)
+  }
+
+  const handleConfirm = () => {
+    if (!name || !privateKey) {
+      setError('Please fill in all fields.')
+      return
+    }
+    if (onConfirm) {
+      // Remove 0x prefix if exists
+      const key = !privateKey.startsWith('0x')
+        ? privateKey
+        : privateKey.slice(2)
+      onConfirm(name, key)
+    }
+  }
+
+  // Validate private key format (basic check)
+  const isValidPrivateKey = (key: string) => {
+    // If private key not start with 0x, add it
+    if (!key.startsWith('0x')) {
+      key = '0x' + key
+    }
+    // Basic check: length and hex format
+    return /^0x[a-fA-F0-9]{64}$/.test(key)
+  }
+
+  const buttonDisabled = !name || !privateKey || !isValidPrivateKey(privateKey)
   return (
     <Modal
       open={open}
@@ -49,14 +92,30 @@ export const WalletSetupModal = ({
           color='#F3F4F6'
           mt={4}
         >
-          Private Key / Recovery Phrase
+          Name
         </Typography>
+
+        <InputBase
+          placeholder='Enter the name of wallet'
+          sx={{
+            background: '#2C2F33',
+            color: '#F3F4F6',
+            border: 'none',
+            borderRadius: '10px',
+            padding: '10px',
+            marginTop: '10px',
+            outline: 'none'
+          }}
+          onChange={onChangeName}
+          value={name}
+        />
+
         <Typography
-          variant='body1'
-          color='#BDC1CA'
-          mt={1}
+          variant='h5'
+          color='#F3F4F6'
+          mt={4}
         >
-          Enter your private key or 12/24 word recovery phrase securely.
+          Private Key
         </Typography>
 
         <TextareaAutosize
@@ -71,6 +130,8 @@ export const WalletSetupModal = ({
             marginTop: '10px',
             outline: 'none'
           }}
+          onChange={onChangePrivateKey}
+          value={privateKey}
         />
 
         {/* Alert card */}
@@ -108,10 +169,34 @@ export const WalletSetupModal = ({
             borderRadius: '8px',
             mt: 2
           }}
-          onClick={onConfirm}
+          disabled={buttonDisabled}
+          onClick={handleConfirm}
         >
           Save Wallet
         </Button>
+        <Button
+          variant='outlined'
+          sx={{
+            borderColor: '#68EB8E',
+            color: '#68EB8E',
+            textTransform: 'capitalize',
+            borderRadius: '8px',
+            mt: 2
+          }}
+          onClick={onClose}
+        >
+          Close
+        </Button>
+
+        {error && (
+          <Typography
+            variant='body2'
+            color='red'
+            mt={2}
+          >
+            {error}
+          </Typography>
+        )}
       </Stack>
     </Modal>
   )

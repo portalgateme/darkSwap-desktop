@@ -1,64 +1,52 @@
 {
-  "name": "darkSwap-desktop",
+  "name": "Darkswap",
   "version": "1.0.0",
-  "main": "dist/electron/main.js",
-  "devDependencies": {
-    "@types/node": "^24.5.2",
-    "@types/react": "^19.1.13",
-    "@types/react-dom": "^19.1.9",
-    "cross-env": "^10.0.0",
-    "electron": "^38.1.2",
-    "electron-builder": "^26.0.12",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
-  },
+  "main": "dist/main/main.js",
   "scripts": {
-    "dev:next": "next dev ./renderer",
-    "build:next": "next build ./renderer",
-    "dev:electron": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main.js",
+    "// dev": "=========== DEVELOPMENT MODE ===========",
+    "dev:remove-old": "rm -rf dist && rm -rf renderer/.next renderer/next-env.d.ts",
+    "dev:next": "cross-env NODE_ENV=development next dev renderer",
+    "dev:electron": "tsc -p . && cross-env NODE_ENV=development electron ./dist/main/main.js",
+    "dev": "npm run dev:remove-old && concurrently \"npm run dev:next\" \"npm run dev:electron\"",
+    "// build": "=========== PRODUCTION BUILD ===========",
+    "build:remove-old": "rm -rf dist && rm -rf renderer/.next renderer/next-env.d.ts && rm -rf release",
+    "build:ts": "tsc -p .",
+    "build:next": "next build renderer",
+    "rebuild:native": "electron-builder install-app-deps",
+    "build:prod": "cross-env NODE_ENV=production yarn build:remove-old && yarn build:ts && yarn build:next && yarn rebuild:native && electron-builder",
+    "// misc": "=========== UTILITIES ===========",
+    "postinstall": "electron-builder install-app-deps",
     "start": "electron .",
-    "build": "tsc -p . && npm run build:next && electron-builder",
-    "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\""
+    "start:next": "next start renderer"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
-    "next": "^15.5.4",
+    "axios": "^1.13.2",
+    "better-sqlite3": "^11.8.0",
+    "darkswap-client-core": "./darkSwap-client-core",
+    "electron-serve": "^3.0.0",
+    "ethers": "^6.15.0",
+    "js-yaml": "^4.1.0",
+    "next": "15.5.7",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "zod": "^4.1.11"
   },
-  "build": {
-    "appId": "com.example.electronnextapp",
-    "productName": "ElectronNextApp",
-    "directories": {
-      "buildResources": "assets",
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "renderer/out/**/*",
-      "package.json"
-    ],
-    "extraResources": [],
-    "mac": {
-      "category": "public.app-category.productivity",
-      "target": [
-        "dmg"
-      ]
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "icon": "assets/icon.ico"
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "category": "Utility"
-    }
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.1",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "concurrently": "^9.1.0",
+    "cross-env": "^10.0.0",
+    "electron": "^38.1.2",
+    "electron-builder": "^26.0.12",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }

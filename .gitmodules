@@ -1,0 +1,3 @@
+[submodule "darkSwap-client-core"]
+	path = darkSwap-client-core
+	url = git@github-singularity.com:portalgateme/darkSwap-client-core.git

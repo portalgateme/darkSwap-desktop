@@ -14,6 +14,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { shorterAddress } from '../../utils/format'
 import { tokenConfig } from '../../constants/tokenConfig'
 import Image from 'next/image'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
 
 interface TokenSelection {
   selectedToken?: Token
@@ -32,6 +33,7 @@ const TokenSelection: React.FC<TokenSelection> = ({
   menuSx,
   sx
 }) => {
+  const { chainId } = useChainContext()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -61,9 +63,23 @@ const TokenSelection: React.FC<TokenSelection> = ({
         fullWidth
         onClick={handleClick}
       >
-        <Typography variant='body1'>
-          {selectedToken ? selectedToken.name : 'Select Token'}
-        </Typography>
+        <Stack
+          direction='row'
+          spacing={1}
+          alignItems='center'
+        >
+          {selectedToken && (
+            <Image
+              src={selectedToken.logoURI || '/tokens/default-token.svg'}
+              alt={selectedToken.symbol}
+              width={24}
+              height={24}
+            />
+          )}
+          <Typography variant='body1'>
+            {selectedToken ? selectedToken.name : 'Select Token'}
+          </Typography>
+        </Stack>
       </Button>
 
       <Menu
@@ -91,29 +107,31 @@ const TokenSelection: React.FC<TokenSelection> = ({
           horizontal: 'left'
         }}
       >
-        {tokenConfig.map((token, index) => (
-          <MenuItem
-            key={index}
-            onClick={() => onSelectToken(token)}
-            sx={{
-              '&:hover': { backgroundColor: '#2A2E33' }
-            }}
-          >
-            <Stack
-              spacing={1}
-              direction='row'
-              alignItems='center'
+        {chainId &&
+          tokenConfig[chainId] &&
+          tokenConfig[chainId].map((token, index) => (
+            <MenuItem
+              key={index}
+              onClick={() => onSelectToken(token)}
+              sx={{
+                '&:hover': { backgroundColor: '#2A2E33' }
+              }}
             >
-              <Image
-                src={token.logoURI || '/default-token.png'}
-                alt={token.name}
-                width={24}
-                height={24}
-              />
-              <Typography>{token.name}</Typography>
-            </Stack>
-          </MenuItem>
-        ))}
+              <Stack
+                spacing={1}
+                direction='row'
+                alignItems='center'
+              >
+                <Image
+                  src={token.logoURI || '/default-token.png'}
+                  alt={token.name || 'token'}
+                  width={24}
+                  height={24}
+                />
+                <Typography>{token.name}</Typography>
+              </Stack>
+            </MenuItem>
+          ))}
       </Menu>
     </Box>
   )

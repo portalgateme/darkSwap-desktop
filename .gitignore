@@ -6,6 +6,7 @@ node_modules/
 
 # Environment variables
 .env
+config.yaml
 
 # Electron
 release/
@@ -15,3 +16,6 @@ build/
 # Next.js
 renderer/.next
 renderer/out
+
+# Database
+app.db

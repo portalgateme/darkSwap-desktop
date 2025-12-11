@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   MenuItem,
   Stack,
@@ -9,36 +9,14 @@ import {
   SxProps
 } from '@mui/material'
 
-import { Account } from '../../types'
+import { Wallet } from '../../types'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { shorterAddress } from '../../utils/format'
-
-const mockAccounts: Account[] = [
-  {
-    name: 'Account 1',
-    address: '0x96d5a4a41c946f6d180945681aeb6196d7aee6e3',
-    balance: '1.5 ETH'
-  },
-  {
-    name: 'Account 2',
-    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    balance: '2.0 ETH'
-  },
-  {
-    name: 'Account 3',
-    address: '0x8ff2F0a8D017c79454AA28509a19Ab9753c2DD14',
-    balance: '0.75 ETH'
-  },
-  {
-    name: 'Account 4',
-    address: '0xD5e2d0dD80cDBaf5ea72570267d748db90c04c28',
-    balance: '3.2 ETH'
-  }
-]
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
 
 interface AccountSelectionProps {
-  selectedAccount?: Account
-  onAccountChange: (account: Account) => void
+  selectedAccount?: Wallet
+  onAccountChange: (account: Wallet) => void
   fullWidth?: boolean
   buttonSx?: SxProps
   menuSx?: SxProps
@@ -51,6 +29,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
   buttonSx,
   menuSx
 }) => {
+  const { accounts } = useAccountContext()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -60,7 +39,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
     setAnchorEl(null)
   }
 
-  const onSelectAccount = (account: Account) => {
+  const onSelectAccount = (account: Wallet) => {
     onAccountChange(account)
     handleClose()
   }
@@ -110,7 +89,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
           horizontal: 'left'
         }}
       >
-        {mockAccounts.map((account, index) => (
+        {accounts.map((account, index) => (
           <MenuItem
             key={index}
             onClick={() => onSelectAccount(account)}
@@ -124,21 +103,15 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
               alignItems='center'
               justifyContent={'space-between'}
             >
-              <Stack
-                direction={'row'}
-                spacing={2}
-                alignItems='center'
+              <Typography>{account.name}</Typography>
+              <Typography
+                variant='body2'
+                color='#BDC1CA'
               >
-                <Typography>{account.name}</Typography>
-                <Typography
-                  variant='body2'
-                  color='#BDC1CA'
-                >
-                  ({shorterAddress(account.address)})
-                </Typography>
-              </Stack>
+                ({shorterAddress(account.address)})
+              </Typography>
 
-              <Typography>{account.balance}</Typography>
+              {/* <Typography>{account}</Typography> TODO: Should be show balance */}
             </Stack>
           </MenuItem>
         ))}

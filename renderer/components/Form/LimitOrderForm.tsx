@@ -1,39 +1,214 @@
 import { Button, InputBase, Stack, Typography } from '@mui/material'
 import NetworkSelection from '../Selection/NetworkSelection'
-import { useState } from 'react'
-import { Network, Token } from '../../types'
-import { Label } from '../Label'
+import { useEffect, useState } from 'react'
+import {
+  AssetPairDto,
+  Network,
+  OrderDirection,
+  OrderType,
+  StpMode,
+  TimeInForce,
+  Token
+} from '../../types'
 import { LabelAssetAmountInput } from '../Input/LabelAssetAmountInput'
-import { tokenConfig } from '../../constants/tokenConfig'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { IOSSwitchButton } from '../Button/IOSSwitchButton'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
+import { getMarketPriceFromBinance } from '../../services/orderService'
+import { ethers } from 'ethers'
+import { OrderDto } from 'darkswap-client-core'
+import { safeAmountWithDecimals } from '../../utils/safeAmount'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 
-export const LimitOrderForm = () => {
+interface LimitOrderFormProps {
+  onClose: () => void
+}
+
+export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
+  const { chainId, currentChain, onChangeChain } = useChainContext()
+  const { selectedAccount } = useAccountContext()
+  const { assetPair } = useAssetPairContext()
+
   const [formData, setFormData] = useState<{
-    network: Network | undefined
-    amount: string
+    amountIn: string
+    amountOut: string
     price: string
-    assetIn: Token
-    assetOut: Token
+    assetIn: Token | undefined
+    assetOut: Token | undefined
     useMarketPrice: boolean
+    orderDirection: OrderDirection
   }>({
-    network: undefined,
-    amount: '',
+    amountIn: '',
+    amountOut: '',
     price: '',
-    assetIn: tokenConfig[0],
-    assetOut: tokenConfig[1],
-    useMarketPrice: false
+    assetIn: undefined,
+    assetOut: undefined,
+    useMarketPrice: false,
+    orderDirection: OrderDirection.SELL
   })
+  const [marketPrice, setMarketPrice] = useState<string>('')
 
-  const onPlaceOrder = () => {
-    // Handle place order logic
+  const [loading, setLoading] = useState(false)
+
+  const fetchMarketPrice = async (assetPair: AssetPairDto) => {
+    const price = await getMarketPriceFromBinance(
+      assetPair.baseSymbol + assetPair.quoteSymbol
+    )
+    setFormData((prev) => ({
+      ...prev,
+      price: parseFloat(price).toFixed(2)
+    }))
+    setMarketPrice(parseFloat(price).toFixed(2))
+  }
+
+  useEffect(() => {
+    if (!assetPair) return
+    setFormData((prev) => ({
+      ...prev,
+      assetIn: {
+        address: assetPair.quoteAddress,
+        decimals: assetPair.quoteDecimal,
+        symbol: assetPair.quoteSymbol
+      },
+      assetOut: {
+        address: assetPair.baseAddress,
+        decimals: assetPair.baseDecimal,
+        symbol: assetPair.baseSymbol
+      },
+      orderDirection: OrderDirection.SELL
+    }))
+  }, [assetPair])
+
+  useEffect(() => {
+    if (!assetPair) return
+    fetchMarketPrice(assetPair)
+  }, [assetPair])
+
+  useEffect(() => {
+    if (formData.amountOut && formData.price && formData.assetIn) {
+      const amountIn = safeAmountWithDecimals(
+        (
+          parseFloat(formData.amountOut) * parseFloat(formData.price)
+        ).toString(),
+        formData.assetIn.decimals
+      )
+      setFormData((prev) => ({
+        ...prev,
+        amountIn
+      }))
+    }
+  }, [formData.amountOut, formData.price])
+
+  const handleClose = () => {
+    // Reset form data if needed
+    setFormData({
+      amountIn: '',
+      amountOut: '',
+      price: '',
+      assetIn: undefined,
+      assetOut: undefined,
+      useMarketPrice: false,
+      orderDirection: OrderDirection.SELL
+    })
+    onClose()
+  }
+
+  const onPlaceOrder = async () => {
+    if (
+      !selectedAccount ||
+      !chainId ||
+      !assetPair ||
+      !formData.assetIn ||
+      !formData.assetOut
+    )
+      return
+    setLoading(true)
+    try {
+      const amountInBN = ethers
+        .parseUnits(formData.amountIn, formData.assetIn.decimals)
+        .toString()
+      const amountOutBN = ethers
+        .parseUnits(formData.amountOut, formData.assetOut.decimals)
+        .toString()
+      const partialAmountInBN = (
+        ethers.parseUnits(formData.amountIn, formData.assetIn.decimals) /
+        BigInt(100)
+      ).toString() // 1% of amountIn
+
+      const params: OrderDto = {
+        orderId: crypto.randomUUID(),
+        wallet: selectedAccount.address,
+        chainId: chainId,
+        assetPairId: assetPair.id,
+        orderDirection: formData.orderDirection,
+        orderType: formData.useMarketPrice ? OrderType.MARKET : OrderType.LIMIT,
+        timeInForce: TimeInForce.GTC,
+        stpMode: StpMode.NONE,
+        price: formData.price,
+        amountOut: amountOutBN,
+        amountIn: amountInBN,
+        partialAmountIn: partialAmountInBN,
+        feeRatio: '0.001'
+      }
+
+      console.log('Placing order with params:', params)
+      // @ts-ignore
+      await window.orderAPI.createOrder(params)
+      handleClose()
+    } catch (error) {
+      console.error('Error placing order:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const switchAsset = () => {
+    setFormData((prev) => ({
+      ...prev,
+      assetIn: prev.assetOut,
+      assetOut: prev.assetIn,
+      orderDirection:
+        prev.orderDirection === OrderDirection.BUY
+          ? OrderDirection.SELL
+          : OrderDirection.BUY,
+      amountIn: prev.amountOut,
+      amountOut: prev.amountIn
+    }))
+  }
+
+  const btnDisabled = !formData.amountOut || !formData.price || loading
+  const onCheckUseMarketPrice = (checked: boolean) => {
+    setFormData({
+      ...formData,
+      useMarketPrice: checked
+    })
+    if (checked && assetPair) {
+      fetchMarketPrice(assetPair)
+    }
+  }
+
+  const onChangeLimitPrice = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Validate input to allow only numbers and decimal point
+    const value = e.target.value
+    const regex = /^\d*\.?\d*$/
+
+    // User input '.' should be treated as '0.'
+    if (value === '.') {
+      setFormData({ ...formData, price: '0.' })
+      return
+    }
+
+    if (value === '' || regex.test(value)) {
+      setFormData({ ...formData, price: value })
+    }
   }
 
   return (
     <Stack>
       <NetworkSelection
-        selectedNetwork={formData.network}
-        onNetworkChange={(network) => setFormData({ ...formData, network })}
+        selectedNetwork={currentChain}
+        onNetworkChange={onChangeChain}
         buttonSx={{
           border: '1px solid #3A3E47'
         }}
@@ -44,6 +219,7 @@ export const LimitOrderForm = () => {
         direction='row'
         alignItems={'center'}
         justifyContent={'space-between'}
+        spacing={4}
         sx={{
           background: '#262A33',
           borderRadius: '8px',
@@ -55,29 +231,35 @@ export const LimitOrderForm = () => {
       >
         <Typography color='#F3F4F6B8'>Limit Price</Typography>
         <Stack
+          flex={1}
           direction={'row'}
           spacing={1}
           alignItems='center'
         >
           <InputBase
-            placeholder='Amount'
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
+            value={formData.price}
+            onChange={onChangeLimitPrice}
             // text right to left for input
             sx={{
               color: '#F3F4F6B8',
-              direction: 'rtl'
+              direction: 'rtl',
+              width: '100%'
             }}
           />
-          <Typography color='#F3F4F6B8'>USDC/ETH</Typography>
+          <Typography color='#F3F4F6B8'>{assetPair?.id}</Typography>
         </Stack>
       </Stack>
 
       <LabelAssetAmountInput
         label='You sell'
-        token={formData.assetIn}
+        token={formData.assetOut?.address}
+        amount={formData.amountOut}
+        onChange={(amount) =>
+          setFormData((prev) => ({
+            ...prev,
+            amountOut: amount
+          }))
+        }
       />
 
       <Stack
@@ -95,12 +277,14 @@ export const LimitOrderForm = () => {
             cursor: 'pointer',
             ':hover': { background: '#3A3E47' }
           }}
+          onClick={switchAsset}
         />
       </Stack>
 
       <LabelAssetAmountInput
         label='You buy'
-        token={formData.assetOut}
+        token={formData.assetIn?.address}
+        amount={formData.amountIn}
       />
 
       <Stack
@@ -109,12 +293,7 @@ export const LimitOrderForm = () => {
       >
         <IOSSwitchButton
           checked={formData.useMarketPrice}
-          onChange={() =>
-            setFormData({
-              ...formData,
-              useMarketPrice: !formData.useMarketPrice
-            })
-          }
+          onChange={() => onCheckUseMarketPrice(!formData.useMarketPrice)}
           label='Use Market Price'
         />
 
@@ -133,7 +312,7 @@ export const LimitOrderForm = () => {
             variant='body1'
             color='#BDC1CA'
           >
-            1 ETH = 4000 USDC
+            1 {assetPair?.baseSymbol} = {marketPrice} {assetPair?.quoteSymbol}
           </Typography>
         </Stack>
         <Stack
@@ -180,11 +359,16 @@ export const LimitOrderForm = () => {
           color: '#000',
           textTransform: 'capitalize',
           borderRadius: '8px',
-          mt: 5
+          mt: 5,
+          '& .MuiCircularProgress-root': {
+            color: '#68EB8E'
+          }
         }}
         onClick={onPlaceOrder}
+        disabled={btnDisabled}
+        loading={loading}
       >
-        Place Order
+        Create Order
       </Button>
     </Stack>
   )

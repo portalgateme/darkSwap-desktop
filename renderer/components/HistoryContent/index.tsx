@@ -6,56 +6,58 @@ import {
   TableBody,
   TableCell,
   TableRow,
-  Button
+  Button,
+  TablePagination
 } from '@mui/material'
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined'
 import SwapVertOutlinedIcon from '@mui/icons-material/SwapVertOutlined'
-
-const rows = [
-  {
-    createdAt: '2023-10-01 12:34:56',
-    orderId: 'ORD123456',
-    assetPair: 'BTC/USD',
-    amount: '0.5 BTC',
-    price: '$30,000',
-    network: 'Bitcoin',
-    status: 'Completed'
-  },
-  {
-    createdAt: '2023-10-02 14:20:30',
-    orderId: 'ORD123457',
-    assetPair: 'ETH/USD',
-    amount: '2 ETH',
-    price: '$2,000',
-    network: 'Ethereum',
-    status: 'Pending'
-  },
-  {
-    createdAt: '2023-10-03 09:15:45',
-    orderId: 'ORD123458',
-    assetPair: 'LTC/USD',
-    amount: '10 LTC',
-    price: '$150',
-    network: 'Litecoin',
-    status: 'Failed'
-  },
-  {
-    createdAt: '2023-10-04 11:05:20',
-    orderId: 'ORD123459',
-    assetPair: 'XRP/USD',
-    amount: '500 XRP',
-    price: '$0.50',
-    network: 'Ripple',
-    status: 'Completed'
-  }
-]
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
+import { useChainContext } from '../../contexts/ChainContext/hooks'
+import { useEffect, useState } from 'react'
+import { MyAssetsDto, OrderDto, OrderEventDto } from 'darkswap-client-core'
+import { OrderStatusLabel } from '../Label/OrderStatusLabel'
+import { NetworkLabel } from '../Label/NetworkLabel'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
+import { OrderDirection } from '../../types'
+import { ethers } from 'ethers'
+import { shorterAddress } from '../../utils/format'
 
 export const HistoryContent = () => {
+  const { chainId } = useChainContext()
+  const [listData, setListData] = useState<OrderEventDto[]>([])
+  const [pagination, setPagination] = useState({ page: 1, limit: 10 })
+
+  const fetchOrders = async (chainId: number, page: number, limit: number) => {
+    // @ts-ignore
+    const orders = await window.orderAPI.getOrderEventsByPage(
+      chainId,
+      page,
+      limit
+    )
+    console.log('Fetched orders:', orders)
+    setListData(orders)
+  }
+
+  useEffect(() => {
+    if (!chainId) return
+    fetchOrders(chainId, pagination.page, pagination.limit)
+  }, [chainId, pagination.page, pagination.limit])
+
+  const handlePageChange = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPagination((prev) => ({
+      ...prev,
+      page: newPage + 1
+    }))
+  }
+
   return (
     <Stack mt={2}>
       {/* Filter */}
 
-      <Stack
+      {/* <Stack
         width={'100%'}
         direction='row'
         justifyContent='flex-end'
@@ -86,7 +88,7 @@ export const HistoryContent = () => {
         >
           Sort
         </Button>
-      </Stack>
+      </Stack> */}
       {/* Table */}
       <TableContainer
         sx={{
@@ -108,20 +110,41 @@ export const HistoryContent = () => {
                 }
               }}
             >
-              <TableCell>Date</TableCell>
               <TableCell>Order Id</TableCell>
-              <TableCell>Asset Pair</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Network</TableCell>
+              <TableCell>Date</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Network</TableCell>
+              <TableCell>Wallet</TableCell>
             </TableRow>
           </TableHead>
           {/* Table Body */}
           <TableBody>
-            {rows.map((row, index) => (
+            {listData.length > 0 ? (
+              listData.map((row, index) => (
+                <TableRow
+                  key={index}
+                  sx={{
+                    'tr, th, td': {
+                      border: 'none',
+                      color: '#FFFFFF',
+                      fontSize: '14px'
+                    }
+                  }}
+                >
+                  <TableCell>{row.orderId}</TableCell>
+                  <TableCell>{row.createdAt.toString()}</TableCell>
+                  <TableCell>
+                    <OrderStatusLabel status={row.status} />
+                  </TableCell>
+
+                  <TableCell>
+                    <NetworkLabel chainId={row.chainId} />
+                  </TableCell>
+                  <TableCell>{shorterAddress(row.wallet)}</TableCell>
+                </TableRow>
+              ))
+            ) : (
               <TableRow
-                key={index}
                 sx={{
                   'tr, th, td': {
                     border: 'none',
@@ -130,20 +153,51 @@ export const HistoryContent = () => {
                   }
                 }}
               >
-                <TableCell>{row.createdAt}</TableCell>
-                <TableCell>{row.orderId}</TableCell>
-                <TableCell>{row.assetPair}</TableCell>
-                <TableCell>{row.amount}</TableCell>
-                <TableCell>{row.price}</TableCell>
-                <TableCell>{row.network}</TableCell>
-                <TableCell>{row.status}</TableCell>
+                <TableCell
+                  colSpan={6}
+                  align='center'
+                  sx={{ color: '#FFFFFF', fontSize: '14px' }}
+                >
+                  No order history available.
+                </TableCell>
               </TableRow>
-            ))}
+            )}
 
             {/* Add more rows as needed */}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Stack
+        mt={1}
+        alignItems='center'
+      >
+        <TablePagination
+          component='div'
+          count={-1} // Unknown total count
+          page={pagination.page - 1}
+          onPageChange={handlePageChange}
+          rowsPerPage={pagination.limit}
+          onRowsPerPageChange={(event) =>
+            setPagination((prev) => ({
+              ...prev,
+              limit: parseInt(event.target.value, 10),
+              page: 1
+            }))
+          }
+          rowsPerPageOptions={[5, 10]}
+          sx={{
+            color: 'white'
+          }}
+          slotProps={{
+            actions: {
+              nextButton: {
+                disabled: listData.length < pagination.limit
+              }
+            }
+          }}
+        />
+      </Stack>
     </Stack>
   )
 }
