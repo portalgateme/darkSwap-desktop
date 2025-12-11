@@ -16,12 +16,19 @@ export const Layout = ({
   children: React.ReactNode
 }) => {
   const [openApiKeyModal, setOpenApiKeyModal] = useState(false)
+  const [loading, setLoading] = useState(false)
   const { openAddModal, setOpenAddModal, onConnectWallet } = useAccountContext()
   const { apiKey, saveApiKey } = useConfigContext()
 
   const onSaveApiKey = async (key: string) => {
-    await saveApiKey(key)
-    setOpenApiKeyModal(false)
+    setLoading(true)
+    try {
+      await saveApiKey(key)
+    } catch (error) {
+      console.error('Error saving API key:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -63,6 +70,7 @@ export const Layout = ({
         open={openApiKeyModal}
         onClose={() => setOpenApiKeyModal(false)}
         onSubmit={onSaveApiKey}
+        loading={loading}
       />
     </Stack>
   )

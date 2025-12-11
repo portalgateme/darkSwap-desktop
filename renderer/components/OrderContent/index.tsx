@@ -27,6 +27,7 @@ import {
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { ethers } from 'ethers'
 import { NetworkLabel } from '../Label/NetworkLabel'
+import { useConfigContext } from '../../contexts/ConfigContext/hooks'
 
 const orderType = (type: OrderType) => {
   switch (type) {
@@ -57,7 +58,7 @@ export const OrderContent = () => {
   })
 
   const [loading, setLoading] = useState<string | boolean>(false)
-
+  const { apiKey } = useConfigContext()
   const { chainId } = useChainContext()
 
   const onOpenModal = () => {
@@ -165,7 +166,7 @@ export const OrderContent = () => {
           }}
           startIcon={<AddIcon />}
           onClick={onOpenModal}
-          disabled={!!loading}
+          disabled={!!loading || !apiKey}
         >
           Place Order
         </Button>
@@ -250,7 +251,7 @@ export const OrderContent = () => {
                           }
                         }}
                         onClick={() => onCancelOrder(row)}
-                        disabled={!!loading}
+                        disabled={!!loading || !apiKey}
                         loading={loading === row.orderId}
                       >
                         {'Cancel'}
