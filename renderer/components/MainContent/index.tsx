@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Button, Stack, Tooltip, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography
+} from '@mui/material'
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import { UserAssetTable } from '../Table/UserAssetTable'
@@ -18,6 +25,7 @@ import { useGetAssets } from '../../hooks/useGetAssets'
 import SyncIcon from '@mui/icons-material/Sync'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline'
+import { useConfigContext } from '../../contexts/ConfigContext/hooks'
 
 enum Modal {
   Deposit = 'DEPOSIT',
@@ -35,6 +43,7 @@ export const MainContent = () => {
   const { selectedAccount, setOpenAddModal } = useAccountContext()
   const { chainId, currentChain } = useChainContext()
   const { listData, fetchAssets, syncAssets } = useGetAssets()
+  const { isAuthenticated } = useConfigContext()
 
   const calculatePortfolioValue = async (assets: MyAssetsDto) => {
     if (!currentChain) return
@@ -188,7 +197,7 @@ export const MainContent = () => {
             }}
             endIcon={<FileDownloadOutlinedIcon />}
             onClick={onOpenDeposit}
-            disabled={loading}
+            disabled={loading || !isAuthenticated}
           >
             Deposit
           </Button>
@@ -202,7 +211,7 @@ export const MainContent = () => {
             }}
             endIcon={<FileUploadOutlinedIcon />}
             onClick={onOpenWithdraw}
-            disabled={loading}
+            disabled={loading || !isAuthenticated}
           >
             Withdraw
           </Button>
@@ -232,19 +241,23 @@ export const MainContent = () => {
           <Tooltip title='Sync your Total Portfolio Value to the latest amount'>
             <InfoOutlineIcon sx={{ color: '#68EB8E', fontSize: '20px' }} />
           </Tooltip>
-          <SyncIcon
-            sx={{
-              fill: '#F3F4F6',
-              cursor: 'pointer',
-              animation: loading ? 'spin 1s linear infinite' : 'none',
-              '@keyframes spin': {
-                '0%': { transform: 'rotate(0deg)' },
-                '100%': { transform: 'rotate(-360deg)' }
-              },
-              '&:hover': { rotate: '-180deg', transition: '0.3s' }
-            }}
+          <IconButton
             onClick={onSyncAssets}
-          />
+            disabled={loading || !isAuthenticated}
+          >
+            <SyncIcon
+              sx={{
+                cursor: loading || !isAuthenticated ? 'not-allowed' : 'pointer',
+                fill: '#F3F4F6',
+                animation: loading ? 'spin 1s linear infinite' : 'none',
+                '@keyframes spin': {
+                  '0%': { transform: 'rotate(0deg)' },
+                  '100%': { transform: 'rotate(-360deg)' }
+                },
+                '&:hover': { rotate: '-180deg', transition: '0.3s' }
+              }}
+            />
+          </IconButton>
         </Stack>
       </Stack>
 

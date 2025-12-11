@@ -58,7 +58,7 @@ export const OrderContent = () => {
   })
 
   const [loading, setLoading] = useState<string | boolean>(false)
-  const { apiKey } = useConfigContext()
+  const { isAuthenticated } = useConfigContext()
   const { chainId } = useChainContext()
 
   const onOpenModal = () => {
@@ -166,7 +166,7 @@ export const OrderContent = () => {
           }}
           startIcon={<AddIcon />}
           onClick={onOpenModal}
-          disabled={!!loading || !apiKey}
+          disabled={!!loading || !isAuthenticated}
         >
           Place Order
         </Button>
@@ -251,7 +251,7 @@ export const OrderContent = () => {
                           }
                         }}
                         onClick={() => onCancelOrder(row)}
-                        disabled={!!loading || !apiKey}
+                        disabled={!!loading || !isAuthenticated}
                         loading={loading === row.orderId}
                       >
                         {'Cancel'}
