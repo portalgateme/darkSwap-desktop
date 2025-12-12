@@ -12,7 +12,7 @@ extraResources:
     to: 'config.yaml'
 win:
   target:
-    - target: 'msi'
+    - target: 'nsis'
       arch:
         - 'x64'
   icon: 'assets/icon.ico'

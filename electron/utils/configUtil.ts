@@ -92,23 +92,23 @@ export class ConfigLoader {
   }
 }
 
-export function configToDarkSwapConfig(config: Config): DarkSwapConfig {
-  return {
-    wallets: config.wallets.map((wallet) => ({
-      type: wallet.type,
-      name: wallet.name,
-      address: wallet.address,
-      privateKey: wallet.privateKey
-    })),
-    chainRpcs: config.chainRpcs.map((chainRpc) => ({
-      chainId: chainRpc.chainId,
-      rpcUrl: chainRpc.rpcUrl
-    })),
-    dbFilePath: config.dbFilePath,
-    bookNodeSocketUrl: config.bookNodeSocketUrl,
-    bookNodeApiUrl: config.bookNodeApiUrl,
-    bookNodeApiKey: config.bookNodeApiKey,
-    userSwapRelayerAddress: config.userSwapRelayerAddress,
-    userSwapRelayerPrivateKey: config.userSwapRelayerPrivateKey
-  }
-}
+// export function configToDarkSwapConfig(config: Config): DarkSwapConfig {
+//   return {
+//     wallets: config.wallets.map((wallet) => ({
+//       type: wallet.type,
+//       name: wallet.name,
+//       address: wallet.address,
+//       privateKey: wallet.privateKey
+//     })),
+//     chainRpcs: config.chainRpcs.map((chainRpc) => ({
+//       chainId: chainRpc.chainId,
+//       rpcUrl: chainRpc.rpcUrl
+//     })),
+//     dbFilePath: config.dbFilePath,
+//     bookNodeSocketUrl: config.bookNodeSocketUrl,
+//     bookNodeApiUrl: config.bookNodeApiUrl,
+//     bookNodeApiKey: config.bookNodeApiKey,
+//     userSwapRelayerAddress: config.userSwapRelayerAddress,
+//     userSwapRelayerPrivateKey: config.userSwapRelayerPrivateKey
+//   }
+// }

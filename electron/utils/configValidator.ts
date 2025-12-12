@@ -43,12 +43,12 @@ const FireblocksConfigSchema = z.object({
 export const ConfigSchema = z
   .object({
     wallets: z.array(WalletSchema).optional().default([]),
-    singularityRelayers: z.array(RelayerSchema),
+    singularityRelayers: z.array(RelayerSchema).optional(),
     chainRpcs: z.array(ChainRpcSchema),
     dbFilePath: dbFilePathScema,
     bookNodeSocketUrl: bookNodeSocketUrlScema,
     bookNodeApiUrl: bookNodeApiUrlSchema,
-    bookNodeApiKey: bookNodeApiKeySchema,
+    bookNodeApiKey: bookNodeApiKeySchema.optional(),
     userSwapRelayerAddress: userSwapRelayerAddressSchema,
     userSwapRelayerPrivateKey: userSwapRelayerPrivateKeySchema,
     proofOptions: ProofOptionsSchema.optional(),
