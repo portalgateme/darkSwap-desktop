@@ -1,14 +1,15 @@
 appId: 'com.darkswap.desktop'
 productName: 'Darkswap'
 directories:
-  output: 'release'
+  output: 'release/prod'
 asarUnpack:
   - '**/node_modules/better-sqlite3/**'
 files:
   - 'dist/**/**/*'
   - 'package.json'
 extraResources:
-  - 'config.yaml'
+  - from: 'config/prod/config.yaml'
+    to: 'config.yaml'
 win:
   target:
     - target: 'msi'
@@ -19,3 +20,6 @@ mac:
   target:
     - 'dmg'
   icon: 'assets/icon.icns'
+linux:
+  target:
+    - 'AppImage'

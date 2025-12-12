@@ -1,13 +1,13 @@
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
 import serve from 'electron-serve'
+import dbInstance from './database'
 import { registerAccountHandlers } from './handlers/accountHandler'
 import { registerAssetPairHandlers } from './handlers/assetPairHandler'
 import { registerOrderHandlers } from './handlers/orderHandler'
 import { registerRPCManagerHandlers } from './handlers/rpcManagerHandler'
 import { registerConfigHandlers } from './handlers/configHandler'
 
-// Configure electron-serve để serve static files
 const appServe = app.isPackaged
   ? serve({ directory: path.join(__dirname, '../renderer/out') })
   : null

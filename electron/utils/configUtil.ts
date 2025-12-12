@@ -30,8 +30,14 @@ export class ConfigLoader {
   private loadConfig() {
     try {
       const configPath = app.isPackaged
-        ? path.join(process.resourcesPath, 'config.yaml')
-        : path.join(process.cwd(), 'config.yaml')
+        ? // Build version
+          path.join(process.resourcesPath, 'config.yaml')
+        : // Dev version
+
+          path.join(
+            process.cwd(),
+            this.parseCommandLineArgs() || 'config/testnet/config.yaml'
+          )
 
       const fileContent = fs.readFileSync(configPath, 'utf8')
       this.config = yaml.load(fileContent) as Config

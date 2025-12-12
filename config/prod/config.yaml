@@ -1,0 +1,21 @@
+singularityRelayers:
+  - relayerName: 'Custom HardhatArb'
+    relayerAddress: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+    hostUrl: 'https://app.dev.portalgate.me:18000'
+    chainId: 31337
+
+chainRpcs:
+  - chainId: 845320009
+    rpcUrl: 'https://horizen-rpc-testnet.appchain.base.org/'
+  - chainId: 11155111
+    rpcUrl: 'https://api.zan.top/eth-sepolia'
+
+dbFilePath: ./db.sqlite3
+bookNodeSocketUrl: 'ws://stage.portalgate.me:20002'
+bookNodeApiUrl: 'https://stage.portalgate.me:20001'
+bookNodeApiKey: 'AK-mat-test'
+
+fireblocks:
+  privateKey: 'your-api-key-here'
+  apiKey: 'your-api-secret-here'
+  apiBaseUrl: 'https://api.fireblocks.io'

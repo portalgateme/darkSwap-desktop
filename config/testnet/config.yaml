@@ -1,0 +1,40 @@
+# wallets:
+# - name: 'hardhat1'
+#   address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+#   privateKey: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+#   type: 'privateKey'
+# - name: 'fireblocks1'
+#   address: '0x1234567890123456789012345678901234567890'
+#   type: 'fireblocks'
+
+singularityRelayers:
+  - relayerName: 'Custom HardhatArb'
+    relayerAddress: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+    hostUrl: 'https://app.dev.portalgate.me:18000'
+    chainId: 31337
+
+chainRpcs:
+  # - chainId: 31338
+  #   rpcUrl: 'https://app.dev.portalgate.me:38545'
+  # - chainId: 31337
+  #   rpcUrl: 'https://app.dev.portalgate.me:18545'
+  - chainId: 845320009
+    rpcUrl: 'https://horizen-rpc-testnet.appchain.base.org/'
+  - chainId: 11155111
+    rpcUrl: 'https://api.zan.top/eth-sepolia'
+
+dbFilePath: ./db.sqlite3
+bookNodeSocketUrl: 'ws://stage.portalgate.me:20002'
+bookNodeApiUrl: 'https://stage.portalgate.me:20001'
+bookNodeApiKey: 'AK-mat-test'
+
+# userSwapRelayerAddress: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+# userSwapRelayerPrivateKey: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+# proofOptions:
+#   threads: 1
+#   memory: 8192
+
+fireblocks:
+  privateKey: 'your-api-key-here'
+  apiKey: 'your-api-secret-here'
+  apiBaseUrl: 'https://api.fireblocks.io'
