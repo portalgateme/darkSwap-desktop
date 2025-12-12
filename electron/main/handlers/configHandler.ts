@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import dbInstance, { config, db, dbPath } from '../database'
+import { config, db, dbPath } from '../database'
 import { DarkSwapClientCore, DarkSwapConfig } from 'darkswap-client-core'
 
 export function registerConfigHandlers() {
