@@ -1,0 +1,104 @@
+name: Build Desktop App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'yarn'
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Prepare assets directory and icons
+      run: |
+        mkdir -p assets
+        if [ ! -f assets/icon.ico ]; then
+          echo "Warning: assets/icon.ico not found. Using fallback."
+          # Copy existing logo as fallback
+          cp renderer/public/images/logo.png assets/icon.png 2>/dev/null || echo "No fallback logo found"
+        fi
+        if [ ! -f assets/icon.icns ]; then
+          echo "Warning: assets/icon.icns not found. Using fallback."
+          # Copy existing logo as fallback
+          cp renderer/public/images/logo.png assets/icon.png 2>/dev/null || echo "No fallback logo found"
+        fi
+
+    - name: Build testnet version
+      run: yarn build:testnet
+
+    - name: Build prod version
+      run: yarn build:prod
+
+    - name: Upload testnet artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: darkswap-testnet-macos
+        path: release/testnet/
+
+    - name: Upload prod artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: darkswap-prod-macos
+        path: release/prod/
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'yarn'
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Prepare assets directory and icons
+      run: |
+        mkdir -p assets
+        if [ ! -f assets/icon.ico ]; then
+          echo "Warning: assets/icon.ico not found. Using fallback."
+          # Copy existing logo as fallback
+          cp renderer/public/images/logo.png assets/icon.png 2>/dev/null || echo "No fallback logo found"
+        fi
+        if [ ! -f assets/icon.icns ]; then
+          echo "Warning: assets/icon.icns not found. Using fallback."
+          # Copy existing logo as fallback
+          cp renderer/public/images/logo.png assets/icon.png 2>/dev/null || echo "No fallback logo found"
+        fi
+
+    - name: Build testnet version
+      run: yarn build:testnet
+
+    - name: Build prod version
+      run: yarn build:prod
+
+    - name: Upload testnet artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: darkswap-testnet-windows
+        path: release/testnet/
+
+    - name: Upload prod artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: darkswap-prod-windows
+        path: release/prod/
