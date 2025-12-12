@@ -30,8 +30,14 @@ export class ConfigLoader {
   private loadConfig() {
     try {
       const configPath = app.isPackaged
-        ? path.join(process.resourcesPath, 'config.yaml')
-        : path.join(process.cwd(), 'config.yaml')
+        ? // Build version
+          path.join(process.resourcesPath, 'config.yaml')
+        : // Dev version
+
+          path.join(
+            process.cwd(),
+            this.parseCommandLineArgs() || 'config/testnet/config.yaml'
+          )
 
       const fileContent = fs.readFileSync(configPath, 'utf8')
       this.config = yaml.load(fileContent) as Config
@@ -86,23 +92,23 @@ export class ConfigLoader {
   }
 }
 
-export function configToDarkSwapConfig(config: Config): DarkSwapConfig {
-  return {
-    wallets: config.wallets.map((wallet) => ({
-      type: wallet.type,
-      name: wallet.name,
-      address: wallet.address,
-      privateKey: wallet.privateKey
-    })),
-    chainRpcs: config.chainRpcs.map((chainRpc) => ({
-      chainId: chainRpc.chainId,
-      rpcUrl: chainRpc.rpcUrl
-    })),
-    dbFilePath: config.dbFilePath,
-    bookNodeSocketUrl: config.bookNodeSocketUrl,
-    bookNodeApiUrl: config.bookNodeApiUrl,
-    bookNodeApiKey: config.bookNodeApiKey,
-    userSwapRelayerAddress: config.userSwapRelayerAddress,
-    userSwapRelayerPrivateKey: config.userSwapRelayerPrivateKey
-  }
-}
+// export function configToDarkSwapConfig(config: Config): DarkSwapConfig {
+//   return {
+//     wallets: config.wallets.map((wallet) => ({
+//       type: wallet.type,
+//       name: wallet.name,
+//       address: wallet.address,
+//       privateKey: wallet.privateKey
+//     })),
+//     chainRpcs: config.chainRpcs.map((chainRpc) => ({
+//       chainId: chainRpc.chainId,
+//       rpcUrl: chainRpc.rpcUrl
+//     })),
+//     dbFilePath: config.dbFilePath,
+//     bookNodeSocketUrl: config.bookNodeSocketUrl,
+//     bookNodeApiUrl: config.bookNodeApiUrl,
+//     bookNodeApiKey: config.bookNodeApiKey,
+//     userSwapRelayerAddress: config.userSwapRelayerAddress,
+//     userSwapRelayerPrivateKey: config.userSwapRelayerPrivateKey
+//   }
+// }
