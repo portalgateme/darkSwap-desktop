@@ -5,11 +5,17 @@ import { DarkSwapClientCore, DarkSwapConfig } from 'darkswap-client-core'
 import { ConfigLoader } from '../utils/configUtil'
 import { app } from 'electron'
 
+export const config = ConfigLoader.getInstance().getConfig()
+
+if (!config) {
+  throw new Error('Failed to load configuration')
+}
+
 const userDataPath = app.getPath('userData')
 if (!fs.existsSync(userDataPath))
   fs.mkdirSync(userDataPath, { recursive: true })
 
-export const dbPath = path.join(userDataPath, 'app.db')
+export const dbPath = path.join(userDataPath, config.dbFilePath)
 console.log('SQLite path:', dbPath)
 export const db = new Database(dbPath, { verbose: console.log })
 
@@ -54,12 +60,6 @@ const configs = db.prepare('SELECT * FROM configs').all() as Array<{
 
 console.log('Loaded wallets from DB:', wallets)
 console.log('Loaded configs from DB:', configs)
-
-export const config = ConfigLoader.getInstance().getConfig()
-
-if (!config) {
-  throw new Error('Failed to load configuration')
-}
 
 const apiKey = configs.find((c) => c.key === 'api_key')?.value || ''
 
