@@ -15,7 +15,7 @@ export const WarningAlert = ({
       direction={'row'}
       spacing={2}
       sx={{
-        width: 'calc(100% - 32px)',
+        width: 'calc(100% - 16px - 16px - 2px)', // full width minus padding and border
         borderRadius: '10px',
         border: '1px solid #E0E0E0',
         background: '#0C1114',
