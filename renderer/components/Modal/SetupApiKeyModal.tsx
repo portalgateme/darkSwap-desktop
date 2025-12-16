@@ -12,6 +12,7 @@ import {
   InputBase
 } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
+import { WarningAlert } from '../Alert'
 
 interface SetupApiKeyModalProps {
   open: boolean
@@ -91,6 +92,8 @@ const SetupApiKeyModal: React.FC<SetupApiKeyModalProps> = ({
               color: 'white'
             }}
           />
+
+          <WarningAlert text='Each API key is bound to one desktop app. Using the same wallet with multiple API keys on different desktops may cause errors.' />
         </DialogContent>
         <DialogActions>
           <Button
