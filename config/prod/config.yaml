@@ -2,6 +2,6 @@ chainRpcs:
   - chainId: 8453
     rpcUrl: 'https://base-rpc.publicnode.com'
 
-dbFilePath: 'darkSwap-prod.db'
+dbFilePath: 'app.db'
 bookNodeSocketUrl: 'wss://ws.bn.darkswap.me'
 bookNodeApiUrl: 'https://bn.darkswap.me'
