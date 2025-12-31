@@ -108,13 +108,14 @@ export class DatabaseService {
     chainId: number,
     asset: string
   ): Promise<NoteDto[]> {
-    const query = `SELECT * FROM NOTES WHERE wallet = ? AND chainId = ? AND asset = ? AND status = ?`
+    const query = `SELECT * FROM NOTES WHERE wallet = ? AND chainId = ? AND asset = ? AND (status = ? OR status = ?)`
     const stmt = this.db.prepare(query)
     const rows = stmt.all(
       walletAddress.toLowerCase(),
       chainId,
       asset.toLowerCase(),
-      NoteStatus.ACTIVE
+      NoteStatus.ACTIVE,
+      NoteStatus.CREATED
     ) as NoteEntity[]
 
     const notes = rows.map((row) => ({
@@ -175,7 +176,6 @@ export class DatabaseService {
       walletAddress.toLowerCase(),
       chainId,
       NoteStatus.ACTIVE,
-      NoteStatus.LOCKED,
       NoteStatus.CREATED
     ) as NoteEntity[]
 

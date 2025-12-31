@@ -229,6 +229,8 @@ export class OrderService {
       darkSwapContext.signature
     )
 
+    this.noteService.addNote(newBalance, darkSwapContext, false)
+
     const tx = await proCancelOrderService.execute(context)
     const receipt = await darkSwapContext.darkSwap.provider.waitForTransaction(
       tx,
@@ -239,7 +241,8 @@ export class OrderService {
     }
 
     this.noteService.setNoteUsed(noteToProcess as DarkSwapNote, darkSwapContext)
-    this.noteService.addNote(newBalance, darkSwapContext, false, tx)
+    this.noteService.setNoteUsed(currentBalanceNote, darkSwapContext)
+    this.noteService.setNoteActive(newBalance, darkSwapContext, tx)
 
     const cancelOrderDto = {
       orderId: orderId,
