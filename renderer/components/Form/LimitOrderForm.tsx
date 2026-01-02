@@ -246,7 +246,10 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
               width: '100%'
             }}
           />
-          <Typography color='#F3F4F6B8'>{assetPair?.id}</Typography>
+          <Typography color='#F3F4F6B8'>
+            {assetPair ? assetPair.quoteSymbol : ''}/
+            {assetPair ? assetPair.baseSymbol : ''}
+          </Typography>
         </Stack>
       </Stack>
 
