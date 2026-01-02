@@ -20,7 +20,7 @@ export const baseTokens = [
     name: 'Horizen',
     symbol: 'ZEN',
     decimals: 18,
-    logoURI: '/token/ZEN.svg',
+    logoURI: '/tokens/ZEN.svg',
     isTop: true
   },
   {
@@ -28,7 +28,7 @@ export const baseTokens = [
     name: 'USDC',
     symbol: 'USDC',
     decimals: 6,
-    logoURI: '/token/USDC.png',
+    logoURI: '/tokens/USDC.png',
     isTop: true
   },
   {
@@ -36,7 +36,7 @@ export const baseTokens = [
     name: 'USDT',
     symbol: 'USDT',
     decimals: 6,
-    logoURI: '/token/USDT.png',
+    logoURI: '/tokens/USDT.png',
     isTop: true
   }
 ]

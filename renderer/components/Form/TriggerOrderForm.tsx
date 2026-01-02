@@ -93,10 +93,18 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
   }, [assetPair])
 
   useEffect(() => {
+    if (!formData.amountOut) {
+      setFormData((prev) => ({
+        ...prev,
+        amountIn: ''
+      }))
+      return
+    }
     if (formData.amountOut && formData.price && formData.assetIn) {
       const amountIn = safeAmountWithDecimals(
-        (
-          parseFloat(formData.amountOut) * parseFloat(formData.price)
+        (formData.orderDirection === OrderDirection.SELL
+          ? parseFloat(formData.amountOut) * parseFloat(formData.price)
+          : parseFloat(formData.amountOut) / parseFloat(formData.price)
         ).toString(),
         formData.assetIn.decimals
       )
@@ -182,8 +190,8 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
         prev.orderDirection === OrderDirection.BUY
           ? OrderDirection.SELL
           : OrderDirection.BUY,
-      amountIn: prev.amountOut,
-      amountOut: prev.amountIn
+      amountIn: '',
+      amountOut: ''
     }))
   }
 
