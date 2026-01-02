@@ -345,14 +345,15 @@ export class DatabaseService {
     noteCommitment: bigint,
     txHash: string
   ) {
-    const query = `UPDATE NOTES SET txHashCreated = ?, status = ? WHERE wallet = ? AND chainId = ? AND noteCommitment = ?`
+    const query = `UPDATE NOTES SET txHashCreated = ?, status = ? WHERE wallet = ? AND chainId = ? AND noteCommitment = ? AND status = ?`
     const stmt = this.db.prepare(query)
     stmt.run(
       txHash,
       NoteStatus.ACTIVE,
       wallet.toLowerCase(),
       chainId,
-      noteCommitment.toString()
+      noteCommitment.toString(),
+      NoteStatus.CREATED
     )
   }
 
