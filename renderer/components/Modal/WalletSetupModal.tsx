@@ -8,6 +8,7 @@ import {
 } from '@mui/material'
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined'
 import { useState } from 'react'
+import { WarningAlert } from '../Alert'
 
 interface WalletSetupModalProps {
   open: boolean
@@ -135,31 +136,14 @@ export const WalletSetupModal = ({
         />
 
         {/* Alert card */}
-        <Stack
-          direction={'row'}
-          spacing={2}
-          sx={{
-            borderRadius: '10px',
-            border: '1px solid #E0E0E0',
-            background: '#0C1114',
-            p: 2,
-            mt: 2
-          }}
-        >
-          <WarningAmberOutlinedIcon sx={{ color: '#F3F4F6', fontSize: 20 }} />
-          <Stack>
-            <Typography color='white'>Important Security Notice:</Typography>
-            <Typography
-              variant='body2'
-              color='#BDC1CA'
-            >
-              Never share your private key or recovery phrase with anyone. This
+        <WarningAlert
+          title='Important Security Notice:'
+          text='Never share your private key or recovery phrase with anyone. This
               is the ultimate access to your funds. Store it offline and in
               multiple secure locations. Digital copies are vulnerable. Lost
-              keys cannot be recovered by anyone.
-            </Typography>
-          </Stack>
-        </Stack>
+              keys cannot be recovered by anyone.'
+        />
+
         <Button
           variant='contained'
           sx={{

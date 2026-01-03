@@ -4,7 +4,7 @@ export const baseTokens = [
     symbol: 'ETH',
     decimals: 18,
     address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-    logoURI: '/images/token/ETH.png',
+    logoURI: '/tokens/ETH.png',
     isTop: true
   },
   // {
@@ -20,7 +20,7 @@ export const baseTokens = [
     name: 'Horizen',
     symbol: 'ZEN',
     decimals: 18,
-    logoURI: '/images/token/ZEN.svg',
+    logoURI: '/tokens/ZEN.svg',
     isTop: true
   },
   {
@@ -28,7 +28,7 @@ export const baseTokens = [
     name: 'USDC',
     symbol: 'USDC',
     decimals: 6,
-    logoURI: '/images/token/USDC.png',
+    logoURI: '/tokens/USDC.png',
     isTop: true
   },
   {
@@ -36,7 +36,7 @@ export const baseTokens = [
     name: 'USDT',
     symbol: 'USDT',
     decimals: 6,
-    logoURI: '/images/token/USDT.png',
+    logoURI: '/tokens/USDT.png',
     isTop: true
   }
 ]

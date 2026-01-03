@@ -195,7 +195,9 @@ export const OrderContent = () => {
               }}
             >
               <TableCell>Date</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>Pair Id</TableCell>
+              <TableCell>Direction</TableCell>
+              <TableCell align='center'>Status</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Amount</TableCell>
               <TableCell>Price</TableCell>
@@ -220,7 +222,11 @@ export const OrderContent = () => {
                   }}
                 >
                   <TableCell>{row.events[0].createdAt.toString()}</TableCell>
+                  <TableCell>{row.assetPairId}</TableCell>
                   <TableCell>
+                    {row.orderDirection === OrderDirection.BUY ? 'Buy' : 'Sell'}
+                  </TableCell>
+                  <TableCell align='center'>
                     <OrderStatusLabel status={row.events[0].status} />
                   </TableCell>
                   <TableCell>{orderType(row.orderType)}</TableCell>
