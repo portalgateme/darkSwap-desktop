@@ -225,7 +225,11 @@ export class SettlementService {
   }
 
   async bobPostSettlement(orderInfo: OrderDto, txHash: string) {
-    //TODO
+    const matchedOrderDetail =
+      await this.booknodeService.getMatchedOrderDetails(orderInfo)
+    const bobSwapMessage = deserializeDarkSwapMessage(
+      matchedOrderDetail.bobSwapMessage
+    )
     const outgoingNote = await this.dbService.getNoteByCommitment(
       orderInfo.noteCommitment
     )
@@ -242,9 +246,9 @@ export class SettlementService {
       orderInfo.orderId,
       txHash
     )
-    if (orderInfo.incomingNoteCommitment) {
+    if (bobSwapMessage.inNote) {
       const incomingNote = await this.dbService.getNoteByCommitment(
-        orderInfo.incomingNoteCommitment
+        bobSwapMessage.inNote.note.toString()
       )
       await this.noteService.setNoteActive(
         this.noteDtoToNote(incomingNote),
@@ -291,6 +295,16 @@ export class SettlementService {
   }
 
   async bobConfirm(orderInfo: OrderDto) {
+    //get orderdetail from bookNode
+    const orderDetail = await this.booknodeService.getMatchedOrderDetails(
+      orderInfo
+    )
+    if (orderDetail.bobSwapMessage) {
+      //just skip it
+      console.log('Order ', orderInfo.orderId, ' has already been confirmed')
+      return
+    }
+
     const assetPair = await this.dbService.getAssetPairById(
       orderInfo.assetPairId,
       orderInfo.chainId
@@ -327,6 +341,10 @@ export class SettlementService {
     )
 
     this.noteService.addNote(darkSwapMessage.inNote, darkSwapContext, false)
+    this.dbService.updateOrderIncomingNoteCommitment(
+      orderInfo.orderId,
+      darkSwapMessage.inNote.note
+    )
 
     const bobConfirmDto = {
       chainId: orderInfo.chainId,

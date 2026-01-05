@@ -1,0 +1,7 @@
+chainRpcs:
+  - chainId: 31337
+    rpcUrl: 'http://app.dev.portalgate.me:18544'
+
+dbFilePath: 'darkSwap-dev.db'
+bookNodeSocketUrl: 'wss://app.dev.portalgate.me:13001'
+bookNodeApiUrl: 'https://app.dev.portalgate.me:13000'
