@@ -24,6 +24,7 @@ import { NotesJoinService } from '../common/notesJoin.service'
 import { NoteService } from '../common/note.service'
 import { Logger } from 'tslog'
 import { RpcManager } from '../common/rpcManager'
+import { checkPrice } from '../utils/priceUtil'
 
 export class OrderService {
   private readonly logger = new Logger({ name: OrderService.name })
@@ -71,6 +72,32 @@ export class OrderService {
       orderDto.assetPairId,
       orderDto.chainId
     )
+
+    if (!assetPair) {
+      throw new DarkSwapError('Asset pair not found')
+    }
+
+    const amountQuote =
+      orderDto.orderDirection === OrderDirection.BUY
+        ? BigInt(orderDto.amountOut)
+        : BigInt(orderDto.amountIn)
+    const amountBase =
+      orderDto.orderDirection === OrderDirection.BUY
+        ? BigInt(orderDto.amountIn)
+        : BigInt(orderDto.amountOut)
+
+    if (
+      !checkPrice(
+        amountBase,
+        amountQuote,
+        assetPair.baseDecimal,
+        assetPair.quoteDecimal,
+        Number(orderDto.price)
+      )
+    ) {
+      throw new DarkSwapError('Price not match with amountOut and amountIn')
+    }
+
     const outAsset =
       orderDto.orderDirection === OrderDirection.BUY
         ? assetPair.quoteAddress
@@ -172,6 +199,36 @@ export class OrderService {
     } else if (order.status != OrderStatus.OPEN) {
       throw new DarkSwapError('Order is not in open status')
     }
+
+    const assetPair = await this.dbService.getAssetPairById(
+      order.assetPairId,
+      order.chainId
+    )
+    if (!assetPair) {
+      throw new DarkSwapError('Asset pair not found')
+    }
+
+    const amountQuote =
+      order.orderDirection === OrderDirection.BUY
+        ? BigInt(order.amountOut)
+        : BigInt(updatePriceDto.amountIn)
+    const amountBase =
+      order.orderDirection === OrderDirection.BUY
+        ? BigInt(updatePriceDto.amountIn)
+        : BigInt(order.amountOut)
+
+    if (
+      !checkPrice(
+        amountBase,
+        amountQuote,
+        assetPair.baseDecimal,
+        assetPair.quoteDecimal,
+        Number(updatePriceDto.price)
+      )
+    ) {
+      throw new DarkSwapError('Price not match with amountOut and amountIn')
+    }
+
     await this.bookNodeService.updateOrderPrice(updatePriceDto)
     await this.dbService.updateOrderPrice(
       updatePriceDto.orderId,
