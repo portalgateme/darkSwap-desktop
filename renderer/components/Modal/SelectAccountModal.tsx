@@ -17,7 +17,8 @@ import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { Wallet } from '../../types'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { ethers } from 'ethers'
-
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 interface SelectAccountModalProps {
   open: boolean
   onClose: () => void
@@ -30,10 +31,12 @@ export const SelectAccountModal = ({
   onSelectAccount
 }: SelectAccountModalProps) => {
   const [search, setSearch] = useState<string>('')
+  const [balances, setBalances] = useState<Record<string, string>>({})
   const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
   }
-  const { accounts, setOpenAddModal } = useAccountContext()
+  const { accounts, setOpenAddModal, onRemoveAccount, selectedAccount } =
+    useAccountContext()
   const { currentChain } = useChainContext()
 
   const filteredAccounts = accounts.filter((account) =>
@@ -46,12 +49,25 @@ export const SelectAccountModal = ({
   }
 
   const balanceOfWallet = async (address: string) => {
-    if (!currentChain) return 0
+    if (!currentChain) return '0'
     const balance = await new ethers.JsonRpcProvider(
       currentChain.rpcUrl
     ).getBalance(address)
-    return ethers.formatEther(balance)
+    return Number(ethers.formatEther(balance)).toFixed(6)
   }
+
+  useEffect(() => {
+    const fetchBalances = async () => {
+      const newBalances: Record<string, string> = {}
+      for (const account of filteredAccounts) {
+        newBalances[account.address] = await balanceOfWallet(account.address)
+      }
+      setBalances(newBalances)
+    }
+    if (open && currentChain) {
+      fetchBalances()
+    }
+  }, [open, currentChain, filteredAccounts])
   return (
     <Modal
       open={open}
@@ -113,38 +129,56 @@ export const SelectAccountModal = ({
               key={index}
               direction={'row'}
               alignItems={'center'}
+              justifyContent='space-between'
               sx={{
-                cursor: 'pointer',
                 padding: '12px',
                 borderRadius: '4px',
                 background: '#323743'
               }}
-              onClick={() => onSelectAccount && onSelectAccount(account)}
             >
-              {/* Avatar */}
-              <Avatar>{account.name.substring(0, 2)}</Avatar>
-              <Stack ml={2}>
+              <Stack
+                flex={1}
+                direction={'row'}
+                alignItems='center'
+                justifyContent={'space-between'}
+                onClick={() => onSelectAccount && onSelectAccount(account)}
+              >
+                {/* Avatar */}
+                <Avatar>{account.name.substring(0, 2)}</Avatar>
+                <Stack ml={2}>
+                  <Typography
+                    variant='body2'
+                    color='white'
+                  >
+                    {account.name}
+
+                    {selectedAccount?.id === account.id && (
+                      <CheckCircleIcon
+                        sx={{ ml: 1, fontSize: 16, fill: '#68EB8E' }}
+                      />
+                    )}
+                  </Typography>
+                  <Typography
+                    variant='caption'
+                    color='#D0D0D0'
+                  >
+                    {shorterAddress(account.address)}
+                  </Typography>
+                </Stack>
+
                 <Typography
-                  variant='body2'
+                  variant='body1'
                   color='white'
+                  ml={'auto'}
                 >
-                  {account.name}
-                </Typography>
-                <Typography
-                  variant='caption'
-                  color='#D0D0D0'
-                >
-                  {shorterAddress(account.address)}
+                  {balances[account.address] || '0'}
                 </Typography>
               </Stack>
 
-              <Typography
-                variant='body1'
-                color='white'
-                ml={'auto'}
-              >
-                {balanceOfWallet(account.address)}
-              </Typography>
+              <DeleteOutlineIcon
+                sx={{ fill: '#FF0000', cursor: 'pointer', ml: '16px' }}
+                onClick={() => onRemoveAccount(account.id)}
+              />
             </Stack>
           ))}
         </Stack>

@@ -26,6 +26,7 @@ import SyncIcon from '@mui/icons-material/Sync'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline'
 import { useConfigContext } from '../../contexts/ConfigContext/hooks'
+import { useToast } from '../../contexts/ToastContext'
 
 enum Modal {
   Deposit = 'DEPOSIT',
@@ -44,6 +45,7 @@ export const MainContent = () => {
   const { chainId, currentChain } = useChainContext()
   const { listData, fetchAssets, syncAssets } = useGetAssets()
   const { isAuthenticated } = useConfigContext()
+  const { showSuccess, showError, showLoading, hideToast } = useToast()
 
   const calculatePortfolioValue = async (assets: MyAssetsDto) => {
     if (!currentChain) return
@@ -89,10 +91,13 @@ export const MainContent = () => {
   ) => {
     setError(null)
     setLoading(true)
+    const toastId = showLoading('Processing deposit...')
     try {
       //@ts-ignore
       await window.accountAPI.deposit(chainId, wallet.address, asset, amount)
       await fetchAssets(chainId, wallet.address)
+      hideToast(toastId)
+      showSuccess('Deposit successful!')
       onCloseModal()
     } catch (error) {
       console.error('Deposit failed:', error)
@@ -100,6 +105,8 @@ export const MainContent = () => {
         'Deposit failed: ' +
           (error instanceof Error ? error.message : String(error))
       )
+      hideToast(toastId)
+      showError('Deposit failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -109,15 +116,20 @@ export const MainContent = () => {
     if (!selectedAccount || !chainId) return
     setLoading(true)
     setError(null)
+    const toastId = showLoading('Syncing assets...')
     try {
       //@ts-ignore
       await syncAssets(selectedAccount.address, chainId)
+      hideToast(toastId)
+      showSuccess('Assets synced successfully!')
     } catch (error) {
       console.error('Sync assets failed:', error)
       setError(
         'Sync assets failed: ' +
           (error instanceof Error ? error.message : String(error))
       )
+      hideToast(toastId)
+      showError('Failed to sync assets. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -136,10 +148,13 @@ export const MainContent = () => {
     if (!listData || !chainId) return
     setError(null)
     setLoading(true)
+    const toastId = showLoading('Processing withdraw...')
     try {
       // @ts-ignore
       await window.accountAPI.withdraw(chainId, wallet.address, asset, amount)
       await fetchAssets(chainId, wallet.address)
+      hideToast(toastId)
+      showSuccess('Withdraw successful!')
       onCloseModal()
     } catch (error) {
       console.error('Withdraw failed:', error)
@@ -147,6 +162,8 @@ export const MainContent = () => {
         'Withdraw failed: ' +
           (error instanceof Error ? error.message : String(error))
       )
+      hideToast(toastId)
+      showError('Withdraw failed. Please try again.')
     } finally {
       setLoading(false)
     }
