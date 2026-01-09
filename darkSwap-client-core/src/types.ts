@@ -1,210 +1,211 @@
-
 export enum ChainId {
-    HARDHAT = 31337,
-    HARDHAT_ARBITRUM = 31338,
-    HARDHAT_BASE = 31339,
-    MAINNET = 1,
-    SEPOLIA = 11155111,
-    HORIZEN_TESTNET = 845320009,
-    ARBITRUM_ONE = 42161,
-    BASE = 8453,
+  HARDHAT = 31337,
+  HARDHAT_ARBITRUM = 31338,
+  HARDHAT_BASE = 31339,
+  MAINNET = 1,
+  SEPOLIA = 11155111,
+  HORIZEN_TESTNET = 845320009,
+  ARBITRUM_ONE = 42161,
+  BASE = 8453
 }
 
 export type HexData = `0x${string}`
 
-
-
 export type NetworkConfig = {
-    priceOracle: HexData
-    ethAddress: HexData
-    nativeWrapper: HexData
-    merkleTreeOperator: HexData
-    darkSwapAssetManager: HexData
-    darkSwapFeeAssetManager: HexData
-    drakSwapSubgraphUrl: string
+  priceOracle: HexData
+  ethAddress: HexData
+  nativeWrapper: HexData
+  merkleTreeOperator: HexData
+  darkSwapAssetManager: HexData
+  darkSwapFeeAssetManager: HexData
+  drakSwapSubgraphUrl: string
 }
 
 export enum OrderDirection {
-    BUY = 0,
-    SELL = 1
+  BUY = 0,
+  SELL = 1
 }
 
 export enum NoteStatus {
-    CREATED = 0,
-    ACTIVE = 1,
-    SPENT = 2,
-    LOCKED = 3,
+  CREATED = 0,
+  ACTIVE = 1,
+  SPENT = 2,
+  LOCKED = 3
 }
 
 export enum NoteType {
-    DARKSWAP = 0,
-    DARKSWAP_ORDER = 1,
-    SINGULARITY = 2,
+  DARKSWAP = 0,
+  DARKSWAP_ORDER = 1,
+  SINGULARITY = 2
 }
 
 export enum OrderStatus {
-    OPEN = 0,
-    MATCHED = 1,
-    BOB_CONFIRMED = 2,
-    SETTLED = 3,
-    CANCELLED = 4,
-    NOT_TRIGGERED = 5,
-    TRIGGERED = 6,
+  OPEN = 0,
+  MATCHED = 1,
+  BOB_CONFIRMED = 2,
+  SETTLED = 3,
+  CANCELLED = 4,
+  NOT_TRIGGERED = 5,
+  TRIGGERED = 6
 }
 
 export enum OrderType {
-    MARKET = 0,
-    LIMIT = 1,
-    STOP_LOSS = 2,
-    STOP_LOSS_LIMIT = 3,
-    TAKE_PROFIT = 4,
-    TAKE_PROFIT_LIMIT = 5,
-    LIMIT_MAKER = 6,
+  MARKET = 0,
+  LIMIT = 1,
+  STOP_LOSS = 2,
+  STOP_LOSS_LIMIT = 3,
+  TAKE_PROFIT = 4,
+  TAKE_PROFIT_LIMIT = 5,
+  LIMIT_MAKER = 6
 }
 
 export enum StpMode {
-    NONE = 0,
-    EXPIRE_MAKER = 1,
-    EXPIRE_TAKER = 2,
-    BOTH = 3,
+  NONE = 0,
+  EXPIRE_MAKER = 1,
+  EXPIRE_TAKER = 2,
+  BOTH = 3
 }
 
 export enum TimeInForce {
-    GTC = 0,
-    GTD = 1,
-    IOC = 2,
-    FOK = 4,
-    AON_GTC = 8,
-    AON_GTD = 9,
+  GTC = 0,
+  GTD = 1,
+  IOC = 2,
+  FOK = 4,
+  AON_GTC = 8,
+  AON_GTD = 9
 }
 
 export interface WalletConfig {
-    name: string
-    address: string
-    privateKey?: string
-    type: 'privateKey' | 'fireblocks'
+  name: string
+  address: string
+  privateKey?: string
+  type: 'privateKey' | 'fireblocks'
 }
 
 export interface ChainRpcConfig {
-    chainId: number
-    rpcUrl: string
+  chainId: number
+  rpcUrl: string
 }
 
 export interface ProofOptionsConfig {
-    threads?: number
-    memory?: number
+  threads?: number
+  memory?: number
 }
 
 export interface FireblocksConfig {
-    privateKey: string
-    apiKey: string
-    apiBaseUrl?: string
+  privateKey: string
+  apiKey: string
+  apiBaseUrl?: string
 }
 
 export interface DarkSwapConfig {
-    wallets: WalletConfig[],
-    chainRpcs: ChainRpcConfig[],
-    dbFilePath: string,
-    bookNodeSocketUrl: string,
-    bookNodeApiUrl: string,
-    bookNodeApiKey: string,
-    userSwapRelayerAddress?: string,
-    userSwapRelayerPrivateKey?: string,
-    proofOptions?: ProofOptionsConfig,
-    fireblocks?: FireblocksConfig,
+  wallets: WalletConfig[]
+  chainRpcs: ChainRpcConfig[]
+  dbFilePath: string
+  bookNodeSocketUrl: string
+  bookNodeApiUrl: string
+  bookNodeApiKey: string
+  userSwapRelayerAddress?: string
+  userSwapRelayerPrivateKey?: string
+  proofOptions?: ProofOptionsConfig
+  fireblocks?: FireblocksConfig
 }
 
-
 export class BaseDto {
-    chainId: number;
-    wallet: string;
+  chainId: number
+  wallet: string
 }
 
 export class OrderDto extends BaseDto {
-    id?: number;
-    orderId: string;
-    assetPairId: string;
-    orderDirection: OrderDirection;
-    orderType: OrderType;
-    timeInForce: TimeInForce;
-    stpMode: StpMode;
-    orderTriggerPrice?: string;
-    price: string;
-    amountOut: string;
-    amountIn: string;
-    partialAmountIn?: string;
-    feeRatio: string;
-    status?: OrderStatus;
-    publicKey?: string;
-    noteCommitment?: string;
-    incomingNoteCommitment?: string;
-    nullifier?: string;
-    txHashCreated?: string;
-    txHashSettled?: string;
+  id?: number
+  orderId: string
+  assetPairId: string
+  orderDirection: OrderDirection
+  orderType: OrderType
+  timeInForce: TimeInForce
+  stpMode: StpMode
+  orderTriggerPrice?: string
+  price: string
+  amountOut: string
+  amountIn: string
+  partialAmountIn?: string
+  feeRatio: string
+  status?: OrderStatus
+  publicKey?: string
+  noteCommitment?: string
+  incomingNoteCommitment?: string
+  nullifier?: string
+  txHashCreated?: string
+  txHashSettled?: string
 }
 
 export class OrderEventDto extends BaseDto {
-    id: number;
-    orderId: string;
-    status: number;
-    createdAt: Date;
+  id: number
+  orderId: string
+  status: number
+  createdAt: Date
 }
 
 export class CancelOrderDto extends BaseDto {
-    orderId: string;
+  orderId: string
 }
 
 export class UpdatePriceDto extends BaseDto {
-    orderId: string;
-    price: string;
-    amountIn: string;
-    partialAmountIn: string;
+  orderId: string
+  price: string
+  amountIn: string
+  partialAmountIn: string
 }
 
 export class AssetPairDto {
-    id: string;
-    chainId: number;
-    baseAddress: string;
-    baseSymbol: string;
-    baseDecimal: number;
-    quoteAddress: string;
-    quoteSymbol: string;
-    quoteDecimal: number;
+  id: string
+  chainId: number
+  baseAddress: string
+  baseSymbol: string
+  baseDecimal: number
+  quoteAddress: string
+  quoteSymbol: string
+  quoteDecimal: number
 }
 
 export class NoteDto extends BaseDto {
-    id: number;
-    publicKey: string;
-    type: number;
-    note: bigint;
-    rho: bigint;
-    asset: string;
-    amount: bigint;
-    status: number;
-    txHashCreated: string;
+  id: number
+  publicKey: string
+  type: number
+  note: bigint
+  rho: bigint
+  asset: string
+  amount: bigint
+  status: number
+  txHashCreated: string
 }
 
 export class AssetDto {
-    asset: string;
-    amount: string;
-    lockedAmount: string;
+  asset: string
+  amount: string
+  lockedAmount: string
 }
 
 export class MyAssetsDto {
-    chainId: number;
-    assets: AssetDto[];
+  chainId: number
+  assets: AssetDto[]
 }
 
 export class SyncAssetDto extends BaseDto {
-    asset: string;
+  asset: string
 }
 
 export class DepositDto extends BaseDto {
-    asset: string;
-    amount: string;
+  asset: string
+  amount: string
 }
 
 export class WithdrawDto extends BaseDto {
-    asset: string;
-    amount: string;
-} 
+  asset: string
+  amount: string
+}
+
+export enum SortType {
+  NEWEST = 'newest',
+  OLDEST = 'oldest'
+}

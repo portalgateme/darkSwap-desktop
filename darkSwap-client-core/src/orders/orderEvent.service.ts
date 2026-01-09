@@ -33,8 +33,18 @@ export class OrderEventService {
   public async getOrderEventsByPage(
     chainId: number,
     page: number,
-    limit: number
-  ): Promise<OrderEventDto[]> {
-    return await this.dbService.getOrderEventsByPage(chainId, page, limit)
+    limit: number,
+    sort: string,
+    status?: number,
+    search?: string
+  ): Promise<{ orderEvents: OrderEventDto[]; total: number }> {
+    return await this.dbService.getOrderEventsByPage(
+      chainId,
+      page,
+      limit,
+      sort,
+      status,
+      search
+    )
   }
 }

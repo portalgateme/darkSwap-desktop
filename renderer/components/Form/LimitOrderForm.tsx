@@ -20,6 +20,7 @@ import { ethers } from 'ethers'
 import { OrderDto } from 'darkswap-client-core'
 import { safeAmountWithDecimals } from '../../utils/safeAmount'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
+import { useToast } from '../../contexts/ToastContext'
 
 interface LimitOrderFormProps {
   onClose: () => void
@@ -29,6 +30,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
   const { chainId, currentChain, onChangeChain } = useChainContext()
   const { selectedAccount } = useAccountContext()
   const { assetPair } = useAssetPairContext()
+  const { hideToast, showLoading, showSuccess, showError } = useToast()
 
   const [formData, setFormData] = useState<{
     amountIn: string
@@ -132,6 +134,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
     )
       return
     setLoading(true)
+    const toastId = showLoading('Placing order...')
     try {
       const amountInBN = ethers
         .parseUnits(formData.amountIn, formData.assetIn.decimals)
@@ -164,8 +167,12 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       // @ts-ignore
       await window.orderAPI.createOrder(params)
       handleClose()
+      hideToast(toastId)
+      showSuccess('Order placed successfully!')
     } catch (error) {
       console.error('Error placing order:', error)
+      hideToast(toastId)
+      showError('Failed to place order. Please try again.')
     } finally {
       setLoading(false)
     }

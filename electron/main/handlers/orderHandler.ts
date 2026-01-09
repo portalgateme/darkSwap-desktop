@@ -20,25 +20,31 @@ export const registerOrderHandlers = () => {
   })
 
   // getAllOrders
-  ipcMain.handle('order:getAllOrders', async (event, chainId, page, limit) => {
-    const list = await dbInstance
-      .getOrderManager()
-      .getOrdersByPage(chainId, page, limit)
+  ipcMain.handle(
+    'order:getAllOrders',
+    async (event, chainId, page, limit, sort, status, search) => {
+      const result = await dbInstance
+        .getOrderManager()
+        .getOrdersByPage(chainId, page, limit, sort, status, search)
 
-    return await Promise.all(
-      list.map(async (order) => {
-        if (!order.id) return null
-        const result = await dbInstance
-          .getOrderManager()
-          .getOrderEvents(order.orderId.toString())
+      return {
+        total: result.total,
+        orders: await Promise.all(
+          result.orders.map(async (order) => {
+            if (!order.id) return null
+            const result = await dbInstance
+              .getOrderManager()
+              .getOrderEvents(order.orderId.toString())
 
-        return {
-          ...order,
-          events: result
-        }
-      })
-    )
-  })
+            return {
+              ...order,
+              events: result
+            }
+          })
+        )
+      }
+    }
+  )
 
   // getOrderById
   ipcMain.handle('order:getOrderById', async (event, orderId) => {
@@ -68,10 +74,10 @@ export const registerOrderHandlers = () => {
   // getOrderEventsByPage
   ipcMain.handle(
     'order:getOrderEventsByPage',
-    async (event, chainId, page, limit) => {
+    async (event, chainId, page, limit, sort, status, search) => {
       return await dbInstance
         .getOrderManager()
-        .getOrderEventsByPage(chainId, page, limit)
+        .getOrderEventsByPage(chainId, page, limit, sort, status, search)
     }
   )
 }

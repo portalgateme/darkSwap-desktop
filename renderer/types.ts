@@ -87,3 +87,8 @@ export enum OrderStatus {
 export interface OrderEvents extends OrderDto {
   events: OrderEventDto[]
 }
+
+export enum SortType {
+  NEWEST = 'newest',
+  OLDEST = 'oldest'
+}

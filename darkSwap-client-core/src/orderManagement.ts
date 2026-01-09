@@ -112,20 +112,36 @@ export class OrderManager {
   public async getOrdersByPage(
     chainId: number,
     page: number,
-    limit: number
-  ): Promise<OrderDto[]> {
-    return await this.orderService.getOrdersByPage(chainId, page, limit)
+    limit: number,
+    sort: string,
+    status?: number,
+    search?: string
+  ): Promise<{ orders: OrderDto[]; total: number }> {
+    return await this.orderService.getOrdersByPage(
+      chainId,
+      page,
+      limit,
+      sort,
+      status,
+      search
+    )
   }
 
   public async getOrderEventsByPage(
     chainId: number,
     page: number,
-    limit: number
-  ): Promise<OrderEventDto[]> {
+    limit: number,
+    sort: string,
+    status?: number,
+    search?: string
+  ): Promise<{ orderEvents: OrderEventDto[]; total: number }> {
     return await this.orderEventService.getOrderEventsByPage(
       chainId,
       page,
-      limit
+      limit,
+      sort,
+      status,
+      search
     )
   }
 }
