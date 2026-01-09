@@ -23,6 +23,7 @@ import { OrderDto } from 'darkswap-client-core'
 import { ethers } from 'ethers'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { handleOrderType } from '../../utils/handleOrderType'
+import { useToast } from '../../contexts/ToastContext'
 
 interface TriggerOrderFormProps {
   onClose: () => void
@@ -36,6 +37,8 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
   const { chainId, currentChain, onChangeChain } = useChainContext()
   const { selectedAccount } = useAccountContext()
   const { assetPair } = useAssetPairContext()
+  const { hideToast, showLoading, showSuccess, showError } = useToast()
+
   const [formData, setFormData] = useState<{
     amountIn: string
     amountOut: string
@@ -139,6 +142,8 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
       !formData.assetOut
     )
       return
+
+    const toastId = showLoading('Placing order...')
     try {
       setLoading(true)
       const amountInBN = ethers
@@ -173,9 +178,13 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
       console.log('Placing order with params:', params)
       // @ts-ignore
       await window.orderAPI.createOrder(params)
+      hideToast(toastId)
+      showSuccess('Order placed successfully!')
       handleClose()
     } catch (error) {
       console.error('Error placing order:', error)
+      hideToast(toastId)
+      showError('Failed to place order. Please try again.')
     } finally {
       setLoading(false)
     }

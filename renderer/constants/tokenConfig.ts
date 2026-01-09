@@ -42,7 +42,6 @@ export const nativeToken: Record<number, Token> = {
     symbol: 'HTH',
     decimals: 18,
     address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-    logoURI:
-      'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png'
+    logoURI: '/tokens/ETH.png'
   }
 }

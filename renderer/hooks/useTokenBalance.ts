@@ -30,5 +30,18 @@ export const useTokenBalance = () => {
     }
   }
 
-  return { getBalance }
+  const getBalances = async (
+    chainId: number,
+    address: string,
+    tokenAddresses: string[]
+  ): Promise<Record<string, bigint>> => {
+    const balances: Record<string, bigint> = {}
+    for (const tokenAddress of tokenAddresses) {
+      const balance = await getBalance(chainId, address, tokenAddress)
+      balances[tokenAddress] = balance
+    }
+    return balances
+  }
+
+  return { getBalance, getBalances }
 }

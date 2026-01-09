@@ -5,9 +5,13 @@ import { useChainContext } from '../../contexts/ChainContext/hooks'
 
 interface TokenLabelProps {
   token?: string
+  showSymbol?: boolean
 }
 
-export const TokenLabel: React.FC<TokenLabelProps> = ({ token }) => {
+export const TokenLabel: React.FC<TokenLabelProps> = ({
+  token,
+  showSymbol = true
+}) => {
   const { chainId } = useChainContext()
   const asset = getTokenFromContract(token, chainId)
   return (
@@ -22,7 +26,7 @@ export const TokenLabel: React.FC<TokenLabelProps> = ({ token }) => {
         width={24}
         height={24}
       />
-      <Typography color='#fff'>{asset?.symbol}</Typography>
+      {showSymbol && <Typography color='#fff'>{asset?.symbol}</Typography>}
     </Stack>
   )
 }

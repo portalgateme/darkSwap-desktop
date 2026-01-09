@@ -40,6 +40,7 @@ export const DepositModal = ({
     network: undefined
   })
   const [balance, setBalance] = useState<string>('0')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { getBalance } = useTokenBalance()
 
   useEffect(() => {
@@ -113,7 +114,16 @@ export const DepositModal = ({
     !data.amount ||
     loading ||
     Number(data.amount) === 0 ||
-    Number(data.amount) > Number(balance)
+    Number(data.amount) > Number(balance) ||
+    error !== null
+
+  useEffect(() => {
+    if (Number(data.amount) > Number(balance)) {
+      setErrorMessage('Insufficient balance')
+    } else {
+      setErrorMessage(null)
+    }
+  }, [data.amount, balance])
 
   return (
     <Modal
@@ -220,6 +230,16 @@ export const DepositModal = ({
             sx={{ mt: 2 }}
           >
             {error}
+          </Typography>
+        )}
+
+        {errorMessage && (
+          <Typography
+            color='error'
+            variant='body2'
+            sx={{ mt: 2 }}
+          >
+            {errorMessage}
           </Typography>
         )}
 

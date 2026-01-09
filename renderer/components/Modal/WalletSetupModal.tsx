@@ -6,7 +6,7 @@ import {
   TextareaAutosize,
   Typography
 } from '@mui/material'
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined'
+
 import { useState } from 'react'
 import { WarningAlert } from '../Alert'
 
@@ -62,6 +62,13 @@ export const WalletSetupModal = ({
   }
 
   const buttonDisabled = !name || !privateKey || !isValidPrivateKey(privateKey)
+
+  // reset state on close
+  if (!open && (name || privateKey || error)) {
+    setName('')
+    setPrivateKey('')
+    setError(null)
+  }
   return (
     <Modal
       open={open}

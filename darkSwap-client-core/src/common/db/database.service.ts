@@ -7,7 +7,8 @@ import {
   OrderDto,
   OrderEventDto,
   NoteDto,
-  AssetPairDto
+  AssetPairDto,
+  SortType
 } from '../../types'
 
 interface NoteEntity {
@@ -688,12 +689,44 @@ export class DatabaseService {
   public async getOrdersByPage(
     chainId: number,
     page: number,
-    limit: number
-  ): Promise<OrderDto[]> {
+    limit: number,
+    sort: string,
+    status?: number,
+    search?: string
+  ): Promise<{ orders: OrderDto[]; total: number }> {
     const offset = (page - 1) * limit
-    const query = `SELECT * FROM ORDERS WHERE chainId = ? LIMIT ? OFFSET ?`
+    const params: any[] = [chainId]
+    let query = `SELECT * FROM ORDERS WHERE chainId = ?`
+    let countQuery = `SELECT COUNT(*) as total FROM ORDERS WHERE chainId = ?`
+
+    if (status !== undefined) {
+      query += ` AND status = ?`
+      countQuery += ` AND status = ?`
+      params.push(status)
+    }
+
+    if (search) {
+      query += ` AND (orderId LIKE ? OR wallet LIKE ?)`
+      countQuery += ` AND (orderId LIKE ? OR wallet LIKE ?)`
+      params.push(`%${search}%`, `%${search}%`)
+    }
+
+    // Get total count
+    const countStmt = this.db.prepare(countQuery)
+    const countResult = countStmt.get(...params) as { total: number }
+    const total = countResult.total
+
+    if (sort === SortType.NEWEST) {
+      query += ` ORDER BY createdAt DESC`
+    } else {
+      query += ` ORDER BY createdAt ASC`
+    }
+
+    query += ` LIMIT ? OFFSET ?`
+    params.push(limit, offset)
+
     const stmt = this.db.prepare(query)
-    const rows = stmt.all(chainId, limit, offset) as OrderDto[]
+    const rows = stmt.all(...params) as OrderDto[]
     const orders = rows.map((row) => ({
       id: row.id,
       orderId: row.orderId,
@@ -717,18 +750,50 @@ export class DatabaseService {
       txHashSettled: row.txHashSettled
     }))
 
-    return orders
+    return { orders, total }
   }
 
   public async getOrderEventsByPage(
     chainId: number,
     page: number,
-    limit: number
-  ): Promise<OrderEventDto[]> {
+    limit: number,
+    sort: string,
+    status?: number,
+    search?: string
+  ): Promise<{ orderEvents: OrderEventDto[]; total: number }> {
     const offset = (page - 1) * limit
-    const query = `SELECT * FROM ORDER_EVENTS WHERE chainId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?`
+    const params: any[] = [chainId]
+    let query = `SELECT * FROM ORDER_EVENTS WHERE chainId = ?`
+    let countQuery = `SELECT COUNT(*) as total FROM ORDER_EVENTS WHERE chainId = ?`
+
+    if (status !== undefined) {
+      query += ` AND status = ?`
+      countQuery += ` AND status = ?`
+      params.push(status)
+    }
+
+    if (search) {
+      query += ` AND (orderId LIKE ? OR wallet LIKE ?)`
+      countQuery += ` AND (orderId LIKE ? OR wallet LIKE ?)`
+      params.push(`%${search}%`, `%${search}%`)
+    }
+
+    // Get total count
+    const countStmt = this.db.prepare(countQuery)
+    const countResult = countStmt.get(...params) as { total: number }
+    const total = countResult.total
+
+    if (sort === SortType.NEWEST) {
+      query += ` ORDER BY createdAt DESC`
+    } else {
+      query += ` ORDER BY createdAt ASC`
+    }
+
+    query += ` LIMIT ? OFFSET ?`
+    params.push(limit, offset)
+
     const stmt = this.db.prepare(query)
-    const rows = stmt.all(chainId, limit, offset) as OrderEventDto[]
+    const rows = stmt.all(...params) as OrderEventDto[]
     const orderEvents = rows.map((row) => ({
       id: row.id,
       createdAt: row.createdAt,
@@ -738,6 +803,6 @@ export class DatabaseService {
       status: row.status
     }))
 
-    return orderEvents
+    return { orderEvents, total }
   }
 }

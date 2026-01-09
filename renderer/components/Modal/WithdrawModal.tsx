@@ -41,6 +41,7 @@ export const WithdrawModal = ({
   })
 
   const { listData, fetchAssets } = useGetAssets()
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!data.account || !data.network) return
@@ -112,7 +113,16 @@ export const WithdrawModal = ({
     !data.amount ||
     loading ||
     Number(data.amount) === 0 ||
-    data.amount > balanceToken
+    data.amount > balanceToken ||
+    error !== null
+
+  useEffect(() => {
+    if (Number(data.amount) > Number(balanceToken)) {
+      setErrorMessage('Insufficient balance')
+    } else {
+      setErrorMessage(null)
+    }
+  }, [data.amount, balanceToken])
   return (
     <Modal
       open={open}
@@ -217,6 +227,16 @@ export const WithdrawModal = ({
             sx={{ mt: 2 }}
           >
             {error}
+          </Typography>
+        )}
+
+        {errorMessage && (
+          <Typography
+            color='error'
+            variant='body2'
+            sx={{ mt: 2 }}
+          >
+            {errorMessage}
           </Typography>
         )}
 

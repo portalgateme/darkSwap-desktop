@@ -349,8 +349,18 @@ export class OrderService {
   async getOrdersByPage(
     chainId: number,
     page: number,
-    limit: number
-  ): Promise<OrderDto[]> {
-    return await this.dbService.getOrdersByPage(chainId, page, limit)
+    limit: number,
+    sort: string,
+    status?: number,
+    search?: string
+  ): Promise<{ orders: OrderDto[]; total: number }> {
+    return await this.dbService.getOrdersByPage(
+      chainId,
+      page,
+      limit,
+      sort,
+      status,
+      search
+    )
   }
 }
