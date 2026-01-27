@@ -25,7 +25,9 @@ contextBridge.exposeInMainWorld('accountAPI', {
   deposit: (chainId: number, wallet: string, asset: string, amount: string) =>
     ipcRenderer.invoke('account:deposit', chainId, wallet, asset, amount),
   withdraw: (chainId: number, wallet: string, asset: string, amount: string) =>
-    ipcRenderer.invoke('account:withdraw', chainId, wallet, asset, amount)
+    ipcRenderer.invoke('account:withdraw', chainId, wallet, asset, amount),
+  checkPrivateKeyExists: (privateKey: string) =>
+    ipcRenderer.invoke('account:checkPrivateKeyExists', privateKey)
 })
 
 // Asset Pair APIs

@@ -7,7 +7,7 @@ import {
   Typography
 } from '@mui/material'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { WarningAlert } from '../Alert'
 
 interface WalletSetupModalProps {
@@ -61,7 +61,8 @@ export const WalletSetupModal = ({
     return /^0x[a-fA-F0-9]{64}$/.test(key)
   }
 
-  const buttonDisabled = !name || !privateKey || !isValidPrivateKey(privateKey)
+  const buttonDisabled =
+    !name || !privateKey || !isValidPrivateKey(privateKey) || !!error
 
   // reset state on close
   if (!open && (name || privateKey || error)) {
@@ -69,6 +70,20 @@ export const WalletSetupModal = ({
     setPrivateKey('')
     setError(null)
   }
+
+  const onCheckPrivateKeyExists = async (key: string) => {
+    //@ts-ignore
+    const isExists = await window.accountAPI.checkPrivateKeyExists(key)
+    if (isExists) {
+      setError('This private key or recovery phrase is already in use.')
+    }
+  }
+
+  useEffect(() => {
+    if (privateKey) {
+      onCheckPrivateKeyExists(privateKey)
+    }
+  }, [privateKey])
   return (
     <Modal
       open={open}
