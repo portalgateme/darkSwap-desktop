@@ -1,6 +1,6 @@
 import { Button, InputBase, Stack, Typography } from '@mui/material'
 import NetworkSelection from '../Selection/NetworkSelection'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   AssetPairDto,
   Network,
@@ -21,6 +21,7 @@ import { OrderDto } from 'darkswap-client-core'
 import { safeAmountWithDecimals } from '../../utils/safeAmount'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { useToast } from '../../contexts/ToastContext'
+import { useGetAssets } from '../../hooks/useGetAssets'
 
 interface LimitOrderFormProps {
   onClose: () => void
@@ -31,6 +32,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
   const { selectedAccount } = useAccountContext()
   const { assetPair } = useAssetPairContext()
   const { hideToast, showLoading, showSuccess, showError } = useToast()
+  const { listData, fetchAssets } = useGetAssets()
 
   const [formData, setFormData] = useState<{
     amountIn: string
@@ -50,8 +52,25 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
     orderDirection: OrderDirection.SELL
   })
   const [marketPrice, setMarketPrice] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
 
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!chainId || !selectedAccount) return
+    fetchAssets(chainId, selectedAccount.address)
+  }, [selectedAccount, chainId])
+
+  const balanceTokenOut = useMemo(() => {
+    if (!formData.assetOut || !listData) return '0'
+    const asset = listData.assets.find(
+      (asset) =>
+        asset.asset.toLowerCase() === formData.assetOut!.address.toLowerCase()
+    )
+    return asset
+      ? ethers.formatUnits(asset.amount, formData.assetOut.decimals)
+      : '0'
+  }, [formData.assetOut, listData])
 
   const fetchMarketPrice = async (assetPair: AssetPairDto) => {
     const price = await getMarketPriceFromBinance(
@@ -88,6 +107,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
   }, [assetPair])
 
   useEffect(() => {
+    // Reset error
     if (!formData.amountOut) {
       setFormData((prev) => ({
         ...prev,
@@ -95,6 +115,18 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       }))
       return
     }
+
+    // Check amount and balance
+    const balance = parseFloat(balanceTokenOut)
+    const amountOut = parseFloat(formData.amountOut)
+    if (amountOut > balance) {
+      setError('Insufficient balance for the selected asset.')
+      return
+    } else {
+      setError(null)
+    }
+
+    // Calculate amountIn
     if (formData.amountOut && formData.price && formData.assetIn) {
       const amountIn = safeAmountWithDecimals(
         (formData.orderDirection === OrderDirection.SELL
@@ -108,7 +140,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
         amountIn
       }))
     }
-  }, [formData.amountOut, formData.price])
+  }, [formData.amountOut, formData.price, formData.assetIn])
 
   const handleClose = () => {
     // Reset form data if needed
@@ -192,7 +224,9 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
     }))
   }
 
-  const btnDisabled = !formData.amountOut || !formData.price || loading
+  const btnDisabled =
+    !formData.amountOut || !formData.price || loading || !!error
+
   const onCheckUseMarketPrice = (checked: boolean) => {
     setFormData({
       ...formData,
@@ -370,6 +404,16 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
           </Typography>
         </Stack>
       </Stack>
+
+      {error && (
+        <Typography
+          color='#FF4D4F'
+          variant='body2'
+          sx={{ mt: 2 }}
+        >
+          {error}
+        </Typography>
+      )}
       <Button
         variant='contained'
         sx={{
