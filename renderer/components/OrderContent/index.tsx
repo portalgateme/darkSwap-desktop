@@ -40,6 +40,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import CheckIcon from '@mui/icons-material/Check'
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline'
 import { WarningAlert } from '../Alert'
+import { useTransactionContext } from '../../contexts/TransactionContext/hooks'
 
 const orderType = (type: OrderType) => {
   switch (type) {
@@ -69,7 +70,6 @@ export const OrderContent = () => {
     limit: 10
   })
 
-  const [loading, setLoading] = useState<string | boolean>(false)
   const { isAuthenticated } = useConfigContext()
   const { chainId } = useChainContext()
   const { hideToast, showLoading, showSuccess, showError } = useToast()
@@ -78,6 +78,7 @@ export const OrderContent = () => {
   const [sort, setSort] = useState<SortType>(SortType.NEWEST)
   const [copied, setCopied] = useState<string>('')
   const [totalOrders, setTotalOrders] = useState<number>(0)
+  const { loading, startLoad, stopLoad, txExecuting } = useTransactionContext()
 
   useEffect(() => {
     if (copied !== '') {
@@ -193,14 +194,14 @@ export const OrderContent = () => {
   const onCancelOrder = async (order: OrderDto) => {
     const toastId = showLoading('Cancelling order...')
     try {
-      setLoading(order.orderId)
+      startLoad(order.orderId)
       // @ts-ignore
       await window.orderAPI.cancelOrder({
         chainId: order.chainId,
         wallet: order.wallet,
         orderId: order.orderId
       })
-      fetchOrders(
+      await fetchOrders(
         order.chainId,
         pagination.page,
         pagination.limit,
@@ -215,7 +216,7 @@ export const OrderContent = () => {
       hideToast(toastId)
       showError('Failed to cancel order. Please try again.')
     } finally {
-      setLoading(false)
+      stopLoad()
     }
   }
 
@@ -517,7 +518,7 @@ export const OrderContent = () => {
                         }}
                         onClick={() => onCancelOrder(row)}
                         disabled={!!loading || !isAuthenticated}
-                        loading={loading === row.orderId}
+                        loading={loading && txExecuting === row.orderId}
                       >
                         {'Cancel'}
                       </Button>
