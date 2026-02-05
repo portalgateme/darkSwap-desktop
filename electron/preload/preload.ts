@@ -2,7 +2,20 @@ import { CancelOrderDto, OrderDto, UpdatePriceDto } from 'darkswap-client-core'
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  ping: () => 'pong from Electron'
+  ping: () => 'pong from Electron',
+  getVersion: () => ipcRenderer.invoke('app:getVersion')
+})
+
+contextBridge.exposeInMainWorld('updateAPI', {
+  checkForUpdates: () => ipcRenderer.invoke('app:checkForUpdates'),
+  downloadUpdate: () => ipcRenderer.invoke('app:downloadUpdate'),
+  installUpdate: () => ipcRenderer.invoke('app:installUpdate'),
+  onStatus: (callback: (payload: unknown) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: unknown) =>
+      callback(payload)
+    ipcRenderer.on('app:update:status', listener)
+    return () => ipcRenderer.removeListener('app:update:status', listener)
+  }
 })
 
 // Account APIs

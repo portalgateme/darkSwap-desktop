@@ -6,6 +6,7 @@ import { registerAssetPairHandlers } from './handlers/assetPairHandler'
 import { registerOrderHandlers } from './handlers/orderHandler'
 import { registerRPCManagerHandlers } from './handlers/rpcManagerHandler'
 import { registerConfigHandlers } from './handlers/configHandler'
+import { registerAppHandlers } from './handlers/appHandler'
 
 const appServe = app.isPackaged
   ? serve({ directory: path.join(__dirname, '../renderer/out') })
@@ -40,6 +41,7 @@ async function createWindow() {
 }
 
 // Register IPC handlers
+registerAppHandlers()
 registerConfigHandlers()
 registerAccountHandlers()
 registerAssetPairHandlers()
