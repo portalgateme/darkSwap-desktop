@@ -42,6 +42,7 @@ async function createWindow() {
 }
 
 // Register IPC handlers
+registerAppHandlers()
 registerConfigHandlers()
 registerAccountHandlers()
 registerAssetPairHandlers()
