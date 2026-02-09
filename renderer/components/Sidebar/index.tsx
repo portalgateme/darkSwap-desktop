@@ -2,6 +2,7 @@ import { Box, Stack, Typography } from '@mui/material'
 import Image from 'next/image'
 import Link from 'next/link'
 import HistoryIcon from '@mui/icons-material/History'
+import AutoAwesomeMotionIcon from '@mui/icons-material/AutoAwesomeMotion'
 import CheckIcon from '@mui/icons-material/Check'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { useState } from 'react'
@@ -25,6 +26,11 @@ const menus = [
     title: 'Order Management',
     icon: '/images/order-list.png',
     link: '/orders'
+  },
+  {
+    title: 'Auto Orders',
+    icon: <AutoAwesomeMotionIcon sx={{ color: '#FFFFFF', fontSize: 16 }} />,
+    link: '/auto-orders'
   },
   {
     title: 'Order History',

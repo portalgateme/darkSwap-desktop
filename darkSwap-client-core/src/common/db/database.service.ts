@@ -8,7 +8,9 @@ import {
   OrderEventDto,
   NoteDto,
   AssetPairDto,
-  SortType
+  SortType,
+  AutoOrderJobDto,
+  AutoOrderJobStatus
 } from '../../types'
 
 interface NoteEntity {
@@ -23,6 +25,30 @@ interface NoteEntity {
   amount: string
   status: number
   txHashCreated: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface AutoOrderJobEntity {
+  id: number
+  jobId: string
+  chainId: number
+  wallet: string
+  assetPairId: string
+  orderDirection: number
+  orderType: number
+  timeInForce: number
+  stpMode: number
+  minPrice: string
+  maxPrice: string
+  amountOut: string
+  feeRatio: string
+  startAt: number
+  endAt?: number
+  intervalSeconds: number
+  status: number
+  activeOrderId?: string
+  lastRunAt?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -804,5 +830,231 @@ export class DatabaseService {
     }))
 
     return { orderEvents, total }
+  }
+
+  // Auto order job operations
+  public async addAutoOrderJob(job: AutoOrderJobDto) {
+    const query = `INSERT INTO AUTO_ORDER_JOBS (
+      jobId, chainId, wallet, assetPairId, orderDirection, orderType,
+      timeInForce, stpMode, minPrice, maxPrice, amountOut, feeRatio,
+      startAt, endAt, intervalSeconds, status, activeOrderId, lastRunAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+    const stmt = this.db.prepare(query)
+    stmt.run(
+      job.jobId,
+      job.chainId,
+      job.wallet.toLowerCase(),
+      job.assetPairId,
+      job.orderDirection,
+      job.orderType,
+      job.timeInForce,
+      job.stpMode,
+      job.minPrice,
+      job.maxPrice,
+      job.amountOut,
+      job.feeRatio,
+      job.startAt,
+      job.endAt ?? null,
+      job.intervalSeconds,
+      job.status ?? AutoOrderJobStatus.ACTIVE,
+      job.activeOrderId ?? null,
+      job.lastRunAt ?? null
+    )
+  }
+
+  public async getAutoOrderJobByJobId(
+    jobId: string
+  ): Promise<AutoOrderJobDto | null> {
+    const query = `SELECT * FROM AUTO_ORDER_JOBS WHERE jobId = ?`
+    const stmt = this.db.prepare(query)
+    const row = stmt.get(jobId) as AutoOrderJobEntity | undefined
+    if (!row) {
+      return null
+    }
+
+    return {
+      id: row.id,
+      jobId: row.jobId,
+      chainId: row.chainId,
+      wallet: row.wallet,
+      assetPairId: row.assetPairId,
+      orderDirection: row.orderDirection,
+      orderType: row.orderType,
+      timeInForce: row.timeInForce,
+      stpMode: row.stpMode,
+      minPrice: row.minPrice,
+      maxPrice: row.maxPrice,
+      amountOut: row.amountOut,
+      feeRatio: row.feeRatio,
+      startAt: row.startAt,
+      endAt: row.endAt,
+      intervalSeconds: row.intervalSeconds,
+      status: row.status,
+      activeOrderId: row.activeOrderId,
+      lastRunAt: row.lastRunAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    }
+  }
+
+  public async getAutoOrderJobsByStatus(
+    status: AutoOrderJobStatus
+  ): Promise<AutoOrderJobDto[]> {
+    const query = `SELECT * FROM AUTO_ORDER_JOBS WHERE status = ?`
+    const stmt = this.db.prepare(query)
+    const rows = stmt.all(status) as AutoOrderJobEntity[]
+
+    return rows.map((row) => ({
+      id: row.id,
+      jobId: row.jobId,
+      chainId: row.chainId,
+      wallet: row.wallet,
+      assetPairId: row.assetPairId,
+      orderDirection: row.orderDirection,
+      orderType: row.orderType,
+      timeInForce: row.timeInForce,
+      stpMode: row.stpMode,
+      minPrice: row.minPrice,
+      maxPrice: row.maxPrice,
+      amountOut: row.amountOut,
+      feeRatio: row.feeRatio,
+      startAt: row.startAt,
+      endAt: row.endAt,
+      intervalSeconds: row.intervalSeconds,
+      status: row.status,
+      activeOrderId: row.activeOrderId,
+      lastRunAt: row.lastRunAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    }))
+  }
+
+  public async updateAutoOrderJobStatus(
+    jobId: string,
+    status: AutoOrderJobStatus
+  ) {
+    const query = `UPDATE AUTO_ORDER_JOBS SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE jobId = ?`
+    const stmt = this.db.prepare(query)
+    stmt.run(status, jobId)
+  }
+
+  public async updateAutoOrderJobActiveOrder(
+    jobId: string,
+    activeOrderId: string | null,
+    lastRunAt?: number
+  ) {
+    const query = `UPDATE AUTO_ORDER_JOBS SET activeOrderId = ?, lastRunAt = ?, updatedAt = CURRENT_TIMESTAMP WHERE jobId = ?`
+    const stmt = this.db.prepare(query)
+    stmt.run(activeOrderId, lastRunAt ?? null, jobId)
+  }
+
+  public async updateAutoOrderJobLastRun(jobId: string, lastRunAt: number) {
+    const query = `UPDATE AUTO_ORDER_JOBS SET lastRunAt = ?, updatedAt = CURRENT_TIMESTAMP WHERE jobId = ?`
+    const stmt = this.db.prepare(query)
+    stmt.run(lastRunAt, jobId)
+  }
+
+  public async updateAutoOrderJob(job: AutoOrderJobDto) {
+    const query = `UPDATE AUTO_ORDER_JOBS SET
+      assetPairId = ?,
+      orderDirection = ?,
+      orderType = ?,
+      timeInForce = ?,
+      stpMode = ?,
+      minPrice = ?,
+      maxPrice = ?,
+      amountOut = ?,
+      feeRatio = ?,
+      startAt = ?,
+      endAt = ?,
+      intervalSeconds = ?,
+      updatedAt = CURRENT_TIMESTAMP
+      WHERE jobId = ?`
+
+    const stmt = this.db.prepare(query)
+    stmt.run(
+      job.assetPairId,
+      job.orderDirection,
+      job.orderType,
+      job.timeInForce,
+      job.stpMode,
+      job.minPrice,
+      job.maxPrice,
+      job.amountOut,
+      job.feeRatio,
+      job.startAt,
+      job.endAt ?? null,
+      job.intervalSeconds,
+      job.jobId
+    )
+  }
+
+  public async getAutoOrderJobsByPage(
+    chainId: number,
+    page: number,
+    limit: number,
+    sort: string,
+    status?: number,
+    search?: string
+  ): Promise<{ jobs: AutoOrderJobDto[]; total: number }> {
+    const offset = (page - 1) * limit
+    const params: any[] = [chainId]
+    let query = `SELECT * FROM AUTO_ORDER_JOBS WHERE chainId = ?`
+    let countQuery = `SELECT COUNT(*) as total FROM AUTO_ORDER_JOBS WHERE chainId = ?`
+
+    if (status !== undefined) {
+      query += ` AND status = ?`
+      countQuery += ` AND status = ?`
+      params.push(status)
+    }
+
+    if (search) {
+      query += ` AND (jobId LIKE ? OR wallet LIKE ?)`
+      countQuery += ` AND (jobId LIKE ? OR wallet LIKE ?)`
+      params.push(`%${search}%`, `%${search}%`)
+    }
+
+    const countStmt = this.db.prepare(countQuery)
+    const countResult = countStmt.get(...params) as { total: number }
+    const total = countResult.total
+
+    if (sort === SortType.NEWEST) {
+      query += ` ORDER BY createdAt DESC`
+    } else {
+      query += ` ORDER BY createdAt ASC`
+    }
+
+    query += ` LIMIT ? OFFSET ?`
+    params.push(limit, offset)
+
+    const stmt = this.db.prepare(query)
+    const rows = stmt.all(...params) as AutoOrderJobEntity[]
+
+    const jobs = rows.map((row) => ({
+      id: row.id,
+      jobId: row.jobId,
+      chainId: row.chainId,
+      wallet: row.wallet,
+      assetPairId: row.assetPairId,
+      orderDirection: row.orderDirection,
+      orderType: row.orderType,
+      timeInForce: row.timeInForce,
+      stpMode: row.stpMode,
+      minPrice: row.minPrice,
+      maxPrice: row.maxPrice,
+      amountOut: row.amountOut,
+      feeRatio: row.feeRatio,
+      startAt: row.startAt,
+      endAt: row.endAt,
+      intervalSeconds: row.intervalSeconds,
+      status: row.status,
+      activeOrderId: row.activeOrderId,
+      lastRunAt: row.lastRunAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    }))
+
+    return { jobs, total }
   }
 }

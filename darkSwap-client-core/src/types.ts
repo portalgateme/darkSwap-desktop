@@ -49,6 +49,13 @@ export enum OrderStatus {
   TRIGGERED = 6
 }
 
+export enum AutoOrderJobStatus {
+  ACTIVE = 0,
+  PAUSED = 1,
+  COMPLETED = 2,
+  CANCELLED = 3
+}
+
 export enum OrderType {
   MARKET = 0,
   LIMIT = 1,
@@ -155,6 +162,28 @@ export class UpdatePriceDto extends BaseDto {
   price: string
   amountIn: string
   partialAmountIn: string
+}
+
+export class AutoOrderJobDto extends BaseDto {
+  id?: number
+  jobId: string
+  assetPairId: string
+  orderDirection: OrderDirection
+  orderType: OrderType
+  timeInForce: TimeInForce
+  stpMode: StpMode
+  minPrice: string
+  maxPrice: string
+  amountOut: string
+  feeRatio: string
+  startAt: number
+  endAt?: number
+  intervalSeconds: number
+  status?: AutoOrderJobStatus
+  activeOrderId?: string
+  lastRunAt?: number
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 export class AssetPairDto {

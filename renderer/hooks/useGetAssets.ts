@@ -23,6 +23,7 @@ export const useGetAssets = () => {
     if (!selectedAccount || !chainId) return
 
     try {
+      console.log('params =>>>', chainId, address)
       //@ts-ignore
       await window.accountAPI.syncAssets(chainId, address)
       await fetchAssets(chainId, address)

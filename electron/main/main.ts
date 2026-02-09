@@ -6,6 +6,8 @@ import { registerAssetPairHandlers } from './handlers/assetPairHandler'
 import { registerOrderHandlers } from './handlers/orderHandler'
 import { registerRPCManagerHandlers } from './handlers/rpcManagerHandler'
 import { registerConfigHandlers } from './handlers/configHandler'
+import { registerAppHandlers } from './handlers/appHandler'
+import { registerAutoOrderHandlers } from './handlers/autoOrderHandler'
 
 const appServe = app.isPackaged
   ? serve({ directory: path.join(__dirname, '../renderer/out') })
@@ -44,7 +46,9 @@ registerConfigHandlers()
 registerAccountHandlers()
 registerAssetPairHandlers()
 registerOrderHandlers()
+registerAutoOrderHandlers()
 registerRPCManagerHandlers()
+registerAppHandlers()
 
 app.on('ready', createWindow)
 app.on('window-all-closed', () => {

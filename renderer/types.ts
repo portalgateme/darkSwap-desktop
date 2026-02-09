@@ -84,8 +84,37 @@ export enum OrderStatus {
   TRIGGERED = 6
 }
 
+export enum AutoOrderJobStatus {
+  ACTIVE = 0,
+  PAUSED = 1,
+  COMPLETED = 2,
+  CANCELLED = 3
+}
+
 export interface OrderEvents extends OrderDto {
   events: OrderEventDto[]
+}
+
+export interface AutoOrderJobDto {
+  id?: number
+  jobId: string
+  chainId: number
+  wallet: string
+  assetPairId: string
+  orderDirection: OrderDirection
+  orderType: OrderType
+  timeInForce: TimeInForce
+  stpMode: StpMode
+  minPrice: string
+  maxPrice: string
+  amountOut: string
+  feeRatio: string
+  startAt: number
+  endAt?: number
+  intervalSeconds: number
+  status?: AutoOrderJobStatus
+  activeOrderId?: string | null
+  lastRunAt?: number | null
 }
 
 export enum SortType {
