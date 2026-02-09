@@ -33,6 +33,7 @@ const bookNodeApiUrlSchema = z.string().url()
 const bookNodeApiKeySchema = z.string().nonempty()
 const userSwapRelayerAddressSchema = z.string().optional()
 const userSwapRelayerPrivateKeySchema = z.string().optional()
+const autoUpdateUrlSchema = z.string().url().optional()
 
 const FireblocksConfigSchema = z.object({
   privateKey: z.string().nonempty(),
@@ -51,6 +52,7 @@ export const ConfigSchema = z
     bookNodeApiKey: bookNodeApiKeySchema.optional(),
     userSwapRelayerAddress: userSwapRelayerAddressSchema,
     userSwapRelayerPrivateKey: userSwapRelayerPrivateKeySchema,
+    autoUpdateUrl: autoUpdateUrlSchema,
     proofOptions: ProofOptionsSchema.optional(),
     fireblocks: FireblocksConfigSchema.optional()
   })

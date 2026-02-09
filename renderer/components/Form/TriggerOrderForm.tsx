@@ -1,6 +1,6 @@
 import { Button, InputBase, Stack, Typography } from '@mui/material'
 import NetworkSelection from '../Selection/NetworkSelection'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   AssetPairDto,
   Network,
@@ -24,6 +24,7 @@ import { ethers } from 'ethers'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { handleOrderType } from '../../utils/handleOrderType'
 import { useToast } from '../../contexts/ToastContext'
+import { useGetAssets } from '../../hooks/useGetAssets'
 
 interface TriggerOrderFormProps {
   onClose: () => void
@@ -38,6 +39,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
   const { selectedAccount } = useAccountContext()
   const { assetPair } = useAssetPairContext()
   const { hideToast, showLoading, showSuccess, showError } = useToast()
+  const { listData, fetchAssets } = useGetAssets()
 
   const [formData, setFormData] = useState<{
     amountIn: string
@@ -60,6 +62,23 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
   })
   const [loading, setLoading] = useState(false)
   const [marketPrice, setMarketPrice] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!chainId || !selectedAccount) return
+    fetchAssets(chainId, selectedAccount.address)
+  }, [selectedAccount, chainId])
+
+  const balanceTokenOut = useMemo(() => {
+    if (!formData.assetOut || !listData) return '0'
+    const asset = listData.assets.find(
+      (asset) =>
+        asset.asset.toLowerCase() === formData.assetOut!.address.toLowerCase()
+    )
+    return asset
+      ? ethers.formatUnits(asset.amount, formData.assetOut.decimals)
+      : '0'
+  }, [formData.assetOut, listData])
 
   const fetchMarketPrice = async (assetPair: AssetPairDto) => {
     const price = await getMarketPriceFromBinance(
@@ -96,6 +115,7 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
   }, [assetPair])
 
   useEffect(() => {
+    // Reset error
     if (!formData.amountOut) {
       setFormData((prev) => ({
         ...prev,
@@ -103,6 +123,18 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
       }))
       return
     }
+
+    // Check amount and balance
+    const balance = parseFloat(balanceTokenOut)
+    const amountOut = parseFloat(formData.amountOut)
+    if (amountOut > balance) {
+      setError('Insufficient balance for the selected asset.')
+      return
+    } else {
+      setError(null)
+    }
+
+    // Calculate amountIn
     if (formData.amountOut && formData.price && formData.assetIn) {
       const amountIn = safeAmountWithDecimals(
         (formData.orderDirection === OrderDirection.SELL
@@ -215,7 +247,11 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
   }
 
   const btnDisabled =
-    !formData.amountOut || !formData.price || loading || !formData.triggerPrice
+    !formData.amountOut ||
+    !formData.price ||
+    loading ||
+    !formData.triggerPrice ||
+    !!error
 
   const onChangeLimitPrice = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Validate input to allow only numbers and decimal point
@@ -440,6 +476,16 @@ export const TriggerOrderForm: React.FC<TriggerOrderFormProps> = ({
           </Typography>
         </Stack>
       </Stack>
+
+      {error && (
+        <Typography
+          color='#FF4D4F'
+          variant='body2'
+          sx={{ mt: 2 }}
+        >
+          {error}
+        </Typography>
+      )}
       <Button
         variant='contained'
         sx={{

@@ -85,4 +85,12 @@ export function registerAccountHandlers() {
     stmt.run(walletId)
     return true
   })
+
+  // Check private key already exists
+  ipcMain.handle('account:checkPrivateKeyExists', (event, privateKey) => {
+    const existingWallet = db
+      .prepare('SELECT id FROM wallets WHERE privateKey = ?')
+      .get(privateKey)
+    return !!existingWallet
+  })
 }
