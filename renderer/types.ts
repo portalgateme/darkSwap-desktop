@@ -121,3 +121,28 @@ export enum SortType {
   NEWEST = 'newest',
   OLDEST = 'oldest'
 }
+
+export interface CreateAutoOrderFormData {
+  minPrice: string
+  maxPrice: string
+  amountOut: string
+  feeRatio: string
+  startAt: string
+  endAt: string
+  intervalSeconds: string
+  orderDirection: OrderDirection
+  orderType: OrderType
+}
+
+export interface EditAutoOrderFormData {
+  assetPairId: string
+  orderDirection: OrderDirection
+  orderType: OrderType
+  minPrice: string
+  maxPrice: string
+  amountOut: string
+  feeRatio: string
+  startAt: string
+  endAt: string
+  intervalSeconds: string
+}

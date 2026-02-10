@@ -49,7 +49,6 @@ registerAssetPairHandlers()
 registerOrderHandlers()
 registerAutoOrderHandlers()
 registerRPCManagerHandlers()
-registerAppHandlers()
 
 app.on('ready', createWindow)
 app.on('window-all-closed', () => {
