@@ -1,9 +1,8 @@
-
 export default {
-    tables: [
-        //status: 0: normal, 1: used, 2: locked, 3: created
-        //type: 0: note, 1: partial note
-        `CREATE TABLE IF NOT EXISTS NOTES (
+  tables: [
+    //status: 0: normal, 1: used, 2: locked, 3: created
+    //type: 0: note, 1: partial note
+    `CREATE TABLE IF NOT EXISTS NOTES (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
             chainId INTERGER NOT NULL, 
             publicKey TEXT NOT NULL, 
@@ -18,7 +17,7 @@ export default {
             createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`,
 
-        `CREATE TABLE IF NOT EXISTS ASSET_PAIRS (
+    `CREATE TABLE IF NOT EXISTS ASSET_PAIRS (
             id TEXT NOT NULL,
             chainId INTERGER NOT NULL,
             baseAddress TEXT NOT NULL,
@@ -32,23 +31,23 @@ export default {
             PRIMARY KEY (id, chainId)
             );`,
 
-        //order_direction: 0: buy, 1: sell
-        //order_type: 0: market, 1: limit, 2: stop loss, 3: stop loss limit, 4: take profit, 5: take profit limit, 6: limit maker
-        //time_in_force in bitmap 
-        // GTC: 0000
-        // GTD: 0001
-        // IOC: 0010
-        // FOK: 0100
-        // AON (GTC): 1000
-        // AON (GTD): 1001
-        //stp in bitmap
-        // none: 00
-        // expire_maker: 01
-        // expire_taker: 10
-        // both: 11
-        //status: 0: open, 1: matched, 2: cancelled
+    //order_direction: 0: buy, 1: sell
+    //order_type: 0: market, 1: limit, 2: stop loss, 3: stop loss limit, 4: take profit, 5: take profit limit, 6: limit maker
+    //time_in_force in bitmap
+    // GTC: 0000
+    // GTD: 0001
+    // IOC: 0010
+    // FOK: 0100
+    // AON (GTC): 1000
+    // AON (GTD): 1001
+    //stp in bitmap
+    // none: 00
+    // expire_maker: 01
+    // expire_taker: 10
+    // both: 11
+    //status: 0: open, 1: matched, 2: cancelled
 
-        `CREATE TABLE IF NOT EXISTS ORDERS (
+    `CREATE TABLE IF NOT EXISTS ORDERS (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             orderId TEXT NOT NULL,
             chainId INTERGER NOT NULL, 
@@ -73,7 +72,7 @@ export default {
             createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`,
 
-        `CREATE TABLE IF NOT EXISTS ORDER_EVENTS (
+    `CREATE TABLE IF NOT EXISTS ORDER_EVENTS (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             chainId INTEGER NOT NULL,
             wallet TEXT NOT NULL,
@@ -82,5 +81,29 @@ export default {
             createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(chainId,wallet,orderId,status)
             );`,
-    ]
+
+    `CREATE TABLE IF NOT EXISTS AUTO_ORDER_JOBS (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            jobId TEXT NOT NULL UNIQUE,
+            chainId INTEGER NOT NULL,
+            wallet TEXT NOT NULL,
+            assetPairId TEXT NOT NULL,
+            orderDirection INTEGER NOT NULL,
+            orderType INTEGER NOT NULL,
+            timeInForce INTEGER NOT NULL,
+            stpMode INTEGER NOT NULL,
+            minPrice TEXT NOT NULL,
+            maxPrice TEXT NOT NULL,
+            amountOut TEXT NOT NULL,
+            feeRatio TEXT NOT NULL,
+            startAt INTEGER NOT NULL,
+            endAt INTEGER,
+            intervalSeconds INTEGER NOT NULL,
+            status INTEGER NOT NULL,
+            activeOrderId TEXT,
+            lastRunAt INTEGER,
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );`
+  ]
 }

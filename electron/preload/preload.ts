@@ -104,6 +104,35 @@ contextBridge.exposeInMainWorld('orderAPI', {
     )
 })
 
+// Auto order APIs
+contextBridge.exposeInMainWorld('autoOrderAPI', {
+  createJob: (jobDto: any) => ipcRenderer.invoke('autoOrder:createJob', jobDto),
+  updateJob: (jobDto: any) => ipcRenderer.invoke('autoOrder:updateJob', jobDto),
+  pauseJob: (jobId: string) => ipcRenderer.invoke('autoOrder:pauseJob', jobId),
+  resumeJob: (jobId: string) =>
+    ipcRenderer.invoke('autoOrder:resumeJob', jobId),
+  cancelJob: (jobId: string) =>
+    ipcRenderer.invoke('autoOrder:cancelJob', jobId),
+  getJob: (jobId: string) => ipcRenderer.invoke('autoOrder:getJob', jobId),
+  getJobsByPage: (
+    chainId: number,
+    page: number,
+    limit: number,
+    sort: string,
+    status?: number,
+    search?: string
+  ) =>
+    ipcRenderer.invoke(
+      'autoOrder:getJobsByPage',
+      chainId,
+      page,
+      limit,
+      sort,
+      status,
+      search
+    )
+})
+
 // RPC Manager APIs
 contextBridge.exposeInMainWorld('rpcManagerAPI', {
   getProvider: (chainId: number) =>

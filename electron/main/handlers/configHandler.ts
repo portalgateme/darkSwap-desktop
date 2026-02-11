@@ -31,6 +31,7 @@ export function registerConfigHandlers() {
         }
       )
       insertMany(configs)
+      event.sender.send('app:restart')
       return { success: true }
     }
   )

@@ -67,7 +67,7 @@ export const OrderContent = () => {
   const { list } = useAssetPairContext()
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10
+    limit: 5
   })
 
   const { isAuthenticated } = useConfigContext()
@@ -571,7 +571,7 @@ export const OrderContent = () => {
               page: 1
             }))
           }
-          rowsPerPageOptions={[5, 10]}
+          rowsPerPageOptions={[5]}
           sx={{
             color: 'white'
           }}

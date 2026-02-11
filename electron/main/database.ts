@@ -74,6 +74,9 @@ const darkSwapConfig: DarkSwapConfig = {
 }
 const instance = new DarkSwapClientCore(darkSwapConfig, db)
 
+// Start auto order scheduler
+instance.getAutoOrderManager().start()
+
 // Initialize database and start WebSocket client
 if (apiKey) {
   console.log('Starting DarkSwapClientCore with API Key')
