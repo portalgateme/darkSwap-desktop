@@ -10,25 +10,32 @@ import {
 import NetworkSelection from '../Selection/NetworkSelection'
 import AccountSelection from '../Selection/AccountSelection'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
-import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
-import { CreateAutoOrderFormData, OrderDirection, OrderType } from '../../types'
+import {
+  CreateAutoOrderFormData,
+  OrderDirection,
+  OrderType,
+  Wallet
+} from '../../types'
 
 interface CreateAutoOrderFormProps {
   onCreateJob: () => void
   disabled?: boolean
   formData: CreateAutoOrderFormData
   onChangeData: (data: Partial<CreateAutoOrderFormData>) => void
+  selectedWallet?: Wallet
+  onChangeWallet: (wallet: Wallet) => void
 }
 
 export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
   onCreateJob,
   disabled = false,
   formData,
-  onChangeData
+  onChangeData,
+  selectedWallet,
+  onChangeWallet
 }) => {
   const { chainId, currentChain, onChangeChain } = useChainContext()
-  const { selectedAccount, setSelectedAccount } = useAccountContext()
   const {
     list,
     assetPair: selectedPair,
@@ -55,6 +62,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
         direction='row'
         spacing={2}
         flexWrap='wrap'
+        alignItems={'center'}
       >
         <NetworkSelection
           selectedNetwork={currentChain}
@@ -62,8 +70,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           buttonSx={{ border: '1px solid #3A3E47' }}
         />
         <AccountSelection
-          selectedAccount={selectedAccount || undefined}
-          onAccountChange={(account) => setSelectedAccount(account)}
+          selectedAccount={selectedWallet}
+          onAccountChange={(account) => onChangeWallet(account)}
           buttonSx={{ border: '1px solid #3A3E47' }}
         />
         <Select
@@ -79,6 +87,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
             color: '#F3F4F6',
             borderRadius: '8px'
           }}
+          size='small'
         >
           <MenuItem value=''>Select Asset Pair</MenuItem>
           {list.map((pair) => (
@@ -94,8 +103,9 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
 
       <Stack
         direction='row'
-        spacing={2}
+        gap={2}
         flexWrap='wrap'
+        alignItems={'center'}
       >
         <Select
           value={formData.orderDirection}
@@ -110,6 +120,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
             color: '#F3F4F6',
             borderRadius: '8px'
           }}
+          size='small'
         >
           <MenuItem value={OrderDirection.BUY}>Buy</MenuItem>
           <MenuItem value={OrderDirection.SELL}>Sell</MenuItem>
@@ -128,6 +139,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
             color: '#F3F4F6',
             borderRadius: '8px'
           }}
+          size='small'
         >
           <MenuItem value={OrderType.LIMIT}>Limit</MenuItem>
           <MenuItem value={OrderType.MARKET}>Market</MenuItem>
@@ -141,6 +153,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
               minPrice: e.target.value
             })
           }
+          size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}
         />
@@ -152,6 +165,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
               maxPrice: e.target.value
             })
           }
+          size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}
         />
@@ -163,6 +177,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
               amountOut: e.target.value
             })
           }
+          size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}
         />
@@ -193,6 +208,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
               startAt: e.target.value
             })
           }
+          size='small'
           InputLabelProps={{
             shrink: true,
             style: { color: '#BDC1CA' }
@@ -208,6 +224,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
               endAt: e.target.value
             })
           }
+          size='small'
           InputLabelProps={{
             shrink: true,
             style: { color: '#BDC1CA' }
@@ -222,6 +239,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
               intervalSeconds: e.target.value
             })
           }
+          size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}
         />

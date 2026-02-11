@@ -84,18 +84,25 @@ export const AutoOrderContent = () => {
   })
 
   const selectedPair = assetPair
+  const [selectedWallet, setSelectedWallet] = useState(selectedAccount || null)
+
+  useEffect(() => {
+    if (!selectedWallet && selectedAccount) {
+      setSelectedWallet(selectedAccount)
+    }
+  }, [selectedAccount, selectedWallet])
 
   const canSubmit = useMemo(() => {
     return (
       !!chainId &&
-      !!selectedAccount &&
+      !!selectedWallet &&
       !!selectedPair &&
       formData.minPrice !== '' &&
       formData.maxPrice !== '' &&
       formData.amountOut !== '' &&
       Number(formData.intervalSeconds) > 0
     )
-  }, [chainId, selectedAccount, selectedPair, formData])
+  }, [chainId, selectedWallet, selectedPair, formData])
 
   const fetchJobs = async () => {
     if (!chainId) return
@@ -166,7 +173,7 @@ export const AutoOrderContent = () => {
   }
 
   const onCreateJob = async () => {
-    if (!chainId || !selectedAccount || !selectedPair) return
+    if (!chainId || !selectedWallet || !selectedPair) return
     if (!canSubmit) {
       showError('Please fill in all required fields')
       return
@@ -190,7 +197,7 @@ export const AutoOrderContent = () => {
       const payload: AutoOrderJobDto = {
         jobId: crypto.randomUUID(),
         chainId,
-        wallet: selectedAccount.address,
+        wallet: selectedWallet.address,
         assetPairId: selectedPair.id,
         orderDirection: formData.orderDirection,
         orderType: formData.orderType,
@@ -361,6 +368,9 @@ export const AutoOrderContent = () => {
         formData={formData}
         onChangeData={onChangeData}
         onCreateJob={onCreateJob}
+        disabled={!canSubmit}
+        selectedWallet={selectedWallet || undefined}
+        onChangeWallet={(wallet) => setSelectedWallet(wallet)}
       />
 
       <AutoOrdersTable

@@ -11,7 +11,9 @@ import {
   TextField,
   MenuItem,
   Select,
-  Button
+  Button,
+  IconButton,
+  Paper
 } from '@mui/material'
 import { SelectChangeEvent } from '@mui/material/Select'
 import {
@@ -21,6 +23,7 @@ import {
 } from '../../types'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { statusLabel } from '../AutoOrderContent'
+import { Cancel, Pause, PlayArrow } from '@mui/icons-material'
 
 interface AutoOrdersTableProps {
   search: string
@@ -71,12 +74,11 @@ export const AutoOrdersTable = ({
     onChangeFilterStatus(value)
   }
   return (
-    <TableContainer
+    <Stack
       sx={{
         background: '#1E2128',
         borderRadius: '16px',
-        padding: 2,
-        overflowX: 'auto'
+        padding: 2
       }}
     >
       <Typography
@@ -95,6 +97,7 @@ export const AutoOrdersTable = ({
       >
         <TextField
           label='Search'
+          size='small'
           value={search}
           onChange={onSearch}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 200 }}
@@ -108,6 +111,7 @@ export const AutoOrdersTable = ({
             color: '#F3F4F6',
             borderRadius: '8px'
           }}
+          size='small'
         >
           <MenuItem value='all'>All</MenuItem>
           <MenuItem value={AutoOrderJobStatus.ACTIVE}>Active</MenuItem>
@@ -117,7 +121,11 @@ export const AutoOrdersTable = ({
         </Select>
       </Stack>
 
-      <Table size='small'>
+      <Table
+        aria-label='simple table'
+        size='small'
+        sx={{ width: '100%' }}
+      >
         <TableHead>
           <TableRow>
             <TableCell sx={{ color: '#F3F4F6' }}>Job</TableCell>
@@ -143,7 +151,7 @@ export const AutoOrdersTable = ({
                   <TableCell
                     sx={{
                       color: '#BDC1CA',
-                      maxWidth: 90,
+                      maxWidth: 100,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap'
@@ -151,7 +159,7 @@ export const AutoOrdersTable = ({
                   >
                     {job.jobId}
                   </TableCell>
-                  <TableCell sx={{ color: '#BDC1CA', maxWidth: 120 }}>
+                  <TableCell sx={{ color: '#BDC1CA' }}>
                     {pair
                       ? `${pair.baseSymbol}/${pair.quoteSymbol}`
                       : job.assetPairId}
@@ -183,44 +191,51 @@ export const AutoOrdersTable = ({
                     <Stack
                       direction='row'
                       spacing={1}
+                      alignItems={'center'}
                     >
                       {job.status === AutoOrderJobStatus.ACTIVE && (
-                        <Button
+                        <IconButton
                           size='small'
-                          variant='outlined'
+                          aria-label='Pause'
                           onClick={(e) => {
                             e.stopPropagation()
                             onPause(job.jobId)
                           }}
                         >
-                          Pause
-                        </Button>
+                          <Pause
+                            fontSize='small'
+                            sx={{ fill: '#BDC1CA' }}
+                          />
+                        </IconButton>
                       )}
                       {job.status === AutoOrderJobStatus.PAUSED && (
-                        <Button
+                        <IconButton
                           size='small'
-                          variant='outlined'
+                          aria-label='Resume'
                           onClick={(e) => {
                             e.stopPropagation()
                             onResume(job.jobId)
                           }}
                         >
-                          Resume
-                        </Button>
+                          <PlayArrow
+                            fontSize='small'
+                            sx={{ fill: '#BDC1CA' }}
+                          />
+                        </IconButton>
                       )}
                       {job.status !== AutoOrderJobStatus.CANCELLED &&
                         job.status !== AutoOrderJobStatus.COMPLETED && (
-                          <Button
+                          <IconButton
                             size='small'
                             color='error'
-                            variant='outlined'
+                            aria-label='Cancel'
                             onClick={(e) => {
                               e.stopPropagation()
                               onCancel(job.jobId)
                             }}
                           >
-                            Cancel
-                          </Button>
+                            <Cancel fontSize='small' />
+                          </IconButton>
                         )}
                     </Stack>
                   </TableCell>
@@ -251,9 +266,16 @@ export const AutoOrdersTable = ({
         onRowsPerPageChange={(e) =>
           onChangePagination({ page: 1, limit: parseInt(e.target.value, 10) })
         }
-        rowsPerPageOptions={[5, 10, 25]}
-        sx={{ color: '#BDC1CA' }}
+        rowsPerPageOptions={[5]}
+        sx={{
+          color: '#BDC1CA',
+          '&	.MuiTablePagination-toolbar': {
+            minHeight: '40px',
+            height: '40px'
+          }
+        }}
+        size='small'
       />
-    </TableContainer>
+    </Stack>
   )
 }

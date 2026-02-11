@@ -11,7 +11,8 @@ import {
   TextField,
   FormControl,
   Select,
-  MenuItem
+  MenuItem,
+  IconButton
 } from '@mui/material'
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined'
 import SwapVertOutlinedIcon from '@mui/icons-material/SwapVertOutlined'
@@ -26,6 +27,7 @@ import { OrderDirection, OrderStatus, SortType } from '../../types'
 import { ethers } from 'ethers'
 import { shorterAddress } from '../../utils/format'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import SyncIcon from '@mui/icons-material/Sync'
 import CheckIcon from '@mui/icons-material/Check'
 
 const listStatuses = new Array<OrderStatus>(
@@ -47,6 +49,7 @@ export const HistoryContent = () => {
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all')
   const [copied, setCopied] = useState<string>('')
   const [totalOrders, setTotalOrders] = useState<number>(0)
+  const [loading, setLoading] = useState(false)
 
   const fetchOrders = async (
     chainId: number,
@@ -84,7 +87,7 @@ export const HistoryContent = () => {
     setCopied(text)
   }
 
-  useEffect(() => {
+  const onSync = () => {
     if (!chainId) return
     const statusFilter = filterStatus === 'all' ? undefined : filterStatus
     const searchTerm = search.trim() === '' ? undefined : search.trim()
@@ -96,6 +99,11 @@ export const HistoryContent = () => {
       statusFilter,
       searchTerm
     )
+  }
+
+  useEffect(() => {
+    if (!chainId) return
+    onSync()
   }, [chainId, pagination.page, pagination.limit, sort, filterStatus, search])
 
   const handlePageChange = (
@@ -237,6 +245,28 @@ export const HistoryContent = () => {
             <MenuItem value={SortType.OLDEST}>Oldest First</MenuItem>
           </Select>
         </FormControl>
+
+        <IconButton
+          onClick={onSync}
+          disabled={loading}
+          sx={{
+            bgcolor: '#1E2128',
+            borderRadius: '8px'
+          }}
+        >
+          <SyncIcon
+            sx={{
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fill: '#F3F4F6',
+              animation: loading ? 'spin 1s linear infinite' : 'none',
+              '@keyframes spin': {
+                '0%': { transform: 'rotate(0deg)' },
+                '100%': { transform: 'rotate(-360deg)' }
+              },
+              '&:hover': { rotate: '-180deg', transition: '0.3s' }
+            }}
+          />
+        </IconButton>
       </Stack>
       {/* Table */}
       <TableContainer
