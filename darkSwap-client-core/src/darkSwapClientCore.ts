@@ -74,7 +74,11 @@ export class DarkSwapClientCore {
       orderEventService,
       this.rpcManager
     )
-    this.autoOrderManager = new AutoOrderManager(dbService, this.orderManager)
+    this.autoOrderManager = new AutoOrderManager(
+      dbService,
+      this.orderManager,
+      this.assetManager
+    )
     this.webSocketClient = new WebSocketClient(
       config,
       settlementService,

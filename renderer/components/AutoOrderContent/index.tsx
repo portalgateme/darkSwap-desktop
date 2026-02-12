@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material'
+import { Button, Stack, Typography } from '@mui/material'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
@@ -15,9 +15,9 @@ import {
   StpMode,
   TimeInForce
 } from '../../types'
-import { CreateAutoOrderForm } from '../Form/CreateAutoOrderForm'
 import { AutoOrdersTable } from '../Table/AutoOrdersTable'
 import { AutoOrderDetailModal } from '../Modal/AutoOrderDetailModal'
+import { CreateAutoOrderModal } from '../Modal/CreateAutoOrderModal'
 
 export const formatDate = (value?: number | null) => {
   if (!value) return '-'
@@ -57,7 +57,7 @@ export const AutoOrderContent = () => {
     orderType: OrderType.LIMIT
   })
 
-  const [pagination, setPagination] = useState({ page: 1, limit: 10 })
+  const [pagination, setPagination] = useState({ page: 1, limit: 5 })
   const [jobs, setJobs] = useState<AutoOrderJobDto[]>([])
   const [totalJobs, setTotalJobs] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -68,6 +68,7 @@ export const AutoOrderContent = () => {
   )
 
   const [detailOpen, setDetailOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
   const [selectedJob, setSelectedJob] = useState<AutoOrderJobDto | null>(null)
   const [editMode, setEditMode] = useState(false)
   const [editForm, setEditForm] = useState<EditAutoOrderFormData>({
@@ -172,6 +173,14 @@ export const AutoOrderContent = () => {
     setEditMode(false)
   }
 
+  const onOpenCreate = () => {
+    setCreateOpen(true)
+  }
+
+  const onCloseCreate = () => {
+    setCreateOpen(false)
+  }
+
   const onCreateJob = async () => {
     if (!chainId || !selectedWallet || !selectedPair) return
     if (!canSubmit) {
@@ -223,6 +232,7 @@ export const AutoOrderContent = () => {
         maxPrice: '',
         amountOut: ''
       }))
+      setCreateOpen(false)
       fetchJobs()
     } catch (error) {
       console.error('Create job failed', error)
@@ -361,17 +371,37 @@ export const AutoOrderContent = () => {
 
   return (
     <Stack
+      mt={2}
       spacing={3}
       sx={{ width: '100%' }}
     >
-      <CreateAutoOrderForm
-        formData={formData}
-        onChangeData={onChangeData}
-        onCreateJob={onCreateJob}
-        disabled={!canSubmit}
-        selectedWallet={selectedWallet || undefined}
-        onChangeWallet={(wallet) => setSelectedWallet(wallet)}
-      />
+      <Stack
+        direction='row'
+        alignItems='center'
+        justifyContent='flex-end'
+      >
+        {/* <Stack>
+          <Typography
+            variant='h5'
+            color='#F3F4F6'
+          >
+            Auto Order Jobs
+          </Typography>
+          <Typography
+            variant='body2'
+            color='#BDC1CA'
+          >
+            Create and manage automated orders by conditions
+          </Typography>
+        </Stack> */}
+        <Button
+          variant='contained'
+          sx={{ background: '#68EB8E', color: '#0C1114' }}
+          onClick={onOpenCreate}
+        >
+          Create Auto Order
+        </Button>
+      </Stack>
 
       <AutoOrdersTable
         search={search}
@@ -399,6 +429,17 @@ export const AutoOrderContent = () => {
         editMode={editMode}
         onChangeEditMode={onChangeEditMode}
         onUpdateJob={onUpdateJob}
+      />
+
+      <CreateAutoOrderModal
+        open={createOpen}
+        onClose={onCloseCreate}
+        onCreateJob={onCreateJob}
+        disabled={!canSubmit}
+        formData={formData}
+        onChangeData={onChangeData}
+        selectedWallet={selectedWallet || undefined}
+        onChangeWallet={(wallet) => setSelectedWallet(wallet)}
       />
     </Stack>
   )

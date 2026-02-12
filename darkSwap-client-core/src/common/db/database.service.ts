@@ -10,7 +10,8 @@ import {
   AssetPairDto,
   SortType,
   AutoOrderJobDto,
-  AutoOrderJobStatus
+  AutoOrderJobStatus,
+  AutoOrderJobOrderDto
 } from '../../types'
 
 interface NoteEntity {
@@ -51,6 +52,15 @@ interface AutoOrderJobEntity {
   lastRunAt?: number
   createdAt: Date
   updatedAt: Date
+}
+
+interface AutoOrderJobOrderEntity {
+  id: number
+  jobId: string
+  orderId: string
+  chainId: number
+  wallet: string
+  createdAt: Date
 }
 
 export class DatabaseService {
@@ -1056,5 +1066,33 @@ export class DatabaseService {
     }))
 
     return { jobs, total }
+  }
+
+  // Auto order job order logs
+  public async addAutoOrderJobOrder(log: AutoOrderJobOrderDto) {
+    const query = `INSERT INTO AUTO_ORDER_JOB_ORDERS (
+      jobId, orderId, chainId, wallet
+    ) VALUES (?, ?, ?, ?)
+    ON CONFLICT DO NOTHING`
+
+    const stmt = this.db.prepare(query)
+    stmt.run(log.jobId, log.orderId, log.chainId, log.wallet.toLowerCase())
+  }
+
+  public async getAutoOrderJobOrdersByJobId(
+    jobId: string
+  ): Promise<AutoOrderJobOrderDto[]> {
+    const query = `SELECT * FROM AUTO_ORDER_JOB_ORDERS WHERE jobId = ? ORDER BY createdAt DESC`
+    const stmt = this.db.prepare(query)
+    const rows = stmt.all(jobId) as AutoOrderJobOrderEntity[]
+
+    return rows.map((row) => ({
+      id: row.id,
+      jobId: row.jobId,
+      orderId: row.orderId,
+      chainId: row.chainId,
+      wallet: row.wallet,
+      createdAt: row.createdAt
+    }))
   }
 }

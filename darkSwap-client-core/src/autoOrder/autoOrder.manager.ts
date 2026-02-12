@@ -3,14 +3,18 @@ import { v4 } from 'uuid'
 import { Logger } from 'tslog'
 import { ethers } from 'ethers'
 import { DatabaseService } from '../common/db/database.service'
+import { AssetManager } from '../assetManagement'
 import { OrderManager } from '../orderManagement'
 import {
   AutoOrderJobDto,
   AutoOrderJobStatus,
+  AutoOrderJobOrderDto,
+  DepositDto,
   OrderDto,
   OrderDirection,
   OrderStatus,
-  SortType
+  SortType,
+  WithdrawDto
 } from '../types'
 
 const PRICE_DECIMALS = 18
@@ -18,14 +22,20 @@ const PRICE_DECIMALS = 18
 export class AutoOrderManager {
   private readonly logger = new Logger({ name: AutoOrderManager.name })
   private dbService: DatabaseService
+  private assetManager: AssetManager
   private orderManager: OrderManager
   private intervalTimer?: NodeJS.Timeout
   private isTicking = false
   private defaultIntervalSeconds = 15
 
-  public constructor(dbService: DatabaseService, orderManager: OrderManager) {
+  public constructor(
+    dbService: DatabaseService,
+    orderManager: OrderManager,
+    assetManager: AssetManager
+  ) {
     this.dbService = dbService
     this.orderManager = orderManager
+    this.assetManager = assetManager
   }
 
   public start(intervalSeconds: number = this.defaultIntervalSeconds) {
@@ -220,19 +230,61 @@ export class AutoOrderManager {
             const order = await this.dbService.getOrderByOrderId(
               job.activeOrderId
             )
-            if (
-              !order ||
-              order.status === OrderStatus.SETTLED ||
-              order.status === OrderStatus.CANCELLED
-            ) {
+
+            if (!order) {
               await this.dbService.updateAutoOrderJobActiveOrder(
                 job.jobId,
                 null,
                 now
               )
-            } else {
               continue
             }
+
+            if (order.status === OrderStatus.SETTLED) {
+              const assetPair = await this.dbService.getAssetPairById(
+                order.assetPairId,
+                order.chainId
+              )
+
+              if (!assetPair) {
+                this.logger.warn(
+                  `Asset pair not found for settled order ${order.orderId}`
+                )
+                continue
+              }
+
+              const inAsset =
+                order.orderDirection === OrderDirection.BUY
+                  ? assetPair.baseAddress
+                  : assetPair.quoteAddress
+
+              const withdrawDto: WithdrawDto = {
+                chainId: order.chainId,
+                wallet: order.wallet,
+                asset: inAsset,
+                amount: order.amountIn
+              }
+
+              await this.assetManager.withdraw(withdrawDto)
+
+              await this.dbService.updateAutoOrderJobActiveOrder(
+                job.jobId,
+                null,
+                now
+              )
+              continue
+            }
+
+            if (order.status === OrderStatus.CANCELLED) {
+              await this.dbService.updateAutoOrderJobActiveOrder(
+                job.jobId,
+                null,
+                now
+              )
+              continue
+            }
+
+            continue
           }
 
           const assetPair = await this.dbService.getAssetPairById(
@@ -275,6 +327,20 @@ export class AutoOrderManager {
             continue
           }
 
+          const outAsset =
+            job.orderDirection === OrderDirection.BUY
+              ? assetPair.quoteAddress
+              : assetPair.baseAddress
+
+          const depositDto: DepositDto = {
+            chainId: job.chainId,
+            wallet: job.wallet,
+            asset: outAsset,
+            amount: amountOutRaw.toString()
+          }
+
+          await this.assetManager.deposit(depositDto)
+
           const orderDto: OrderDto = {
             orderId: v4(),
             wallet: job.wallet,
@@ -287,11 +353,20 @@ export class AutoOrderManager {
             price: priceStr,
             amountOut: amountOutRaw.toString(),
             amountIn: amountInRaw.toString(),
-            partialAmountIn: (amountInRaw / 100n).toString(),
+            partialAmountIn: amountInRaw.toString(), // fully filled when created
             feeRatio: job.feeRatio
           }
 
           await this.orderManager.createOrder(orderDto)
+
+          const log: AutoOrderJobOrderDto = {
+            jobId: job.jobId,
+            orderId: orderDto.orderId,
+            chainId: job.chainId,
+            wallet: job.wallet
+          }
+
+          await this.dbService.addAutoOrderJobOrder(log)
 
           await this.dbService.updateAutoOrderJobActiveOrder(
             job.jobId,

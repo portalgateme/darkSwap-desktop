@@ -186,6 +186,13 @@ export class AutoOrderJobDto extends BaseDto {
   updatedAt?: Date
 }
 
+export class AutoOrderJobOrderDto extends BaseDto {
+  id?: number
+  jobId: string
+  orderId: string
+  createdAt?: Date
+}
+
 export class AssetPairDto {
   id: string
   chainId: number

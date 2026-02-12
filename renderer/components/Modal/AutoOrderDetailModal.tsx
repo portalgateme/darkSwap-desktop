@@ -50,6 +50,9 @@ export const AutoOrderDetailModal = ({
       onClose={closeDetail}
       maxWidth='md'
       fullWidth
+      PaperProps={{
+        style: { borderRadius: 16, background: '#1E2128', color: '#F3F4F6' }
+      }}
     >
       <DialogTitle>Auto Order Job Details</DialogTitle>
       <DialogContent>

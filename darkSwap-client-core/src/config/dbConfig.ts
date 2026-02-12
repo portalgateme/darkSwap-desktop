@@ -104,6 +104,18 @@ export default {
             lastRunAt INTEGER,
             createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );`
+            );`,
+
+    `CREATE TABLE IF NOT EXISTS AUTO_ORDER_JOB_ORDERS (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            jobId TEXT NOT NULL,
+            orderId TEXT NOT NULL,
+            chainId INTEGER NOT NULL,
+            wallet TEXT NOT NULL,
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(jobId, orderId)
+            );`,
+
+    `ALTER TABLE AUTO_ORDER_JOBS ADD COLUMN price TEXT NOT NULL DEFAULT '0'`
   ]
 }

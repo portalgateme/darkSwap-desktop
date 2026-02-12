@@ -19,8 +19,6 @@ import {
 } from '../../types'
 
 interface CreateAutoOrderFormProps {
-  onCreateJob: () => void
-  disabled?: boolean
   formData: CreateAutoOrderFormData
   onChangeData: (data: Partial<CreateAutoOrderFormData>) => void
   selectedWallet?: Wallet
@@ -28,8 +26,6 @@ interface CreateAutoOrderFormProps {
 }
 
 export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
-  onCreateJob,
-  disabled = false,
   formData,
   onChangeData,
   selectedWallet,
@@ -46,18 +42,10 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
     <Stack
       spacing={2}
       sx={{
-        background: '#1E2128',
         padding: 2,
         borderRadius: '16px'
       }}
     >
-      <Typography
-        variant='h6'
-        color='#F3F4F6'
-      >
-        Create Auto Order Job
-      </Typography>
-
       <Stack
         direction='row'
         spacing={2}
@@ -244,17 +232,6 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}
         />
       </Stack>
-
-      <Box>
-        <Button
-          variant='contained'
-          sx={{ background: '#68EB8E', color: '#0C1114' }}
-          onClick={onCreateJob}
-          disabled={disabled}
-        >
-          Create Job
-        </Button>
-      </Box>
     </Stack>
   )
 }
