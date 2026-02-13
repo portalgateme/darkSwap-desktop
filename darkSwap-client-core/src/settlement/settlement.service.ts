@@ -3,7 +3,8 @@ import {
   DarkSwapError,
   DarkSwapMessage,
   DarkSwapNote,
-  DarkSwapOrderNote
+  DarkSwapOrderNote,
+  isAddressEquals
 } from '@thesingularitynetwork/darkswap-sdk'
 import {
   deserializeDarkSwapMessage,
@@ -84,9 +85,8 @@ export class SettlementService {
       OrderStatus.MATCHED
     )
 
-    const matchedOrderDto = await this.booknodeService.getMatchedOrderDetails(
-      orderInfo
-    )
+    const matchedOrderDto =
+      await this.booknodeService.getMatchedOrderDetails(orderInfo)
     const bobSwapMessage = deserializeDarkSwapMessage(
       matchedOrderDto.bobSwapMessage
     )
@@ -296,9 +296,8 @@ export class SettlementService {
 
   async bobConfirm(orderInfo: OrderDto) {
     //get orderdetail from bookNode
-    const orderDetail = await this.booknodeService.getMatchedOrderDetails(
-      orderInfo
-    )
+    const orderDetail =
+      await this.booknodeService.getMatchedOrderDetails(orderInfo)
     if (orderDetail.bobSwapMessage) {
       //just skip it
       console.log('Order ', orderInfo.orderId, ' has already been confirmed')
@@ -322,10 +321,9 @@ export class SettlementService {
       address: orderInfo.wallet
     } as DarkSwapOrderNote
 
-    const swapInAsset =
-      orderNote.asset === assetPair.quoteAddress
-        ? assetPair.baseAddress
-        : assetPair.quoteAddress
+    const swapInAsset = isAddressEquals(orderNote.asset, assetPair.quoteAddress)
+      ? assetPair.baseAddress
+      : assetPair.quoteAddress
 
     const darkSwapContext = await DarkSwapContext.createDarkSwapContext(
       orderInfo.chainId,
