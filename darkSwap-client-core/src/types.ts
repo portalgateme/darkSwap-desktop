@@ -172,6 +172,8 @@ export class AutoOrderJobDto extends BaseDto {
   orderType: OrderType
   timeInForce: TimeInForce
   stpMode: StpMode
+  price: string
+  marketPrice?: string
   minPrice: string
   maxPrice: string
   amountOut: string

@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { v4 } from 'uuid'
 import { Logger } from 'tslog'
 import { ethers } from 'ethers'
@@ -12,6 +11,7 @@ import {
   DepositDto,
   OrderDto,
   OrderDirection,
+  OrderType,
   OrderStatus,
   SortType,
   WithdrawDto
@@ -79,6 +79,20 @@ export class AutoOrderManager {
       throw new Error('minPrice must be less than or equal to maxPrice')
     }
 
+    if (
+      job.orderType === OrderType.LIMIT ||
+      job.orderType === OrderType.LIMIT_MAKER
+    ) {
+      const limitPrice = Number(job.price)
+      if (isNaN(limitPrice) || limitPrice <= 0) {
+        throw new Error('price is required for limit orders')
+      }
+    } else {
+      job.price = job.price || '0'
+    }
+
+    job.marketPrice = job.marketPrice || '0'
+
     const existing = await this.dbService.getAutoOrderJobByJobId(job.jobId)
     if (existing) {
       throw new Error('Duplicate jobId')
@@ -139,6 +153,20 @@ export class AutoOrderManager {
       throw new Error('minPrice must be less than or equal to maxPrice')
     }
 
+    if (
+      merged.orderType === OrderType.LIMIT ||
+      merged.orderType === OrderType.LIMIT_MAKER
+    ) {
+      const limitPrice = Number(merged.price)
+      if (isNaN(limitPrice) || limitPrice <= 0) {
+        throw new Error('price is required for limit orders')
+      }
+    } else {
+      merged.price = merged.price || '0'
+    }
+
+    merged.marketPrice = merged.marketPrice || '0'
+
     await this.dbService.updateAutoOrderJob(merged)
 
     return await this.dbService.getAutoOrderJobByJobId(merged.jobId)
@@ -162,6 +190,18 @@ export class AutoOrderManager {
     await this.dbService.updateAutoOrderJobStatus(
       jobId,
       AutoOrderJobStatus.CANCELLED
+    )
+  }
+
+  public async updateMarketPrice(
+    chainId: number,
+    assetPairId: string,
+    marketPrice: string
+  ) {
+    await this.dbService.updateAutoOrderJobsMarketPrice(
+      chainId,
+      assetPairId,
+      marketPrice
     )
   }
 
@@ -298,17 +338,14 @@ export class AutoOrderManager {
             continue
           }
 
-          const rawPrice = await this.getMarketPrice(
-            assetPair.baseSymbol + assetPair.quoteSymbol
-          )
-          const priceStr = rawPrice
-            ? this.normalizePrice(rawPrice, PRICE_DECIMALS)
+          const marketPriceStr = job.marketPrice
+            ? this.normalizePrice(job.marketPrice, PRICE_DECIMALS)
             : null
-          if (!priceStr) {
+          if (!marketPriceStr || Number(marketPriceStr) <= 0) {
             continue
           }
 
-          const price = Number(priceStr)
+          const price = Number(marketPriceStr)
           const minPrice = Number(job.minPrice)
           const maxPrice = Number(job.maxPrice)
 
@@ -316,11 +353,21 @@ export class AutoOrderManager {
             continue
           }
 
+          const orderPrice =
+            job.orderType === OrderType.MARKET
+              ? marketPriceStr
+              : this.normalizePrice(job.price, PRICE_DECIMALS)
+
+          if (!orderPrice || Number(orderPrice) <= 0) {
+            this.logger.warn(`Invalid order price for job ${job.jobId}`)
+            continue
+          }
+
           const { amountOutRaw, amountInRaw } = this.computeOrderAmounts(
             job,
             assetPair.baseDecimal,
             assetPair.quoteDecimal,
-            priceStr
+            orderPrice
           )
 
           if (amountInRaw <= 0n || amountOutRaw <= 0n) {
@@ -350,7 +397,7 @@ export class AutoOrderManager {
             orderType: job.orderType,
             timeInForce: job.timeInForce,
             stpMode: job.stpMode,
-            price: priceStr,
+            price: orderPrice,
             amountOut: amountOutRaw.toString(),
             amountIn: amountInRaw.toString(),
             partialAmountIn: amountInRaw.toString(), // fully filled when created
@@ -415,21 +462,6 @@ export class AutoOrderManager {
     }
 
     return { amountOutRaw, amountInRaw }
-  }
-
-  private async getMarketPrice(symbol: string): Promise<string | null> {
-    try {
-      const response = await axios.get(
-        `https://data-api.binance.vision/api/v3/avgPrice?symbol=${symbol}`
-      )
-      if (!response?.data?.price) {
-        return null
-      }
-      return response.data.price as string
-    } catch (error) {
-      this.logger.warn(`Failed to fetch market price for ${symbol}`, error)
-      return null
-    }
   }
 
   private normalizePrice(value: string, decimals: number): string {

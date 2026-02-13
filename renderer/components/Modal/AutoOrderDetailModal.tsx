@@ -142,6 +142,14 @@ export const AutoOrderDetailModal = ({
               spacing={2}
               flexWrap='wrap'
             >
+              {editForm.orderType === OrderType.LIMIT && (
+                <TextField
+                  label='Price'
+                  value={editForm.price}
+                  onChange={(e) => onChangeEditForm({ price: e.target.value })}
+                  disabled={!editMode}
+                />
+              )}
               <TextField
                 label='Min Price'
                 value={editForm.minPrice}

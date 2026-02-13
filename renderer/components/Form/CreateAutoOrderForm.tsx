@@ -7,6 +7,7 @@ import {
   TextField,
   Typography
 } from '@mui/material'
+import { useState } from 'react'
 import NetworkSelection from '../Selection/NetworkSelection'
 import AccountSelection from '../Selection/AccountSelection'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
@@ -23,15 +24,27 @@ interface CreateAutoOrderFormProps {
   onChangeData: (data: Partial<CreateAutoOrderFormData>) => void
   selectedWallet?: Wallet
   onChangeWallet: (wallet: Wallet) => void
+  errors: {
+    price?: string
+    minPrice?: string
+    maxPrice?: string
+    amountOut?: string
+    intervalSeconds?: string
+    startAt?: string
+    endAt?: string
+  }
+  validateField: (field: keyof CreateAutoOrderFormData, value: any) => void
 }
 
 export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
   formData,
   onChangeData,
   selectedWallet,
-  onChangeWallet
+  onChangeWallet,
+  errors,
+  validateField
 }) => {
-  const { chainId, currentChain, onChangeChain } = useChainContext()
+  const { currentChain, onChangeChain } = useChainContext()
   const {
     list,
     assetPair: selectedPair,
@@ -133,43 +146,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           <MenuItem value={OrderType.MARKET}>Market</MenuItem>
         </Select>
 
-        <TextField
-          label='Min Price'
-          value={formData.minPrice}
-          onChange={(e) =>
-            onChangeData({
-              minPrice: e.target.value
-            })
-          }
-          size='small'
-          InputLabelProps={{ style: { color: '#BDC1CA' } }}
-          sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}
-        />
-        <TextField
-          label='Max Price'
-          value={formData.maxPrice}
-          onChange={(e) =>
-            onChangeData({
-              maxPrice: e.target.value
-            })
-          }
-          size='small'
-          InputLabelProps={{ style: { color: '#BDC1CA' } }}
-          sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}
-        />
-        <TextField
-          label='Amount Out'
-          value={formData.amountOut}
-          onChange={(e) =>
-            onChangeData({
-              amountOut: e.target.value
-            })
-          }
-          size='small'
-          InputLabelProps={{ style: { color: '#BDC1CA' } }}
-          sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}
-        />
-        <TextField
+        {/* TODO: Hide until next decision */}
+        {/* <TextField
           label='Fee Ratio'
           value={formData.feeRatio}
           onChange={(e) =>
@@ -179,6 +157,86 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           }
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 160 }}
+        /> */}
+      </Stack>
+
+      <Stack
+        direction='row'
+        spacing={2}
+        flexWrap='wrap'
+      >
+        <TextField
+          label='Min Price'
+          value={formData.minPrice}
+          onChange={(e) => {
+            onChangeData({
+              minPrice: e.target.value
+            })
+            validateField('minPrice', e.target.value)
+          }}
+          onBlur={(e) => validateField('minPrice', e.target.value)}
+          error={!!errors.minPrice}
+          helperText={errors.minPrice}
+          size='small'
+          InputLabelProps={{ style: { color: '#BDC1CA' } }}
+          sx={{ input: { color: '#F3F4F6' }, width: 300 }}
+        />
+        <TextField
+          label='Max Price'
+          value={formData.maxPrice}
+          onChange={(e) => {
+            onChangeData({
+              maxPrice: e.target.value
+            })
+            validateField('maxPrice', e.target.value)
+          }}
+          onBlur={(e) => validateField('maxPrice', e.target.value)}
+          error={!!errors.maxPrice}
+          helperText={errors.maxPrice}
+          size='small'
+          InputLabelProps={{ style: { color: '#BDC1CA' } }}
+          sx={{ input: { color: '#F3F4F6' }, width: 300 }}
+        />
+      </Stack>
+
+      <Stack
+        direction='row'
+        spacing={2}
+        flexWrap='wrap'
+      >
+        <TextField
+          label='Price'
+          value={formData.price}
+          disabled={formData.orderType === OrderType.MARKET}
+          size='small'
+          onChange={(e) => {
+            onChangeData({
+              price: e.target.value
+            })
+            validateField('price', e.target.value)
+          }}
+          onBlur={(e) => validateField('price', e.target.value)}
+          error={!!errors.price}
+          helperText={errors.price}
+          InputLabelProps={{ style: { color: '#BDC1CA' } }}
+          sx={{ input: { color: '#F3F4F6' }, width: 300 }}
+        />
+
+        <TextField
+          label='Amount'
+          value={formData.amountOut}
+          onChange={(e) => {
+            onChangeData({
+              amountOut: e.target.value
+            })
+            validateField('amountOut', e.target.value)
+          }}
+          onBlur={(e) => validateField('amountOut', e.target.value)}
+          error={!!errors.amountOut}
+          helperText={errors.amountOut}
+          size='small'
+          InputLabelProps={{ style: { color: '#BDC1CA' } }}
+          sx={{ input: { color: '#F3F4F6' }, minWidth: 300 }}
         />
       </Stack>
 
@@ -191,11 +249,15 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           label='Start Date'
           type='datetime-local'
           value={formData.startAt}
-          onChange={(e) =>
+          onChange={(e) => {
             onChangeData({
               startAt: e.target.value
             })
-          }
+            validateField('startAt', e.target.value)
+          }}
+          onBlur={(e) => validateField('startAt', e.target.value)}
+          error={!!errors.startAt}
+          helperText={errors.startAt}
           size='small'
           InputLabelProps={{
             shrink: true,
@@ -207,11 +269,15 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           label='End Date'
           type='datetime-local'
           value={formData.endAt}
-          onChange={(e) =>
+          onChange={(e) => {
             onChangeData({
               endAt: e.target.value
             })
-          }
+            validateField('endAt', e.target.value)
+          }}
+          onBlur={(e) => validateField('endAt', e.target.value)}
+          error={!!errors.endAt}
+          helperText={errors.endAt}
           size='small'
           InputLabelProps={{
             shrink: true,
@@ -222,11 +288,15 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
         <TextField
           label='Interval (seconds)'
           value={formData.intervalSeconds}
-          onChange={(e) =>
+          onChange={(e) => {
             onChangeData({
               intervalSeconds: e.target.value
             })
-          }
+            validateField('intervalSeconds', e.target.value)
+          }}
+          onBlur={(e) => validateField('intervalSeconds', e.target.value)}
+          error={!!errors.intervalSeconds}
+          helperText={errors.intervalSeconds}
           size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}

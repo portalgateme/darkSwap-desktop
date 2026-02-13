@@ -40,6 +40,8 @@ interface AutoOrderJobEntity {
   orderType: number
   timeInForce: number
   stpMode: number
+  price: string
+  marketPrice: string
   minPrice: string
   maxPrice: string
   amountOut: string
@@ -846,9 +848,9 @@ export class DatabaseService {
   public async addAutoOrderJob(job: AutoOrderJobDto) {
     const query = `INSERT INTO AUTO_ORDER_JOBS (
       jobId, chainId, wallet, assetPairId, orderDirection, orderType,
-      timeInForce, stpMode, minPrice, maxPrice, amountOut, feeRatio,
+      timeInForce, stpMode, price, marketPrice, minPrice, maxPrice, amountOut, feeRatio,
       startAt, endAt, intervalSeconds, status, activeOrderId, lastRunAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
     const stmt = this.db.prepare(query)
     stmt.run(
@@ -860,6 +862,8 @@ export class DatabaseService {
       job.orderType,
       job.timeInForce,
       job.stpMode,
+      job.price,
+      job.marketPrice ?? '0',
       job.minPrice,
       job.maxPrice,
       job.amountOut,
@@ -893,6 +897,8 @@ export class DatabaseService {
       orderType: row.orderType,
       timeInForce: row.timeInForce,
       stpMode: row.stpMode,
+      price: row.price,
+      marketPrice: row.marketPrice,
       minPrice: row.minPrice,
       maxPrice: row.maxPrice,
       amountOut: row.amountOut,
@@ -925,6 +931,8 @@ export class DatabaseService {
       orderType: row.orderType,
       timeInForce: row.timeInForce,
       stpMode: row.stpMode,
+      price: row.price,
+      marketPrice: row.marketPrice,
       minPrice: row.minPrice,
       maxPrice: row.maxPrice,
       amountOut: row.amountOut,
@@ -965,6 +973,16 @@ export class DatabaseService {
     stmt.run(lastRunAt, jobId)
   }
 
+  public async updateAutoOrderJobsMarketPrice(
+    chainId: number,
+    assetPairId: string,
+    marketPrice: string
+  ) {
+    const query = `UPDATE AUTO_ORDER_JOBS SET marketPrice = ?, updatedAt = CURRENT_TIMESTAMP WHERE chainId = ? AND assetPairId = ?`
+    const stmt = this.db.prepare(query)
+    stmt.run(marketPrice, chainId, assetPairId)
+  }
+
   public async updateAutoOrderJob(job: AutoOrderJobDto) {
     const query = `UPDATE AUTO_ORDER_JOBS SET
       assetPairId = ?,
@@ -972,6 +990,8 @@ export class DatabaseService {
       orderType = ?,
       timeInForce = ?,
       stpMode = ?,
+      price = ?,
+      marketPrice = ?,
       minPrice = ?,
       maxPrice = ?,
       amountOut = ?,
@@ -989,6 +1009,8 @@ export class DatabaseService {
       job.orderType,
       job.timeInForce,
       job.stpMode,
+      job.price,
+      job.marketPrice ?? '0',
       job.minPrice,
       job.maxPrice,
       job.amountOut,
@@ -1051,6 +1073,8 @@ export class DatabaseService {
       orderType: row.orderType,
       timeInForce: row.timeInForce,
       stpMode: row.stpMode,
+      price: row.price,
+      marketPrice: row.marketPrice,
       minPrice: row.minPrice,
       maxPrice: row.maxPrice,
       amountOut: row.amountOut,

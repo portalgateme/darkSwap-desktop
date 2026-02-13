@@ -113,6 +113,17 @@ contextBridge.exposeInMainWorld('autoOrderAPI', {
     ipcRenderer.invoke('autoOrder:resumeJob', jobId),
   cancelJob: (jobId: string) =>
     ipcRenderer.invoke('autoOrder:cancelJob', jobId),
+  updateMarketPrice: (
+    chainId: number,
+    assetPairId: string,
+    marketPrice: string
+  ) =>
+    ipcRenderer.invoke(
+      'autoOrder:updateMarketPrice',
+      chainId,
+      assetPairId,
+      marketPrice
+    ),
   getJob: (jobId: string) => ipcRenderer.invoke('autoOrder:getJob', jobId),
   getJobsByPage: (
     chainId: number,

@@ -1,10 +1,11 @@
 import { Button, Stack, Typography } from '@mui/material'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { use, useEffect, useMemo, useState } from 'react'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { useToast } from '../../contexts/ToastContext'
 import {
+  AssetPairDto,
   AutoOrderJobDto,
   AutoOrderJobStatus,
   CreateAutoOrderFormData,
@@ -15,6 +16,7 @@ import {
   StpMode,
   TimeInForce
 } from '../../types'
+import { getMarketPriceFromBinance } from '../../services/orderService'
 import { AutoOrdersTable } from '../Table/AutoOrdersTable'
 import { AutoOrderDetailModal } from '../Modal/AutoOrderDetailModal'
 import { CreateAutoOrderModal } from '../Modal/CreateAutoOrderModal'
@@ -46,6 +48,8 @@ export const AutoOrderContent = () => {
   const { showError, showLoading, hideToast, showSuccess } = useToast()
 
   const [formData, setFormData] = useState<CreateAutoOrderFormData>({
+    price: '',
+    marketPrice: '',
     minPrice: '',
     maxPrice: '',
     amountOut: '',
@@ -57,15 +61,9 @@ export const AutoOrderContent = () => {
     orderType: OrderType.LIMIT
   })
 
-  const [pagination, setPagination] = useState({ page: 1, limit: 5 })
   const [jobs, setJobs] = useState<AutoOrderJobDto[]>([])
   const [totalJobs, setTotalJobs] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [filterStatus, setFilterStatus] = useState<AutoOrderJobStatus | 'all'>(
-    'all'
-  )
 
   const [detailOpen, setDetailOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
@@ -75,10 +73,12 @@ export const AutoOrderContent = () => {
     assetPairId: '',
     orderDirection: OrderDirection.SELL,
     orderType: OrderType.LIMIT,
+    price: '',
+    marketPrice: '',
     minPrice: '',
     maxPrice: '',
     amountOut: '',
-    feeRatio: '0.001',
+    feeRatio: '0.001', // default value
     startAt: '',
     endAt: '',
     intervalSeconds: '15'
@@ -87,17 +87,95 @@ export const AutoOrderContent = () => {
   const selectedPair = assetPair
   const [selectedWallet, setSelectedWallet] = useState(selectedAccount || null)
 
+  const fetchMarketPrice = async (pair: AssetPairDto) => {
+    const price = await getMarketPriceFromBinance(
+      pair.baseSymbol + pair.quoteSymbol
+    )
+    const value = Number(price)
+    if (Number.isNaN(value) || value <= 0) {
+      throw new Error('Invalid market price')
+    }
+    return value.toFixed(2)
+  }
+
   useEffect(() => {
     if (!selectedWallet && selectedAccount) {
       setSelectedWallet(selectedAccount)
     }
   }, [selectedAccount, selectedWallet])
 
+  useEffect(() => {
+    if (!selectedPair) return
+    const run = async () => {
+      try {
+        const price = await fetchMarketPrice(selectedPair)
+        setFormData((prev) => ({
+          ...prev,
+          marketPrice: price,
+          price
+        }))
+      } catch (error) {
+        console.error('Failed to fetch market price for auto order', error)
+      }
+    }
+    run()
+  }, [selectedPair])
+
+  useEffect(() => {
+    if (!editForm.assetPairId) return
+    const pair = list.find((p) => p.id === editForm.assetPairId)
+    if (!pair) return
+    const run = async () => {
+      try {
+        const price = await fetchMarketPrice(pair)
+        setEditForm((prev) => ({
+          ...prev,
+          marketPrice: price
+        }))
+      } catch (error) {
+        console.error('Failed to fetch market price for edit form', error)
+      }
+    }
+    run()
+  }, [editForm.assetPairId, list])
+
+  useEffect(() => {
+    if (!chainId || list.length === 0) return
+    let cancelled = false
+
+    const updateAllMarketPrices = async () => {
+      await Promise.all(
+        list.map(async (pair) => {
+          try {
+            const price = await fetchMarketPrice(pair)
+            if (cancelled) return
+            // @ts-ignore
+            await window.autoOrderAPI.updateMarketPrice(chainId, pair.id, price)
+          } catch (error) {
+            console.error(
+              `Failed to update market price for ${pair.baseSymbol}/${pair.quoteSymbol}`,
+              error
+            )
+          }
+        })
+      )
+    }
+
+    updateAllMarketPrices()
+    const interval = setInterval(updateAllMarketPrices, 15000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [chainId, list])
+
   const canSubmit = useMemo(() => {
     return (
       !!chainId &&
       !!selectedWallet &&
       !!selectedPair &&
+      (formData.orderType === OrderType.MARKET || formData.price !== '') &&
+      formData.marketPrice !== '' &&
       formData.minPrice !== '' &&
       formData.maxPrice !== '' &&
       formData.amountOut !== '' &&
@@ -112,11 +190,11 @@ export const AutoOrderContent = () => {
       // @ts-ignore
       const result = await window.autoOrderAPI.getJobsByPage(
         chainId,
-        pagination.page,
-        pagination.limit,
+        1, // TODO: hardcoded page, need to implement pagination in the future
+        10, // TODO: hardcoded limit, need to implement pagination in the future
         SortType.NEWEST,
-        filterStatus === 'all' ? undefined : filterStatus,
-        debouncedSearch.trim() === '' ? undefined : debouncedSearch.trim()
+        undefined, // TODO: hardcoded page, need to implement pagination in the future
+        undefined // TODO: hardcoded page, need to implement pagination in the future
       )
       setJobs(result.jobs || [])
       setTotalJobs(result.total || 0)
@@ -128,21 +206,8 @@ export const AutoOrderContent = () => {
   }
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search)
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [search])
-
-  useEffect(() => {
     fetchJobs()
-  }, [
-    chainId,
-    pagination.page,
-    pagination.limit,
-    filterStatus,
-    debouncedSearch
-  ])
+  }, [chainId])
 
   const toDateTimeInput = (value?: number | null) => {
     if (!value) return ''
@@ -155,6 +220,8 @@ export const AutoOrderContent = () => {
       assetPairId: job.assetPairId,
       orderDirection: job.orderDirection,
       orderType: job.orderType,
+      price: job.price || '',
+      marketPrice: job.marketPrice || '',
       minPrice: job.minPrice,
       maxPrice: job.maxPrice,
       amountOut: job.amountOut,
@@ -179,6 +246,21 @@ export const AutoOrderContent = () => {
 
   const onCloseCreate = () => {
     setCreateOpen(false)
+    setFormData((prev) => ({
+      ...prev,
+      price: '',
+      marketPrice: '',
+      minPrice: '',
+      maxPrice: '',
+      amountOut: '',
+      feeRatio: '0.001',
+      startAt: '',
+      endAt: '',
+      intervalSeconds: '15',
+      orderDirection: OrderDirection.SELL,
+      orderType: OrderType.LIMIT
+    }))
+    setSelectedWallet(selectedAccount || null)
   }
 
   const onCreateJob = async () => {
@@ -212,6 +294,8 @@ export const AutoOrderContent = () => {
         orderType: formData.orderType,
         timeInForce: TimeInForce.GTC,
         stpMode: StpMode.NONE,
+        price: formData.orderType === OrderType.MARKET ? '0' : formData.price,
+        marketPrice: formData.marketPrice || '0',
         minPrice: formData.minPrice,
         maxPrice: formData.maxPrice,
         amountOut: formData.amountOut,
@@ -312,6 +396,8 @@ export const AutoOrderContent = () => {
         orderType: editForm.orderType,
         timeInForce: TimeInForce.GTC,
         stpMode: StpMode.NONE,
+        price: editForm.orderType === OrderType.MARKET ? '0' : editForm.price,
+        marketPrice: editForm.marketPrice || selectedJob.marketPrice || '0',
         minPrice: editForm.minPrice,
         maxPrice: editForm.maxPrice,
         amountOut: editForm.amountOut,
@@ -346,16 +432,6 @@ export const AutoOrderContent = () => {
       ...prev,
       ...data
     }))
-  }
-
-  const onChangeSearch = (value: string) => {
-    setSearch(value)
-    setPagination((prev) => ({ ...prev, page: 1 }))
-  }
-
-  const onChangeStatus = (value: AutoOrderJobStatus | 'all') => {
-    setFilterStatus(value)
-    setPagination((prev) => ({ ...prev, page: 1 }))
   }
 
   const onChangeEditForm = (data: Partial<EditAutoOrderFormData>) => {
@@ -404,19 +480,12 @@ export const AutoOrderContent = () => {
       </Stack>
 
       <AutoOrdersTable
-        search={search}
-        onChangeSearch={onChangeSearch}
-        filterStatus={filterStatus}
-        onChangeFilterStatus={onChangeStatus}
         jobs={jobs}
         openDetail={openDetail}
         onPause={onPause}
         onResume={onResume}
         onCancel={onCancel}
         loading={loading}
-        totalJobs={totalJobs}
-        pagination={pagination}
-        onChangePagination={(pagination) => setPagination(pagination)}
       />
 
       <AutoOrderDetailModal
