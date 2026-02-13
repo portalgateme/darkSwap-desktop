@@ -50,6 +50,9 @@ export const AutoOrderDetailModal = ({
       onClose={closeDetail}
       maxWidth='md'
       fullWidth
+      PaperProps={{
+        style: { borderRadius: 16, background: '#1E2128', color: '#F3F4F6' }
+      }}
     >
       <DialogTitle>Auto Order Job Details</DialogTitle>
       <DialogContent>
@@ -139,6 +142,14 @@ export const AutoOrderDetailModal = ({
               spacing={2}
               flexWrap='wrap'
             >
+              {editForm.orderType === OrderType.LIMIT && (
+                <TextField
+                  label='Price'
+                  value={editForm.price}
+                  onChange={(e) => onChangeEditForm({ price: e.target.value })}
+                  disabled={!editMode}
+                />
+              )}
               <TextField
                 label='Min Price'
                 value={editForm.minPrice}

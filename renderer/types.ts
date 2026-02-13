@@ -105,6 +105,8 @@ export interface AutoOrderJobDto {
   orderType: OrderType
   timeInForce: TimeInForce
   stpMode: StpMode
+  price: string
+  marketPrice?: string
   minPrice: string
   maxPrice: string
   amountOut: string
@@ -123,6 +125,8 @@ export enum SortType {
 }
 
 export interface CreateAutoOrderFormData {
+  price: string
+  marketPrice?: string
   minPrice: string
   maxPrice: string
   amountOut: string
@@ -138,6 +142,8 @@ export interface EditAutoOrderFormData {
   assetPairId: string
   orderDirection: OrderDirection
   orderType: OrderType
+  price: string
+  marketPrice?: string
   minPrice: string
   maxPrice: string
   amountOut: string

@@ -21,6 +21,21 @@ export const registerAutoOrderHandlers = () => {
     return true
   })
 
+  ipcMain.handle(
+    'autoOrder:updateMarketPrice',
+    async (
+      event,
+      chainId: number,
+      assetPairId: string,
+      marketPrice: string
+    ) => {
+      await dbInstance
+        .getAutoOrderManager()
+        .updateMarketPrice(chainId, assetPairId, marketPrice)
+      return true
+    }
+  )
+
   ipcMain.handle('autoOrder:getJob', async (event, jobId: string) => {
     return await dbInstance.getAutoOrderManager().getJob(jobId)
   })

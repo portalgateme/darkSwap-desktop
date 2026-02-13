@@ -172,6 +172,8 @@ export class AutoOrderJobDto extends BaseDto {
   orderType: OrderType
   timeInForce: TimeInForce
   stpMode: StpMode
+  price: string
+  marketPrice?: string
   minPrice: string
   maxPrice: string
   amountOut: string
@@ -184,6 +186,13 @@ export class AutoOrderJobDto extends BaseDto {
   lastRunAt?: number
   createdAt?: Date
   updatedAt?: Date
+}
+
+export class AutoOrderJobOrderDto extends BaseDto {
+  id?: number
+  jobId: string
+  orderId: string
+  createdAt?: Date
 }
 
 export class AssetPairDto {

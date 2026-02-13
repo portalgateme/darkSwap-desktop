@@ -1,16 +1,20 @@
-import axios from 'axios'
 import { v4 } from 'uuid'
 import { Logger } from 'tslog'
 import { ethers } from 'ethers'
 import { DatabaseService } from '../common/db/database.service'
+import { AssetManager } from '../assetManagement'
 import { OrderManager } from '../orderManagement'
 import {
   AutoOrderJobDto,
   AutoOrderJobStatus,
+  AutoOrderJobOrderDto,
+  DepositDto,
   OrderDto,
   OrderDirection,
+  OrderType,
   OrderStatus,
-  SortType
+  SortType,
+  WithdrawDto
 } from '../types'
 
 const PRICE_DECIMALS = 18
@@ -18,14 +22,20 @@ const PRICE_DECIMALS = 18
 export class AutoOrderManager {
   private readonly logger = new Logger({ name: AutoOrderManager.name })
   private dbService: DatabaseService
+  private assetManager: AssetManager
   private orderManager: OrderManager
   private intervalTimer?: NodeJS.Timeout
   private isTicking = false
   private defaultIntervalSeconds = 15
 
-  public constructor(dbService: DatabaseService, orderManager: OrderManager) {
+  public constructor(
+    dbService: DatabaseService,
+    orderManager: OrderManager,
+    assetManager: AssetManager
+  ) {
     this.dbService = dbService
     this.orderManager = orderManager
+    this.assetManager = assetManager
   }
 
   public start(intervalSeconds: number = this.defaultIntervalSeconds) {
@@ -68,6 +78,20 @@ export class AutoOrderManager {
     if (minPrice > maxPrice) {
       throw new Error('minPrice must be less than or equal to maxPrice')
     }
+
+    if (
+      job.orderType === OrderType.LIMIT ||
+      job.orderType === OrderType.LIMIT_MAKER
+    ) {
+      const limitPrice = Number(job.price)
+      if (isNaN(limitPrice) || limitPrice <= 0) {
+        throw new Error('price is required for limit orders')
+      }
+    } else {
+      job.price = job.price || '0'
+    }
+
+    job.marketPrice = job.marketPrice || '0'
 
     const existing = await this.dbService.getAutoOrderJobByJobId(job.jobId)
     if (existing) {
@@ -129,6 +153,20 @@ export class AutoOrderManager {
       throw new Error('minPrice must be less than or equal to maxPrice')
     }
 
+    if (
+      merged.orderType === OrderType.LIMIT ||
+      merged.orderType === OrderType.LIMIT_MAKER
+    ) {
+      const limitPrice = Number(merged.price)
+      if (isNaN(limitPrice) || limitPrice <= 0) {
+        throw new Error('price is required for limit orders')
+      }
+    } else {
+      merged.price = merged.price || '0'
+    }
+
+    merged.marketPrice = merged.marketPrice || '0'
+
     await this.dbService.updateAutoOrderJob(merged)
 
     return await this.dbService.getAutoOrderJobByJobId(merged.jobId)
@@ -152,6 +190,18 @@ export class AutoOrderManager {
     await this.dbService.updateAutoOrderJobStatus(
       jobId,
       AutoOrderJobStatus.CANCELLED
+    )
+  }
+
+  public async updateMarketPrice(
+    chainId: number,
+    assetPairId: string,
+    marketPrice: string
+  ) {
+    await this.dbService.updateAutoOrderJobsMarketPrice(
+      chainId,
+      assetPairId,
+      marketPrice
     )
   }
 
@@ -220,19 +270,61 @@ export class AutoOrderManager {
             const order = await this.dbService.getOrderByOrderId(
               job.activeOrderId
             )
-            if (
-              !order ||
-              order.status === OrderStatus.SETTLED ||
-              order.status === OrderStatus.CANCELLED
-            ) {
+
+            if (!order) {
               await this.dbService.updateAutoOrderJobActiveOrder(
                 job.jobId,
                 null,
                 now
               )
-            } else {
               continue
             }
+
+            if (order.status === OrderStatus.SETTLED) {
+              const assetPair = await this.dbService.getAssetPairById(
+                order.assetPairId,
+                order.chainId
+              )
+
+              if (!assetPair) {
+                this.logger.warn(
+                  `Asset pair not found for settled order ${order.orderId}`
+                )
+                continue
+              }
+
+              const inAsset =
+                order.orderDirection === OrderDirection.BUY
+                  ? assetPair.baseAddress
+                  : assetPair.quoteAddress
+
+              const withdrawDto: WithdrawDto = {
+                chainId: order.chainId,
+                wallet: order.wallet,
+                asset: inAsset,
+                amount: order.amountIn
+              }
+
+              await this.assetManager.withdraw(withdrawDto)
+
+              await this.dbService.updateAutoOrderJobActiveOrder(
+                job.jobId,
+                null,
+                now
+              )
+              continue
+            }
+
+            if (order.status === OrderStatus.CANCELLED) {
+              await this.dbService.updateAutoOrderJobActiveOrder(
+                job.jobId,
+                null,
+                now
+              )
+              continue
+            }
+
+            continue
           }
 
           const assetPair = await this.dbService.getAssetPairById(
@@ -246,17 +338,14 @@ export class AutoOrderManager {
             continue
           }
 
-          const rawPrice = await this.getMarketPrice(
-            assetPair.baseSymbol + assetPair.quoteSymbol
-          )
-          const priceStr = rawPrice
-            ? this.normalizePrice(rawPrice, PRICE_DECIMALS)
+          const marketPriceStr = job.marketPrice
+            ? this.normalizePrice(job.marketPrice, PRICE_DECIMALS)
             : null
-          if (!priceStr) {
+          if (!marketPriceStr || Number(marketPriceStr) <= 0) {
             continue
           }
 
-          const price = Number(priceStr)
+          const price = Number(marketPriceStr)
           const minPrice = Number(job.minPrice)
           const maxPrice = Number(job.maxPrice)
 
@@ -264,16 +353,40 @@ export class AutoOrderManager {
             continue
           }
 
+          const orderPrice =
+            job.orderType === OrderType.MARKET
+              ? marketPriceStr
+              : this.normalizePrice(job.price, PRICE_DECIMALS)
+
+          if (!orderPrice || Number(orderPrice) <= 0) {
+            this.logger.warn(`Invalid order price for job ${job.jobId}`)
+            continue
+          }
+
           const { amountOutRaw, amountInRaw } = this.computeOrderAmounts(
             job,
             assetPair.baseDecimal,
             assetPair.quoteDecimal,
-            priceStr
+            orderPrice
           )
 
           if (amountInRaw <= 0n || amountOutRaw <= 0n) {
             continue
           }
+
+          const outAsset =
+            job.orderDirection === OrderDirection.BUY
+              ? assetPair.quoteAddress
+              : assetPair.baseAddress
+
+          const depositDto: DepositDto = {
+            chainId: job.chainId,
+            wallet: job.wallet,
+            asset: outAsset,
+            amount: amountOutRaw.toString()
+          }
+
+          await this.assetManager.deposit(depositDto)
 
           const orderDto: OrderDto = {
             orderId: v4(),
@@ -284,14 +397,23 @@ export class AutoOrderManager {
             orderType: job.orderType,
             timeInForce: job.timeInForce,
             stpMode: job.stpMode,
-            price: priceStr,
+            price: orderPrice,
             amountOut: amountOutRaw.toString(),
             amountIn: amountInRaw.toString(),
-            partialAmountIn: (amountInRaw / 100n).toString(),
+            partialAmountIn: amountInRaw.toString(), // fully filled when created
             feeRatio: job.feeRatio
           }
 
           await this.orderManager.createOrder(orderDto)
+
+          const log: AutoOrderJobOrderDto = {
+            jobId: job.jobId,
+            orderId: orderDto.orderId,
+            chainId: job.chainId,
+            wallet: job.wallet
+          }
+
+          await this.dbService.addAutoOrderJobOrder(log)
 
           await this.dbService.updateAutoOrderJobActiveOrder(
             job.jobId,
@@ -340,21 +462,6 @@ export class AutoOrderManager {
     }
 
     return { amountOutRaw, amountInRaw }
-  }
-
-  private async getMarketPrice(symbol: string): Promise<string | null> {
-    try {
-      const response = await axios.get(
-        `https://data-api.binance.vision/api/v3/avgPrice?symbol=${symbol}`
-      )
-      if (!response?.data?.price) {
-        return null
-      }
-      return response.data.price as string
-    } catch (error) {
-      this.logger.warn(`Failed to fetch market price for ${symbol}`, error)
-      return null
-    }
   }
 
   private normalizePrice(value: string, decimals: number): string {
