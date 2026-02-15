@@ -24,25 +24,13 @@ interface CreateAutoOrderFormProps {
   onChangeData: (data: Partial<CreateAutoOrderFormData>) => void
   selectedWallet?: Wallet
   onChangeWallet: (wallet: Wallet) => void
-  errors: {
-    price?: string
-    minPrice?: string
-    maxPrice?: string
-    amountOut?: string
-    intervalSeconds?: string
-    startAt?: string
-    endAt?: string
-  }
-  validateField: (field: keyof CreateAutoOrderFormData, value: any) => void
 }
 
 export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
   formData,
   onChangeData,
   selectedWallet,
-  onChangeWallet,
-  errors,
-  validateField
+  onChangeWallet
 }) => {
   const { currentChain, onChangeChain } = useChainContext()
   const {
@@ -50,6 +38,35 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
     assetPair: selectedPair,
     onChangeAssetPair
   } = useAssetPairContext()
+
+  const onChangeNumberData = (
+    field: keyof CreateAutoOrderFormData,
+    value: string
+  ) => {
+    const regex = /^\d*\.?\d*$/
+
+    // User input '.' should be treated as '0.'
+    if (value === '.') {
+      onChangeData({ [field]: '0.' })
+      return
+    }
+
+    if (value === '' || regex.test(value)) {
+      onChangeData({ [field]: value })
+    }
+  }
+
+  const onChangeDateData = (
+    field: keyof CreateAutoOrderFormData,
+    value: string
+  ) => {
+    const timestamp = Date.parse(value)
+    if (Number.isNaN(timestamp)) {
+      onChangeData({ [field]: '' })
+      return
+    }
+    onChangeData({ [field]: timestamp.toString() })
+  }
 
   return (
     <Stack
@@ -141,9 +158,10 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
             borderRadius: '8px'
           }}
           size='small'
+          readOnly
         >
           <MenuItem value={OrderType.LIMIT}>Limit</MenuItem>
-          <MenuItem value={OrderType.MARKET}>Market</MenuItem>
+          {/* <MenuItem value={OrderType.MARKET}>Market</MenuItem> */}
         </Select>
 
         {/* TODO: Hide until next decision */}
@@ -169,14 +187,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           label='Min Price'
           value={formData.minPrice}
           onChange={(e) => {
-            onChangeData({
-              minPrice: e.target.value
-            })
-            validateField('minPrice', e.target.value)
+            onChangeNumberData('minPrice', e.target.value)
           }}
-          onBlur={(e) => validateField('minPrice', e.target.value)}
-          error={!!errors.minPrice}
-          helperText={errors.minPrice}
           size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, width: 300 }}
@@ -185,14 +197,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           label='Max Price'
           value={formData.maxPrice}
           onChange={(e) => {
-            onChangeData({
-              maxPrice: e.target.value
-            })
-            validateField('maxPrice', e.target.value)
+            onChangeNumberData('maxPrice', e.target.value)
           }}
-          onBlur={(e) => validateField('maxPrice', e.target.value)}
-          error={!!errors.maxPrice}
-          helperText={errors.maxPrice}
           size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, width: 300 }}
@@ -210,14 +216,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           disabled={formData.orderType === OrderType.MARKET}
           size='small'
           onChange={(e) => {
-            onChangeData({
-              price: e.target.value
-            })
-            validateField('price', e.target.value)
+            onChangeNumberData('price', e.target.value)
           }}
-          onBlur={(e) => validateField('price', e.target.value)}
-          error={!!errors.price}
-          helperText={errors.price}
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, width: 300 }}
         />
@@ -226,14 +226,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           label='Amount'
           value={formData.amountOut}
           onChange={(e) => {
-            onChangeData({
-              amountOut: e.target.value
-            })
-            validateField('amountOut', e.target.value)
+            onChangeNumberData('amountOut', e.target.value)
           }}
-          onBlur={(e) => validateField('amountOut', e.target.value)}
-          error={!!errors.amountOut}
-          helperText={errors.amountOut}
           size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 300 }}
@@ -250,14 +244,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           type='datetime-local'
           value={formData.startAt}
           onChange={(e) => {
-            onChangeData({
-              startAt: e.target.value
-            })
-            validateField('startAt', e.target.value)
+            onChangeDateData('startAt', e.target.value)
           }}
-          onBlur={(e) => validateField('startAt', e.target.value)}
-          error={!!errors.startAt}
-          helperText={errors.startAt}
           size='small'
           InputLabelProps={{
             shrink: true,
@@ -270,14 +258,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           type='datetime-local'
           value={formData.endAt}
           onChange={(e) => {
-            onChangeData({
-              endAt: e.target.value
-            })
-            validateField('endAt', e.target.value)
+            onChangeDateData('endAt', e.target.value)
           }}
-          onBlur={(e) => validateField('endAt', e.target.value)}
-          error={!!errors.endAt}
-          helperText={errors.endAt}
           size='small'
           InputLabelProps={{
             shrink: true,
@@ -289,14 +271,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           label='Interval (seconds)'
           value={formData.intervalSeconds}
           onChange={(e) => {
-            onChangeData({
-              intervalSeconds: e.target.value
-            })
-            validateField('intervalSeconds', e.target.value)
+            onChangeNumberData('intervalSeconds', e.target.value)
           }}
-          onBlur={(e) => validateField('intervalSeconds', e.target.value)}
-          error={!!errors.intervalSeconds}
-          helperText={errors.intervalSeconds}
           size='small'
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 180 }}

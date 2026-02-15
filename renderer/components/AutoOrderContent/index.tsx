@@ -95,7 +95,7 @@ export const AutoOrderContent = () => {
     if (Number.isNaN(value) || value <= 0) {
       throw new Error('Invalid market price')
     }
-    return value.toFixed(2)
+    return value.toString()
   }
 
   useEffect(() => {
@@ -104,8 +104,9 @@ export const AutoOrderContent = () => {
     }
   }, [selectedAccount, selectedWallet])
 
+  // Fetch market price when selected pair changes in create form
   useEffect(() => {
-    if (!selectedPair) return
+    if (!selectedPair || !createOpen) return
     const run = async () => {
       try {
         const price = await fetchMarketPrice(selectedPair)
@@ -119,55 +120,55 @@ export const AutoOrderContent = () => {
       }
     }
     run()
-  }, [selectedPair])
+  }, [selectedPair, createOpen])
 
-  useEffect(() => {
-    if (!editForm.assetPairId) return
-    const pair = list.find((p) => p.id === editForm.assetPairId)
-    if (!pair) return
-    const run = async () => {
-      try {
-        const price = await fetchMarketPrice(pair)
-        setEditForm((prev) => ({
-          ...prev,
-          marketPrice: price
-        }))
-      } catch (error) {
-        console.error('Failed to fetch market price for edit form', error)
-      }
-    }
-    run()
-  }, [editForm.assetPairId, list])
+  // useEffect(() => {
+  //   if (!editForm.assetPairId) return
+  //   const pair = list.find((p) => p.id === editForm.assetPairId)
+  //   if (!pair) return
+  //   const run = async () => {
+  //     try {
+  //       const price = await fetchMarketPrice(pair)
+  //       setEditForm((prev) => ({
+  //         ...prev,
+  //         marketPrice: price
+  //       }))
+  //     } catch (error) {
+  //       console.error('Failed to fetch market price for edit form', error)
+  //     }
+  //   }
+  //   run()
+  // }, [editForm.assetPairId, list])
 
-  useEffect(() => {
-    if (!chainId || list.length === 0) return
-    let cancelled = false
+  // useEffect(() => {
+  //   if (!chainId || list.length === 0) return
+  //   let cancelled = false
 
-    const updateAllMarketPrices = async () => {
-      await Promise.all(
-        list.map(async (pair) => {
-          try {
-            const price = await fetchMarketPrice(pair)
-            if (cancelled) return
-            // @ts-ignore
-            await window.autoOrderAPI.updateMarketPrice(chainId, pair.id, price)
-          } catch (error) {
-            console.error(
-              `Failed to update market price for ${pair.baseSymbol}/${pair.quoteSymbol}`,
-              error
-            )
-          }
-        })
-      )
-    }
+  //   const updateAllMarketPrices = async () => {
+  //     await Promise.all(
+  //       list.map(async (pair) => {
+  //         try {
+  //           const price = await fetchMarketPrice(pair)
+  //           if (cancelled) return
+  //           // @ts-ignore
+  //           await window.autoOrderAPI.updateMarketPrice(chainId, pair.id, price)
+  //         } catch (error) {
+  //           console.error(
+  //             `Failed to update market price for ${pair.baseSymbol}/${pair.quoteSymbol}`,
+  //             error
+  //           )
+  //         }
+  //       })
+  //     )
+  //   }
 
-    updateAllMarketPrices()
-    const interval = setInterval(updateAllMarketPrices, 15000)
-    return () => {
-      cancelled = true
-      clearInterval(interval)
-    }
-  }, [chainId, list])
+  //   updateAllMarketPrices()
+  //   const interval = setInterval(updateAllMarketPrices, 15000)
+  //   return () => {
+  //     cancelled = true
+  //     clearInterval(interval)
+  //   }
+  // }, [chainId, list])
 
   const canSubmit = useMemo(() => {
     return (
