@@ -7,7 +7,7 @@ import {
   TextField,
   Typography
 } from '@mui/material'
-import { useState } from 'react'
+
 import NetworkSelection from '../Selection/NetworkSelection'
 import AccountSelection from '../Selection/AccountSelection'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
@@ -242,7 +242,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
         <TextField
           label='Start Date'
           type='datetime-local'
-          value={formData.startAt}
+          // value={startDate}
           onChange={(e) => {
             onChangeDateData('startAt', e.target.value)
           }}
@@ -256,7 +256,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
         <TextField
           label='End Date'
           type='datetime-local'
-          value={formData.endAt}
+          // value={endDate}
           onChange={(e) => {
             onChangeDateData('endAt', e.target.value)
           }}

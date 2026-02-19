@@ -180,7 +180,10 @@ export const AutoOrderContent = () => {
       formData.minPrice !== '' &&
       formData.maxPrice !== '' &&
       formData.amountOut !== '' &&
-      Number(formData.intervalSeconds) > 0
+      Number(formData.intervalSeconds) > 0 &&
+      (formData.endAt && formData.startAt
+        ? Number(formData.endAt) > Number(formData.startAt)
+        : true)
     )
   }, [chainId, selectedWallet, selectedPair, formData])
 
