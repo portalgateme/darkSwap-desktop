@@ -95,7 +95,7 @@ export const AutoOrderContent = () => {
     if (Number.isNaN(value) || value <= 0) {
       throw new Error('Invalid market price')
     }
-    return value.toString()
+    return value.toFixed(5) // format to 5 decimal places for better display, you can adjust as needed
   }
 
   useEffect(() => {
