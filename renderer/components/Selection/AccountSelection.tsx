@@ -60,7 +60,25 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
         onClick={handleClick}
       >
         <Typography variant='body1'>
-          {selectedAccount ? selectedAccount.name : 'Select Account'}
+          {selectedAccount ? (
+            <>
+              <Stack
+                direction={'row'}
+                alignItems={'center'}
+                spacing={1}
+              >
+                <Typography>{selectedAccount.name}</Typography>
+                <Typography
+                  variant='body2'
+                  color='#BDC1CA'
+                >
+                  ({shorterAddress(selectedAccount.address)})
+                </Typography>
+              </Stack>
+            </>
+          ) : (
+            'Select Account'
+          )}
         </Typography>
       </Button>
 
@@ -72,7 +90,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
         slotProps={{
           paper: {
             sx: {
-              width: anchorEl?.offsetWidth || 'auto',
+              //       width: anchorEl?.offsetWidth || 'auto',
               background: 'none'
             }
           },
@@ -80,7 +98,8 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
             'aria-labelledby': 'basic-button',
             sx: {
               background: '#1E2128',
-              color: '#F3F4F6'
+              color: '#F3F4F6',
+              minWidth: '220px'
             }
           }
         }}
@@ -110,7 +129,6 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
               >
                 ({shorterAddress(account.address)})
               </Typography>
-
               {/* <Typography>{account}</Typography> TODO: Should be show balance */}
             </Stack>
           </MenuItem>
