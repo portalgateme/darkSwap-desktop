@@ -21,6 +21,8 @@ import {
 } from '../../types'
 import { formatDate, statusLabel } from '../AutoOrderContent'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
+import { useAccountContext } from '../../contexts/AccountContext/hooks'
+import { isSameAddress } from '../../utils/format'
 
 interface AutoOrderDetailModalProps {
   detailOpen: boolean
@@ -46,6 +48,13 @@ export const AutoOrderDetailModal = ({
   onUpdateJob
 }: AutoOrderDetailModalProps) => {
   const { list, assetPair } = useAssetPairContext()
+  const { accounts } = useAccountContext()
+
+  const walletName =
+    accounts.find((acc) => isSameAddress(acc.address, selectedJob?.wallet))
+      ?.name || 'Unknown Wallet'
+
+  console.log('Selected Job:', editForm)
 
   return (
     <Dialog
@@ -69,7 +78,7 @@ export const AutoOrderDetailModal = ({
                 Job ID: {selectedJob.jobId}
               </Typography>
               <Typography variant='body2'>
-                Wallet: {selectedJob.wallet}
+                Wallet: {walletName} ({selectedJob.wallet})
               </Typography>
               <Typography variant='body2'>
                 Status: {statusLabel(selectedJob.status)}
@@ -92,101 +101,100 @@ export const AutoOrderDetailModal = ({
               </Typography>
             )}
 
-            <Stack spacing={2}>
-              <Stack
-                direction='row'
-                spacing={2}
-                flexWrap='wrap'
-              >
-                <FormControl>
-                  <InputLabel
-                    id='demo-customized-select-label'
-                    sx={{
-                      color: 'white',
-                      '&.Mui-focused': { color: 'white' }
-                    }}
-                  >
-                    Asset Pair
-                  </InputLabel>
-                  <Select
-                    labelId='demo-customized-select-label'
-                    label='Asset Pair'
-                    value={editForm.assetPairId}
-                    onChange={(e) =>
-                      onChangeEditForm({ assetPairId: e.target.value })
+            <Stack
+              direction='row'
+              gap={2}
+              flexWrap='wrap'
+            >
+              <FormControl>
+                <InputLabel
+                  id='demo-customized-select-label'
+                  sx={{
+                    color: 'white',
+                    '&.Mui-focused': { color: 'white' }
+                  }}
+                >
+                  Asset Pair
+                </InputLabel>
+                <Select
+                  labelId='demo-customized-select-label'
+                  label='Asset Pair'
+                  value={editForm.assetPairId}
+                  onChange={(e) =>
+                    onChangeEditForm({ assetPairId: e.target.value })
+                  }
+                  sx={{
+                    minWidth: 220,
+                    color: 'white',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white'
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white'
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white'
                     }
-                    sx={{
-                      minWidth: 220,
-                      color: 'white',
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      }
-                    }}
-                    readOnly={!editMode}
-                  >
-                    {list.map((pair) => (
-                      <MenuItem
-                        key={pair.id}
-                        value={pair.id}
-                      >
-                        {pair.baseSymbol}/{pair.quoteSymbol}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                  }}
+                  readOnly={!editMode}
+                >
+                  {list.map((pair) => (
+                    <MenuItem
+                      key={pair.id}
+                      value={pair.id}
+                    >
+                      {pair.baseSymbol}/{pair.quoteSymbol}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-                <FormControl>
-                  <InputLabel
-                    id='demo-customized-select-label'
-                    sx={{ color: 'white', '&.Mui-focused': { color: 'white' } }}
-                  >
-                    Order Direction
-                  </InputLabel>
-                  <Select
-                    labelId='demo-customized-select-label'
-                    label='Order Direction'
-                    value={editForm.orderDirection}
-                    onChange={(e) =>
-                      onChangeEditForm({
-                        orderDirection: Number(e.target.value)
-                      })
+              <FormControl>
+                <InputLabel
+                  id='demo-customized-select-label'
+                  sx={{ color: 'white', '&.Mui-focused': { color: 'white' } }}
+                >
+                  Order Direction
+                </InputLabel>
+                <Select
+                  labelId='demo-customized-select-label'
+                  label='Order Direction'
+                  value={editForm.orderDirection}
+                  onChange={(e) =>
+                    onChangeEditForm({
+                      orderDirection: Number(e.target.value)
+                    })
+                  }
+                  sx={{
+                    minWidth: 160,
+                    color: 'white',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white'
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white'
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white'
                     }
-                    sx={{
-                      minWidth: 160,
-                      color: 'white',
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      }
-                    }}
-                    readOnly={!editMode}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: {
-                          bgcolor: '#1E2128',
-                          '& .MuiMenuItem-root': {
-                            color: 'white'
-                          }
+                  }}
+                  readOnly={!editMode}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        bgcolor: '#1E2128',
+                        '& .MuiMenuItem-root': {
+                          color: 'white'
                         }
                       }
-                    }}
-                  >
-                    <MenuItem value={OrderDirection.BUY}>Buy</MenuItem>
-                    <MenuItem value={OrderDirection.SELL}>Sell</MenuItem>
-                  </Select>
-                </FormControl>
-
+                    }
+                  }}
+                >
+                  <MenuItem value={OrderDirection.BUY}>Buy</MenuItem>
+                  <MenuItem value={OrderDirection.SELL}>Sell</MenuItem>
+                </Select>
+              </FormControl>
+              {/* 
                 <FormControl>
                   <InputLabel
                     id='demo-customized-select-label'
@@ -227,45 +235,15 @@ export const AutoOrderDetailModal = ({
                     }}
                   >
                     <MenuItem value={OrderType.LIMIT}>Limit</MenuItem>
-                    {/* <MenuItem value={OrderType.MARKET}>Market</MenuItem> */}
+                    <MenuItem value={OrderType.MARKET}>Market</MenuItem>
                   </Select>
-                </FormControl>
-              </Stack>
+                </FormControl> */}
 
-              <Stack
-                direction='row'
-                gap={2}
-                flexWrap='wrap'
-              >
-                {editForm.orderType === OrderType.LIMIT && (
-                  <TextField
-                    label='Price'
-                    value={editForm.price}
-                    onChange={(e) =>
-                      onChangeEditForm({ price: e.target.value })
-                    }
-                    inputProps={{ readOnly: !editMode }}
-                    sx={{
-                      input: { color: 'white' },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      }
-                    }}
-                    InputLabelProps={{ style: { color: 'white' } }}
-                  />
-                )}
+              {editForm.orderType === OrderType.LIMIT && (
                 <TextField
-                  label='Min Price'
-                  value={editForm.minPrice}
-                  onChange={(e) =>
-                    onChangeEditForm({ minPrice: e.target.value })
-                  }
+                  label='Price'
+                  value={editForm.price}
+                  onChange={(e) => onChangeEditForm({ price: e.target.value })}
                   inputProps={{ readOnly: !editMode }}
                   sx={{
                     input: { color: 'white' },
@@ -281,49 +259,67 @@ export const AutoOrderDetailModal = ({
                   }}
                   InputLabelProps={{ style: { color: 'white' } }}
                 />
-                <TextField
-                  label='Max Price'
-                  value={editForm.maxPrice}
-                  onChange={(e) =>
-                    onChangeEditForm({ maxPrice: e.target.value })
+              )}
+              <TextField
+                label='Min Price'
+                value={editForm.minPrice}
+                onChange={(e) => onChangeEditForm({ minPrice: e.target.value })}
+                inputProps={{ readOnly: !editMode }}
+                sx={{
+                  input: { color: 'white' },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
                   }
-                  inputProps={{ readOnly: !editMode }}
-                  sx={{
-                    input: { color: 'white' },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    }
-                  }}
-                  InputLabelProps={{ style: { color: 'white' } }}
-                />
-                <TextField
-                  label='Amount Out'
-                  value={editForm.amountOut}
-                  onChange={(e) =>
-                    onChangeEditForm({ amountOut: e.target.value })
+                }}
+                InputLabelProps={{ style: { color: 'white' } }}
+              />
+              <TextField
+                label='Max Price'
+                value={editForm.maxPrice}
+                onChange={(e) => onChangeEditForm({ maxPrice: e.target.value })}
+                inputProps={{ readOnly: !editMode }}
+                sx={{
+                  input: { color: 'white' },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
                   }
-                  inputProps={{ readOnly: !editMode }}
-                  sx={{
-                    input: { color: 'white' },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    }
-                  }}
-                  InputLabelProps={{ style: { color: 'white' } }}
-                />
-                {/* <TextField
+                }}
+                InputLabelProps={{ style: { color: 'white' } }}
+              />
+              <TextField
+                label='Amount Out'
+                value={editForm.amountOut}
+                onChange={(e) =>
+                  onChangeEditForm({ amountOut: e.target.value })
+                }
+                inputProps={{ readOnly: !editMode }}
+                sx={{
+                  input: { color: 'white' },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  }
+                }}
+                InputLabelProps={{ style: { color: 'white' } }}
+              />
+              {/* <TextField
                   label='Fee Ratio'
                   value={editForm.feeRatio}
                   onChange={(e) =>
@@ -335,20 +331,33 @@ export const AutoOrderDetailModal = ({
                     '& .MuiOutlinedInput-root': { borderColor: 'white' }
                   }}
                 /> */}
-              </Stack>
 
-              <Stack
-                direction='row'
-                spacing={2}
-                flexWrap='wrap'
-              >
+              <TextField
+                label='Start Date'
+                type='datetime-local'
+                value={editForm.startAt}
+                onChange={(e) => onChangeEditForm({ startAt: e.target.value })}
+                inputProps={{ readOnly: !editMode }}
+                sx={{
+                  input: { color: 'white' },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  }
+                }}
+                InputLabelProps={{ style: { color: 'white' } }}
+              />
+              {editForm.endAt && (
                 <TextField
-                  label='Start Date'
+                  label='End Date'
                   type='datetime-local'
-                  value={editForm.startAt}
-                  onChange={(e) =>
-                    onChangeEditForm({ startAt: e.target.value })
-                  }
+                  value={editForm.endAt}
+                  onChange={(e) => onChangeEditForm({ endAt: e.target.value })}
                   inputProps={{ readOnly: !editMode }}
                   sx={{
                     input: { color: 'white' },
@@ -364,53 +373,29 @@ export const AutoOrderDetailModal = ({
                   }}
                   InputLabelProps={{ style: { color: 'white' } }}
                 />
-                {editForm.endAt && (
-                  <TextField
-                    label='End Date'
-                    type='datetime-local'
-                    value={editForm.endAt}
-                    onChange={(e) =>
-                      onChangeEditForm({ endAt: e.target.value })
-                    }
-                    inputProps={{ readOnly: !editMode }}
-                    sx={{
-                      input: { color: 'white' },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      },
-                      '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white'
-                      }
-                    }}
-                    InputLabelProps={{ style: { color: 'white' } }}
-                  />
-                )}
+              )}
 
-                <TextField
-                  label='Interval (seconds)'
-                  value={editForm.intervalSeconds}
-                  onChange={(e) =>
-                    onChangeEditForm({ intervalSeconds: e.target.value })
+              <TextField
+                label='Interval (seconds)'
+                value={editForm.intervalSeconds}
+                onChange={(e) =>
+                  onChangeEditForm({ intervalSeconds: e.target.value })
+                }
+                inputProps={{ readOnly: !editMode }}
+                sx={{
+                  input: { color: 'white' },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
+                  },
+                  '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white'
                   }
-                  inputProps={{ readOnly: !editMode }}
-                  sx={{
-                    input: { color: 'white' },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    },
-                    '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white'
-                    }
-                  }}
-                  InputLabelProps={{ style: { color: 'white' } }}
-                />
-              </Stack>
+                }}
+                InputLabelProps={{ style: { color: 'white' } }}
+              />
             </Stack>
           </Stack>
         )}

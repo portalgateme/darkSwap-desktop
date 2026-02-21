@@ -20,6 +20,7 @@ import { getMarketPriceFromBinance } from '../../services/orderService'
 import { AutoOrdersTable } from '../Table/AutoOrdersTable'
 import { AutoOrderDetailModal } from '../Modal/AutoOrderDetailModal'
 import { CreateAutoOrderModal } from '../Modal/CreateAutoOrderModal'
+import { toLocalDateTimeInput } from '../../utils/format'
 
 export const formatDate = (value?: number | null) => {
   if (!value) return '-'
@@ -213,10 +214,10 @@ export const AutoOrderContent = () => {
     fetchJobs()
   }, [chainId])
 
-  const toDateTimeInput = (value?: number | null) => {
-    if (!value) return ''
-    return new Date(value).toISOString().slice(0, 16)
-  }
+  // const toDateTimeInput = (value?: number | null) => {
+  //   if (!value) return ''
+  //   return new Date(value).toLocaleString().slice(0, 16)
+  // }
 
   const openDetail = (job: AutoOrderJobDto) => {
     setSelectedJob(job)
@@ -230,8 +231,8 @@ export const AutoOrderContent = () => {
       maxPrice: job.maxPrice,
       amountOut: job.amountOut,
       feeRatio: job.feeRatio,
-      startAt: toDateTimeInput(job.startAt),
-      endAt: toDateTimeInput(job.endAt),
+      startAt: toLocalDateTimeInput(job.startAt),
+      endAt: toLocalDateTimeInput(job.endAt),
       intervalSeconds: job.intervalSeconds.toString()
     })
     setEditMode(false)
@@ -276,14 +277,11 @@ export const AutoOrderContent = () => {
 
     const toastId = showLoading('Creating auto order job...')
     try {
-      const startAt = formData.startAt
-        ? new Date(formData.startAt).getTime()
-        : Date.now()
-      const endAt = formData.endAt
-        ? new Date(formData.endAt).getTime()
-        : undefined
-
-      if (endAt && endAt <= startAt) {
+      if (
+        formData.startAt &&
+        formData.endAt &&
+        formData.endAt <= formData.startAt
+      ) {
         showError('End date must be after start date')
         hideToast(toastId)
         return
@@ -304,8 +302,8 @@ export const AutoOrderContent = () => {
         maxPrice: formData.maxPrice,
         amountOut: formData.amountOut,
         feeRatio: formData.feeRatio,
-        startAt,
-        endAt,
+        startAt: formData.startAt ? +formData.startAt : Date.now(),
+        endAt: formData.endAt ? +formData.endAt : undefined,
         intervalSeconds: Number(formData.intervalSeconds),
         status: AutoOrderJobStatus.ACTIVE
       }
