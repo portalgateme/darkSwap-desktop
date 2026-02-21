@@ -18,6 +18,8 @@ import {
   OrderType,
   Wallet
 } from '../../types'
+import { AssetPairSelection } from '../Selection/AssetPairSelection'
+import { OrderDirectionSelection } from '../Selection/OrderDirectionSelection'
 
 interface CreateAutoOrderFormProps {
   formData: CreateAutoOrderFormData
@@ -60,6 +62,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
     field: keyof CreateAutoOrderFormData,
     value: string
   ) => {
+    console.log('Input date value:', value)
     const timestamp = Date.parse(value)
     if (Number.isNaN(timestamp)) {
       onChangeData({ [field]: '' })
@@ -137,59 +140,22 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           onAccountChange={(account) => onChangeWallet(account)}
           buttonSx={{ border: '1px solid #3A3E47' }}
         />
+        <AssetPairSelection />
+        <OrderDirectionSelection
+          orderDirection={formData.orderDirection}
+          onChangeOrderDirection={(direction) =>
+            onChangeData({ orderDirection: direction })
+          }
+        />
       </Stack>
 
-      <Stack
+      {/* <Stack
         direction='row'
         gap={2}
         flexWrap='wrap'
         alignItems={'center'}
-      >
-        <Select
-          value={selectedPair?.id || ''}
-          onChange={(e) => {
-            const pair = list.find((p) => p.id === e.target.value)
-            if (pair && onChangeAssetPair) onChangeAssetPair(pair)
-          }}
-          displayEmpty
-          sx={{
-            minWidth: 220,
-            background: '#262A33',
-            color: '#F3F4F6',
-            borderRadius: '8px'
-          }}
-          size='small'
-        >
-          {/* <MenuItem value=''>Select Asset Pair</MenuItem> */}
-          {list.map((pair) => (
-            <MenuItem
-              key={pair.id}
-              value={pair.id}
-            >
-              {pair.baseSymbol}/{pair.quoteSymbol}
-            </MenuItem>
-          ))}
-        </Select>
-
-        <Select
-          value={formData.orderDirection}
-          onChange={(e) =>
-            onChangeData({
-              orderDirection: Number(e.target.value)
-            })
-          }
-          sx={{
-            minWidth: 120,
-            background: '#262A33',
-            color: '#F3F4F6',
-            borderRadius: '8px'
-          }}
-          size='small'
-        >
-          <MenuItem value={OrderDirection.BUY}>Buy</MenuItem>
-          <MenuItem value={OrderDirection.SELL}>Sell</MenuItem>
-        </Select>
-        {/* <Select
+      > */}
+      {/* <Select
           value={formData.orderType}
           onChange={(e) =>
             onChangeData({
@@ -209,8 +175,8 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           <MenuItem value={OrderType.MARKET}>Market</MenuItem>
         </Select> */}
 
-        {/* TODO: Hide until next decision */}
-        {/* <TextField
+      {/* TODO: Hide until next decision */}
+      {/* <TextField
           label='Fee Ratio'
           value={formData.feeRatio}
           onChange={(e) =>
@@ -221,7 +187,7 @@ export const CreateAutoOrderForm: React.FC<CreateAutoOrderFormProps> = ({
           InputLabelProps={{ style: { color: '#BDC1CA' } }}
           sx={{ input: { color: '#F3F4F6' }, minWidth: 160 }}
         /> */}
-      </Stack>
+      {/* </Stack> */}
 
       <Stack
         direction='row'
