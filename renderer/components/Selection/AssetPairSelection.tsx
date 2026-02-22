@@ -18,7 +18,7 @@ export const AssetPairSelection: React.FC<AssetPairSelectionProps> = ({}) => {
       }}
       displayEmpty
       sx={{
-        minWidth: 220,
+        minWidth: 160,
         // background: '#262A33',
         color: '#F3F4F6',
         borderRadius: '8px'

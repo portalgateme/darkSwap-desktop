@@ -268,6 +268,23 @@ export const AutoOrderContent = () => {
     setSelectedWallet(selectedAccount || null)
   }
 
+  const resetFormData = () => {
+    setFormData((prev) => ({
+      ...prev,
+      price: '',
+      marketPrice: '',
+      minPrice: '',
+      maxPrice: '',
+      amountOut: '',
+      feeRatio: '0.001',
+      startAt: '',
+      endAt: '',
+      intervalSeconds: '15',
+      orderDirection: OrderDirection.SELL,
+      orderType: OrderType.LIMIT
+    }))
+  }
+
   const onCreateJob = async () => {
     if (!chainId || !selectedWallet || !selectedPair) return
     if (!canSubmit) {
@@ -312,12 +329,7 @@ export const AutoOrderContent = () => {
       await window.autoOrderAPI.createJob(payload)
 
       showSuccess('Auto order job created')
-      setFormData((prev) => ({
-        ...prev,
-        minPrice: '',
-        maxPrice: '',
-        amountOut: ''
-      }))
+      resetFormData()
       setCreateOpen(false)
       fetchJobs()
     } catch (error) {
