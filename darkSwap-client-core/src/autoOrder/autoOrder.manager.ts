@@ -422,6 +422,7 @@ export class AutoOrderManager {
           )
         } catch (error) {
           this.logger.error(`Auto order job failed: ${job.jobId}`, error)
+          await this.pauseJob(job.jobId)
         }
       }
     } catch (error) {
