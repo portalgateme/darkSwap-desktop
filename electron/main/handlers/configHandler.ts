@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import { config, db, dbPath } from '../database'
 import { DarkSwapClientCore, DarkSwapConfig } from 'darkswap-client-core'
+import { reloadCore } from '../utils/coreReloader'
 
 export function registerConfigHandlers() {
   ipcMain.handle('config:getConfigs', async (event) => {
@@ -13,6 +14,13 @@ export function registerConfigHandlers() {
       'INSERT OR REPLACE INTO configs (key, value) VALUES (?, ?)'
     )
     stmt.run(key, value)
+
+    // Reload core instance if API key is changed
+    if (key === 'api_key') {
+      console.log('API key changed, reloading DarkSwapClientCore...')
+      await reloadCore(db, dbPath, value)
+    }
+
     return { success: true }
   })
 
@@ -31,6 +39,15 @@ export function registerConfigHandlers() {
         }
       )
       insertMany(configs)
+
+      // Reload core if API key is changed
+      if ('api_key' in configs) {
+        console.log(
+          'API key changed via setConfigs, reloading DarkSwapClientCore...'
+        )
+        await reloadCore(db, dbPath, configs['api_key'])
+      }
+
       event.sender.send('app:restart')
       return { success: true }
     }

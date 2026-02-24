@@ -168,3 +168,8 @@ contextBridge.exposeInMainWorld('configAPI', {
   healthCheck: (apiKey: string) =>
     ipcRenderer.invoke('config:healthCheck', apiKey)
 })
+
+// Core APIs
+contextBridge.exposeInMainWorld('coreAPI', {
+  reload: () => ipcRenderer.invoke('core:reload')
+})
