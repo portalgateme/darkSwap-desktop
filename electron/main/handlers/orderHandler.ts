@@ -1,20 +1,23 @@
 import { ipcMain } from 'electron'
-import dbInstance from '../database'
+import { getCurrentInstance } from '../utils/coreReloader'
 
 export const registerOrderHandlers = () => {
   ipcMain.handle('order:createOrder', async (event, orderDto) => {
+    const dbInstance = getCurrentInstance()
     await dbInstance.getOrderManager().createOrder(orderDto)
     return true
   })
 
   // cancelOrder
   ipcMain.handle('order:cancelOrder', async (event, cancelOrderDto) => {
+    const dbInstance = getCurrentInstance()
     await dbInstance.getOrderManager().cancelOrder(cancelOrderDto)
     return true
   })
 
   // updateOrderPrice
   ipcMain.handle('order:updateOrderPrice', async (event, updatePriceDto) => {
+    const dbInstance = getCurrentInstance()
     await dbInstance.getOrderManager().updateOrderPrice(updatePriceDto)
     return true
   })
@@ -23,6 +26,7 @@ export const registerOrderHandlers = () => {
   ipcMain.handle(
     'order:getAllOrders',
     async (event, chainId, page, limit, sort, status, search) => {
+      const dbInstance = getCurrentInstance()
       const result = await dbInstance
         .getOrderManager()
         .getOrdersByPage(chainId, page, limit, sort, status, search)
@@ -48,16 +52,19 @@ export const registerOrderHandlers = () => {
 
   // getOrderById
   ipcMain.handle('order:getOrderById', async (event, orderId) => {
+    const dbInstance = getCurrentInstance()
     return await dbInstance.getOrderManager().getOrderById(orderId)
   })
 
   // getAssetPairs
   ipcMain.handle('order:getAssetPairs', async (event, chainId) => {
+    const dbInstance = getCurrentInstance()
     return await dbInstance.getOrderManager().getAssetPairs(chainId)
   })
 
   // getOrderEvents
   ipcMain.handle('order:getOrderEvents', async (event, orderId) => {
+    const dbInstance = getCurrentInstance()
     return await dbInstance.getOrderManager().getOrderEvents(orderId)
   })
 
@@ -65,6 +72,7 @@ export const registerOrderHandlers = () => {
   ipcMain.handle(
     'order:getIncrementalOrderEvents',
     async (event, lastEventId) => {
+      const dbInstance = getCurrentInstance()
       return await dbInstance
         .getOrderManager()
         .getIncrementalOrderEvents(lastEventId)
@@ -75,6 +83,7 @@ export const registerOrderHandlers = () => {
   ipcMain.handle(
     'order:getOrderEventsByPage',
     async (event, chainId, page, limit, sort, status, search) => {
+      const dbInstance = getCurrentInstance()
       return await dbInstance
         .getOrderManager()
         .getOrderEventsByPage(chainId, page, limit, sort, status, search)

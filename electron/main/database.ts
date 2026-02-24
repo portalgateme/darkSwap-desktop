@@ -1,9 +1,13 @@
 import Database from 'better-sqlite3'
 import * as path from 'path'
 import * as fs from 'fs'
-import { DarkSwapClientCore, DarkSwapConfig } from 'darkswap-client-core'
+
 import { ConfigLoader } from '../utils/configUtil'
 import { app } from 'electron'
+import {
+  initializeCoreReloader,
+  getOrCreateCoreInstance
+} from './utils/coreReloader'
 
 export const config = ConfigLoader.getInstance().getConfig()
 
@@ -63,25 +67,7 @@ console.log('Loaded configs from DB:', configs)
 
 const apiKey = configs.find((c) => c.key === 'api_key')?.value || ''
 
-const darkSwapConfig: DarkSwapConfig = {
-  wallets: [...config.wallets, ...wallets],
-  chainRpcs: config.chainRpcs || [],
-  dbFilePath: dbPath,
-  bookNodeSocketUrl: config.bookNodeSocketUrl || 'wss://socket.darknode.io',
-  bookNodeApiUrl: config.bookNodeApiUrl || 'https://api.darknode.io/api',
-  bookNodeApiKey: apiKey
-  // config.bookNodeApiKey || '8f3f1f4e-6b3c-4f0a-9d3a-2e5b5e5e5e5e'
-}
-const instance = new DarkSwapClientCore(darkSwapConfig, db)
+// Initialize core reloader
+initializeCoreReloader({ db, dbPath })
 
-// Start auto order scheduler
-instance.getAutoOrderManager().start()
-
-// Initialize database and start WebSocket client
-if (apiKey) {
-  console.log('Starting DarkSwapClientCore with API Key')
-  instance.getWebSocketClient().startWebSocket()
-  instance.getAssetPairService().syncAssetPairs()
-}
-
-export default instance
+getOrCreateCoreInstance(db, dbPath, apiKey)

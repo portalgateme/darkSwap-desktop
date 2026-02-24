@@ -1,8 +1,10 @@
 import { ipcMain } from 'electron'
-import dbInstance, { db } from '../database'
+import { db } from '../database'
+import { getCurrentInstance } from '../utils/coreReloader'
 
 export const registerAssetPairHandlers = () => {
   ipcMain.handle('assetPair:syncAssetPairs', async (event) => {
+    const dbInstance = getCurrentInstance()
     await dbInstance.getAssetPairService().syncAssetPairs()
     return true
   })
@@ -10,6 +12,7 @@ export const registerAssetPairHandlers = () => {
   ipcMain.handle(
     'assetPair:syncAssetPair',
     async (event, assetPairId, chainId) => {
+      const dbInstance = getCurrentInstance()
       await dbInstance.getAssetPairService().syncAssetPair(assetPairId, chainId)
       return true
     }
