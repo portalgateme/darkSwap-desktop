@@ -19,7 +19,8 @@ export class NotesJoinService {
       darkSwapContext.walletAddress,
       notesToJoin[0],
       notesToJoin[1],
-      darkSwapContext.signature);
+      darkSwapContext.signature,
+      darkSwapContext.noteCryptoContext);
     this.noteService.addNote(outNote, darkSwapContext, false);
 
     const tx = await joinService.execute(joinContext);

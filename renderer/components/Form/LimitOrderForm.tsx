@@ -185,7 +185,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
         chainId: chainId,
         assetPairId: assetPair.id,
         orderDirection: formData.orderDirection,
-        orderType: formData.useMarketPrice ? OrderType.MARKET : OrderType.LIMIT,
+        orderType: OrderType.LIMIT,
         timeInForce: TimeInForce.GTC,
         stpMode: StpMode.NONE,
         price: formData.price,
@@ -343,11 +343,12 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
         mt={2}
         spacing={1}
       >
-        <IOSSwitchButton
+        {/* Market order creation is not supported on desktop */}
+        {/* <IOSSwitchButton
           checked={formData.useMarketPrice}
           onChange={() => onCheckUseMarketPrice(!formData.useMarketPrice)}
           label='Use Market Price'
-        />
+        /> */}
 
         <Stack
           direction={'row'}

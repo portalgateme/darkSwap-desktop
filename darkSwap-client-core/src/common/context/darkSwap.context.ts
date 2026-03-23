@@ -1,7 +1,9 @@
-import { DarkSwap } from "@thesingularitynetwork/darkswap-sdk"
+import { DarkSwap, NoteCryptoContext, createNoteCryptoContext, deriveKey } from "@thesingularitynetwork/darkswap-sdk"
 import { getAddress, Signer } from "ethers"
 import { getDarkSwap } from "../../utils/darkSwap"
 import { RpcManager } from "../rpcManager"
+
+const NOTE_CRYPTO_SALT = "darkswap-note-crypto"
 
 export class DarkSwapContext {
     chainId: number
@@ -10,14 +12,16 @@ export class DarkSwapContext {
     publicKey: string
     darkSwap: DarkSwap
     signature: string
+    noteCryptoContext: NoteCryptoContext
 
-    private constructor(chain: number, wallet: string, signer: Signer, pubKey: string, darkSwap: DarkSwap,  signature: string) {
+    private constructor(chain: number, wallet: string, signer: Signer, pubKey: string, darkSwap: DarkSwap, signature: string, noteCryptoContext: NoteCryptoContext) {
         this.chainId = chain
         this.walletAddress = wallet
         this.signer = signer
         this.publicKey = pubKey
         this.darkSwap = darkSwap
         this.signature = signature
+        this.noteCryptoContext = noteCryptoContext
     }
 
     static async createDarkSwapContext(chain: number, walletIn: string, rpcManager: RpcManager) {
@@ -43,6 +47,8 @@ export class DarkSwapContext {
         };
 
         const signature = await signer.signTypedData(domain, types, value);
-        return new DarkSwapContext(chain, wallet, signer, pubKey, darkSwap, signature)
+        const keyHex = deriveKey(signature, NOTE_CRYPTO_SALT)
+        const noteCryptoContext = createNoteCryptoContext(wallet, keyHex)
+        return new DarkSwapContext(chain, wallet, signer, pubKey, darkSwap, signature, noteCryptoContext)
     }
 } 

@@ -12,4 +12,5 @@ export class MatchedOrderDto {
     bobPublicKey: string;
     aliceSwapMessage: string;
     bobSwapMessage: string;
+    isMarket: boolean;
 }

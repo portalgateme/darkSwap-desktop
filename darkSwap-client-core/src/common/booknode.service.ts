@@ -18,6 +18,7 @@ interface BookNodeMatchedOrder {
   assetPairId: string
   orderDirection: number
   isAlice: boolean
+  isMarket: boolean
   matchedPrice: number
   aliceAmount: string
   aliceMatchedAmount: string
@@ -130,7 +131,8 @@ export class BooknodeService {
       aliceAmount: BigInt(bookNodeMathedOrderDetail.aliceAmount),
       aliceMatchedAmount: BigInt(bookNodeMathedOrderDetail.bobMatchedAmount),
       bobMatchedAmount: BigInt(bookNodeMathedOrderDetail.bobMatchedAmount),
-      bobSwapMessage: bookNodeMathedOrderDetail.bobSwapMessage
+      bobSwapMessage: bookNodeMathedOrderDetail.bobSwapMessage,
+      isMarket: bookNodeMathedOrderDetail.isMarket ?? false
     } as MatchedOrderDto
   }
 
