@@ -1,14 +1,14 @@
 {
   "name": "Darkswap",
   "version": "1.0.3",
-  "main": "dist/main/main.js",
+  "main": "dist/electron/main/main.js",
   "scripts": {
     "// dev": "=========== DEVELOPMENT MODE ===========",
     "dev:remove-old": "rm -rf dist && rm -rf renderer/.next renderer/next-env.d.ts",
     "dev:next": "cross-env NODE_ENV=development next dev renderer",
-    "dev:electron:testnet": "tsc -p . && cross-env NODE_ENV=development electron ./dist/main/main.js config=config/testnet/config.yaml",
-    "dev:electron:prod": "tsc -p . && cross-env NODE_ENV=development electron ./dist/main/main.js config=config/prod/config.yaml",
-    "dev:electron:dev": "tsc -p . && cross-env NODE_ENV=development electron ./dist/main/main.js config=config/dev/config.yaml",
+    "dev:electron:testnet": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js config=config/testnet/config.yaml",
+    "dev:electron:prod": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js config=config/prod/config.yaml",
+    "dev:electron:dev": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js config=config/dev/config.yaml",
     "dev:testnet": "npm run dev:remove-old && concurrently \"npm run dev:next\" \"npm run dev:electron:testnet\"",
     "dev:prod": "npm run dev:remove-old && concurrently \"npm run dev:next\" \"npm run dev:electron:prod\"",
     "dev:dev": "npm run dev:remove-old && concurrently \"npm run dev:next\" \"npm run dev:electron:dev\"",
