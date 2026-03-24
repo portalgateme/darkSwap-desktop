@@ -26,7 +26,7 @@ export class BasicService {
     const currentBalanceNote = await this.notesJoinService.getCurrentBalanceNote(darkSwapContext, asset);
 
     const { context, newBalanceNote } = await depositService.prepare(
-      currentBalanceNote, asset, BigInt(amount), darkSwapContext.walletAddress, darkSwapContext.signature);
+      currentBalanceNote, asset, BigInt(amount), darkSwapContext.walletAddress, darkSwapContext.signature, darkSwapContext.noteCryptoContext);
 
     this.noteService.addNote(newBalanceNote, darkSwapContext, false);
 

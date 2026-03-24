@@ -15,7 +15,7 @@ import { DepositModal } from '../Modal/DepositModal'
 import { WithdrawModal } from '../Modal/WithdrawModal'
 import { ethers } from 'ethers'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
-import { MyAssetsDto } from 'darkswap-client-core'
+import { MyAssetsDto } from '../../../darkSwap-client-core/src'
 import { getTokenFromContract } from '../../utils/getToken'
 import {
   getMarketPriceFromBinance,

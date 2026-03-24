@@ -1,4 +1,4 @@
-import { CancelOrderDto, OrderDto, UpdatePriceDto } from 'darkswap-client-core'
+import { CancelOrderDto, OrderDto, UpdatePriceDto } from '../../darkSwap-client-core/src'
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('electronAPI', {

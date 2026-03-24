@@ -27,11 +27,12 @@ const menus = [
     icon: '/images/order-list.png',
     link: '/orders'
   },
-  {
-    title: 'Auto Orders',
-    icon: <AutoAwesomeMotionIcon sx={{ color: '#FFFFFF', fontSize: 16 }} />,
-    link: '/auto-orders'
-  },
+  // Auto Orders hidden — feature disabled
+  // {
+  //   title: 'Auto Orders',
+  //   icon: <AutoAwesomeMotionIcon sx={{ color: '#FFFFFF', fontSize: 16 }} />,
+  //   link: '/auto-orders'
+  // },
   {
     title: 'Order History',
     icon: <HistoryIcon sx={{ color: '#FFFFFF', fontSize: 16 }} />,

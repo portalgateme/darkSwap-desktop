@@ -79,14 +79,14 @@ export function validateConfig(config: unknown) {
   try {
     const validatedConfig = ConfigSchema.parse(config)
     return {
-      isValid: true,
+      isValid: true as const,
       config: validatedConfig,
-      errors: null
+      errors: null as unknown
     }
   } catch (error) {
     return {
-      isValid: false,
-      config: null,
+      isValid: false as const,
+      config: null as unknown,
       errors: error
     }
   }

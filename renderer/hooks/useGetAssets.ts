@@ -1,4 +1,4 @@
-import { MyAssetsDto } from 'darkswap-client-core'
+import { MyAssetsDto } from '../../darkSwap-client-core/src'
 import { useEffect, useState } from 'react'
 import { useAccountContext } from '../contexts/AccountContext/hooks'
 import { useChainContext } from '../contexts/ChainContext/hooks'

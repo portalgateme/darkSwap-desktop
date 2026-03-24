@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 import { ConfigSchema, Config } from './configValidator'
 import { ethers } from 'ethers'
-import { DarkSwapConfig } from 'darkswap-client-core'
+import { DarkSwapConfig } from '../../darkSwap-client-core/src'
 import { app } from 'electron'
 import * as path from 'path'
 

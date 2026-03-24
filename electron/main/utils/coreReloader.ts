@@ -1,4 +1,4 @@
-import { DarkSwapClientCore, DarkSwapConfig } from 'darkswap-client-core'
+import { DarkSwapClientCore, DarkSwapConfig } from '../../../darkSwap-client-core/src'
 import { Database } from 'better-sqlite3'
 
 import { ipcMain } from 'electron'
