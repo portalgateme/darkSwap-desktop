@@ -3,15 +3,19 @@ import { DarkSwapError } from '@thesingularitynetwork/darkswap-sdk';
 import { ethers } from 'ethers';
 import { DarkSwapConfig, WalletConfig } from '../types';
 
+export type WalletResolver = (address: string) => WalletConfig | null;
+
 export class RpcManager {
   private providers: Map<number, ethers.JsonRpcProvider>;
   private signers: Map<string, [ethers.Signer, string]>;
   private config: DarkSwapConfig;
+  private walletResolver?: WalletResolver;
 
-  public constructor(config: DarkSwapConfig) {
+  public constructor(config: DarkSwapConfig, walletResolver?: WalletResolver) {
     this.providers = new Map();
     this.signers = new Map();
     this.config = config;
+    this.walletResolver = walletResolver;
     this.initializeProviders();
   }
 
@@ -47,8 +51,12 @@ export class RpcManager {
       return this.signers.get(key)!;
     }
 
-    const wallet = this.config.wallets
+    let wallet = this.config.wallets
       .find(w => w.address.toLowerCase() === walletAddress.toLowerCase());
+
+    if (!wallet && this.walletResolver) {
+      wallet = this.walletResolver(walletAddress) ?? undefined;
+    }
 
     if (!wallet) {
       throw new DarkSwapError(`No wallet found for address: ${walletAddress}`);

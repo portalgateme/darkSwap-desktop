@@ -1,6 +1,6 @@
 import { DarkSwapError, NoteOnChainStatus } from '@thesingularitynetwork/darkswap-sdk'
-import { SettlementService } from './settlement.service'
-import { OrderDirection, OrderDto, OrderStatus, NoteDto } from '../types'
+import { SettlementService } from '../../../electron/core/settlement/settlement.service'
+import { OrderDirection, OrderDto, OrderStatus, NoteDto } from '../../../electron/core/types'
 
 // --- SDK mocks ---
 const mockCalcNullifier = jest.fn().mockReturnValue(BigInt(999))
@@ -73,13 +73,13 @@ const mockDarkSwapContext = {
 }
 
 const mockCreateDarkSwapContext = jest.fn().mockResolvedValue(mockDarkSwapContext)
-jest.mock('../common/context/darkSwap.context', () => ({
+jest.mock('../../../electron/core/common/context/darkSwap.context', () => ({
   DarkSwapContext: {
     createDarkSwapContext: (...args: any[]) => mockCreateDarkSwapContext(...args)
   }
 }))
 
-jest.mock('../config/networkConfig', () => ({
+jest.mock('../../../electron/core/config/networkConfig', () => ({
   getConfirmations: jest.fn().mockReturnValue(3)
 }))
 

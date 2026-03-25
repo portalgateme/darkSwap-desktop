@@ -162,7 +162,15 @@ export class WebSocketClient {
           break
       }
     } catch (error: any) {
-      this.logger.error('Invalid message:', message.data)
+      const errorMessage = error instanceof Error ? (error.message || '') : ''
+      if (errorMessage.includes('No wallet found for address')) {
+        this.logger.error(
+          'Wallet not found during event processing. Ensure the wallet is configured and core is reloaded.',
+          { message: message.data, error: errorMessage }
+        )
+      } else {
+        this.logger.error('Failed to process message:', message.data)
+      }
       if (error instanceof Error) {
         this.logger.error(
           'Caught error:',

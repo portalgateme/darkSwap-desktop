@@ -1,5 +1,5 @@
-import { networkConfig } from './networkConfig'
-import { ChainId } from '../types'
+import { networkConfig } from '../../../electron/core/config/networkConfig'
+import { ChainId } from '../../../electron/core/types'
 
 describe('networkConfig', () => {
   describe('BASE chain config', () => {

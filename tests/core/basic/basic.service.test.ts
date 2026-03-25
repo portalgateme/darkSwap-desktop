@@ -1,4 +1,4 @@
-import { BasicService } from './basic.service'
+import { BasicService } from '../../../electron/core/basic/basic.service'
 
 const mockPrepare = jest.fn()
 const mockExecute = jest.fn()
@@ -18,7 +18,7 @@ jest.mock('@thesingularitynetwork/darkswap-sdk', () => ({
   }))
 }))
 
-jest.mock('../config/networkConfig', () => ({
+jest.mock('../../../electron/core/config/networkConfig', () => ({
   getConfirmations: jest.fn().mockReturnValue(3)
 }))
 

@@ -15,7 +15,7 @@ import { WalletMutexService } from './common/mutex/walletMutex.service'
 import { OrderService } from './orders/order.service'
 import { AccountService } from './account/account.service'
 import { BasicService } from './basic/basic.service'
-import { RpcManager } from './common/rpcManager'
+import { RpcManager, WalletResolver } from './common/rpcManager'
 import { AutoOrderManager } from './autoOrder/autoOrder.manager'
 
 export class DarkSwapClientCore {
@@ -31,7 +31,13 @@ export class DarkSwapClientCore {
   }
 
   private init(db: Database, config: DarkSwapConfig) {
-    this.rpcManager = new RpcManager(config)
+    const walletResolver: WalletResolver = (address: string) => {
+      const row = db.prepare(
+        'SELECT name, address, privateKey, type FROM wallets WHERE LOWER(address) = LOWER(?)'
+      ).get(address) as { name: string; address: string; privateKey: string; type: 'privateKey' | 'fireblocks' } | undefined
+      return row ? { name: row.name, address: row.address, privateKey: row.privateKey, type: row.type } : null
+    }
+    this.rpcManager = new RpcManager(config, walletResolver)
     const dbService = new DatabaseService(db)
     const noteService = new NoteService(dbService)
     const noteJoinService = new NotesJoinService(dbService, noteService)
