@@ -1,4 +1,4 @@
-import { DarkSwapClientCore, DarkSwapConfig } from 'darkswap-client-core'
+import { DarkSwapClientCore, DarkSwapConfig } from '../../core'
 import { Database } from 'better-sqlite3'
 
 import { ipcMain } from 'electron'
@@ -50,8 +50,17 @@ function createCoreInstance(
     throw new Error('Failed to load configuration')
   }
 
+  // Load wallets from database (same as reloadCore)
+  const dbWallets = db.prepare('SELECT * FROM wallets').all() as Array<{
+    id: number
+    name: string
+    address: string
+    privateKey: string
+    type: 'privateKey' | 'fireblocks'
+  }>
+
   const darkSwapConfig: DarkSwapConfig = {
-    wallets: latestConfig.wallets || [],
+    wallets: [...(latestConfig.wallets || []), ...dbWallets],
     chainRpcs: latestConfig.chainRpcs || [],
     dbFilePath: dbPath,
     bookNodeSocketUrl:

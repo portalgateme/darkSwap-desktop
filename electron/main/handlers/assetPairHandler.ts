@@ -24,4 +24,43 @@ export const registerAssetPairHandlers = () => {
       .all(chainId)
     return assetPairs
   })
+
+  ipcMain.handle('assetPair:getTokensByChainId', async (event, chainId: number) => {
+    const assetPairs = db
+      .prepare('SELECT * FROM ASSET_PAIRS WHERE chainId = ?')
+      .all(chainId) as Array<{
+        baseAddress: string
+        baseSymbol: string
+        baseDecimal: number
+        quoteAddress: string
+        quoteSymbol: string
+        quoteDecimal: number
+      }>
+
+    const tokenMap = new Map<string, { address: string; symbol: string; name: string; decimals: number }>()
+
+    for (const pair of assetPairs) {
+      const baseKey = pair.baseAddress.toLowerCase()
+      if (!tokenMap.has(baseKey)) {
+        tokenMap.set(baseKey, {
+          address: pair.baseAddress,
+          symbol: pair.baseSymbol,
+          name: pair.baseSymbol,
+          decimals: pair.baseDecimal
+        })
+      }
+
+      const quoteKey = pair.quoteAddress.toLowerCase()
+      if (!tokenMap.has(quoteKey)) {
+        tokenMap.set(quoteKey, {
+          address: pair.quoteAddress,
+          symbol: pair.quoteSymbol,
+          name: pair.quoteSymbol,
+          decimals: pair.quoteDecimal
+        })
+      }
+    }
+
+    return Array.from(tokenMap.values())
+  })
 }

@@ -1,0 +1,134 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - testnet
+          - prod
+      create_release:
+        description: 'Create GitHub Release with artifacts'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build TypeScript
+        run: yarn build:ts
+
+      - name: Build Next.js
+        run: yarn build:next
+        env:
+          NODE_ENV: production
+
+      - name: Rebuild native modules
+        run: yarn rebuild:native
+
+      - name: Build Mac app
+        run: electron-builder --mac -c=./config/${{ inputs.environment }}/electron-builder.yaml
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload Mac artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-build-${{ inputs.environment }}
+          path: release/${{ inputs.environment }}/*.dmg
+          if-no-files-found: error
+
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build TypeScript
+        run: yarn build:ts
+
+      - name: Build Next.js
+        run: yarn build:next
+        env:
+          NODE_ENV: production
+
+      - name: Rebuild native modules
+        run: yarn rebuild:native
+
+      - name: Build Windows app
+        run: electron-builder --win -c=./config/${{ inputs.environment }}/electron-builder.yaml
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-build-${{ inputs.environment }}
+          path: release/${{ inputs.environment }}/*.exe
+          if-no-files-found: error
+
+  release:
+    if: ${{ inputs.create_release }}
+    needs: [build-mac, build-win]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Download Mac artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-build-${{ inputs.environment }}
+          path: artifacts/mac
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: win-build-${{ inputs.environment }}
+          path: artifacts/win
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}-${{ inputs.environment }}
+          name: Darkswap v${{ steps.version.outputs.version }} (${{ inputs.environment }})
+          draft: false
+          prerelease: ${{ inputs.environment != 'prod' }}
+          files: |
+            artifacts/mac/*.dmg
+            artifacts/win/*.exe

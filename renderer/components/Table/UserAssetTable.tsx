@@ -8,10 +8,11 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import { styled } from '@mui/material'
 import { shorterAddress } from '../../utils/format'
-import { MyAssetsDto } from 'darkswap-client-core'
+import { MyAssetsDto } from '../../../electron/core'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { getTokenFromContract } from '../../utils/getToken'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { ethers } from 'ethers'
 
 interface UserAssetTableProps {
@@ -20,6 +21,7 @@ interface UserAssetTableProps {
 
 export function UserAssetTable({ listData }: UserAssetTableProps) {
   const { chainId } = useChainContext()
+  const { tokens } = useAssetPairContext()
 
   const formatAmount = (amount: string, decimals: number = 18) => {
     return ethers.formatUnits(amount, decimals)
@@ -57,17 +59,17 @@ export function UserAssetTable({ listData }: UserAssetTableProps) {
                   component='th'
                   scope='row'
                 >
-                  {getTokenFromContract(row.asset, chainId)?.symbol}
+                  {getTokenFromContract(row.asset, chainId, tokens)?.symbol}
                 </StyledTableCell>
                 <StyledTableCell align='center'>
                   {shorterAddress(
-                    getTokenFromContract(row.asset, chainId)?.address
+                    getTokenFromContract(row.asset, chainId, tokens)?.address
                   )}
                 </StyledTableCell>
                 <StyledTableCell align='center'>
                   {formatAmount(
                     row.amount,
-                    getTokenFromContract(row.asset, chainId)?.decimals
+                    getTokenFromContract(row.asset, chainId, tokens)?.decimals
                   )}
                 </StyledTableCell>
                 <StyledTableCell align='right'>

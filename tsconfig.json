@@ -4,11 +4,19 @@
     "module": "CommonJS",
     "outDir": "dist",
     "strict": true,
+    "strictPropertyInitialization": false,
+    "strictNullChecks": false,
+    "useUnknownInCatchVariables": false,
     "esModuleInterop": true,
     "moduleResolution": "node",
     "types": ["node"],
     "jsx": "preserve",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "sourceMap": true
   },
-  "exclude": ["node_modules", "darkSwap-client-core", "renderer"]
+  "include": ["electron/**/*"],
+  "exclude": ["node_modules", "renderer", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

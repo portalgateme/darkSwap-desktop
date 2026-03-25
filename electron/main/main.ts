@@ -10,7 +10,7 @@ import { registerAppHandlers } from './handlers/appHandler'
 import { registerAutoOrderHandlers } from './handlers/autoOrderHandler'
 
 const appServe = app.isPackaged
-  ? serve({ directory: path.join(__dirname, '../renderer/out') })
+  ? serve({ directory: path.join(__dirname, '../../renderer/out') })
   : null
 
 let mainWindow: BrowserWindow | null = null

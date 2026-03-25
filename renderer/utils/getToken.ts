@@ -1,11 +1,12 @@
-import { tokenConfig } from '../constants/tokenConfig'
+import { Token } from '../types'
 
 export const getTokenFromContract = (
   address?: string | null,
-  chainId?: number
+  chainId?: number,
+  tokens?: Token[]
 ) => {
-  if (!address || !chainId) return
-  return tokenConfig[chainId].find(
+  if (!address || !tokens) return
+  return tokens.find(
     (token) => token.address.toLowerCase() === address.toLowerCase()
   )
 }

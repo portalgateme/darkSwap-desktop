@@ -17,7 +17,7 @@ import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { getMarketPriceFromBinance } from '../../services/orderService'
 import { ethers } from 'ethers'
-import { OrderDto } from 'darkswap-client-core'
+import { OrderDto } from '../../../electron/core'
 import { safeAmountWithDecimals } from '../../utils/safeAmount'
 import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { useToast } from '../../contexts/ToastContext'
@@ -185,7 +185,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
         chainId: chainId,
         assetPairId: assetPair.id,
         orderDirection: formData.orderDirection,
-        orderType: formData.useMarketPrice ? OrderType.MARKET : OrderType.LIMIT,
+        orderType: OrderType.LIMIT,
         timeInForce: TimeInForce.GTC,
         stpMode: StpMode.NONE,
         price: formData.price,
@@ -343,11 +343,12 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
         mt={2}
         spacing={1}
       >
-        <IOSSwitchButton
+        {/* Market order creation is not supported on desktop */}
+        {/* <IOSSwitchButton
           checked={formData.useMarketPrice}
           onChange={() => onCheckUseMarketPrice(!formData.useMarketPrice)}
           label='Use Market Price'
-        />
+        /> */}
 
         <Stack
           direction={'row'}
