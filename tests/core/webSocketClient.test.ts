@@ -212,6 +212,155 @@ describe('WebSocketClient', () => {
     })
   })
 
+  // =========================================================
+  // OrderMatchedAsBob (eventType=1) - Edge Cases
+  // =========================================================
+  describe('processMessage - EventType.OrderMatchedAsBob edge cases', () => {
+    it('should acquire mutex with correct chainId and lowercase wallet', async () => {
+      const orderDto = makeOrderDto()
+      orderDto.wallet = '0xMixedCaseWallet'
+      mocks.dbService.getOrderByOrderId.mockReturnValue(orderDto)
+
+      const message = JSON.stringify({ eventType: 1, orderId: 'order-1' })
+      await processMessage(message)
+
+      expect(mocks.walletMutexService.getMutex).toHaveBeenCalledWith(1, '0xmixedcasewallet')
+    })
+
+    it('should log error when bobConfirm throws generic error', async () => {
+      mocks.settlementService.bobConfirm.mockRejectedValue(new Error('bobConfirm failed'))
+
+      const message = JSON.stringify({ eventType: 1, orderId: 'order-1' })
+      await processMessage(message)
+
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to process message:',
+        expect.any(String)
+      )
+    })
+
+    it('should log wallet-not-found error when bobConfirm throws wallet error', async () => {
+      mocks.settlementService.bobConfirm.mockRejectedValue(
+        new Error('No wallet found for address: 0xUnknown')
+      )
+
+      const message = JSON.stringify({ eventType: 1, orderId: 'order-1' })
+      await processMessage(message)
+
+      expect(logger.error).toHaveBeenCalledWith(
+        'Wallet not found during event processing. Ensure the wallet is configured and core is reloaded.',
+        expect.objectContaining({
+          error: 'No wallet found for address: 0xUnknown'
+        })
+      )
+    })
+
+    it('should log info message with orderId for OrderMatchedAsBob', async () => {
+      const message = JSON.stringify({ eventType: 1, orderId: 'order-42' })
+      await processMessage(message)
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Event for order matched as Bob: ',
+        'order-42'
+      )
+    })
+  })
+
+  // =========================================================
+  // OrderConfirmed (eventType=2) - Edge Cases
+  // =========================================================
+  describe('processMessage - EventType.OrderConfirmed edge cases', () => {
+    it('should acquire mutex with correct chainId and lowercase wallet', async () => {
+      const orderDto = makeOrderDto()
+      orderDto.wallet = '0xUpperWALLET'
+      mocks.dbService.getOrderByOrderId.mockReturnValue(orderDto)
+
+      const message = JSON.stringify({ eventType: 2, orderId: 'order-1' })
+      await processMessage(message)
+
+      expect(mocks.walletMutexService.getMutex).toHaveBeenCalledWith(1, '0xupperwallet')
+    })
+
+    it('should log info message with orderId for OrderConfirmed', async () => {
+      const message = JSON.stringify({ eventType: 2, orderId: 'order-99' })
+      await processMessage(message)
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Event for order confirmed: ',
+        'order-99'
+      )
+    })
+  })
+
+  // =========================================================
+  // OrderSettled (eventType=3) - Edge Cases
+  // =========================================================
+  describe('processMessage - EventType.OrderSettled edge cases', () => {
+    it('should pass empty string as txHash when not provided in message', async () => {
+      const message = JSON.stringify({ eventType: 3, orderId: 'order-1' })
+      await processMessage(message)
+
+      expect(mocks.settlementService.bobPostSettlement).toHaveBeenCalledWith(
+        expect.objectContaining({ orderId: 'order-1' }),
+        ''
+      )
+    })
+
+    it('should acquire mutex with correct chainId and lowercase wallet', async () => {
+      const orderDto = makeOrderDto()
+      orderDto.wallet = '0xABCDef'
+      mocks.dbService.getOrderByOrderId.mockReturnValue(orderDto)
+
+      const message = JSON.stringify({ eventType: 3, orderId: 'order-1', txHash: '0xTx' })
+      await processMessage(message)
+
+      expect(mocks.walletMutexService.getMutex).toHaveBeenCalledWith(1, '0xabcdef')
+    })
+
+    it('should log error when bobPostSettlement throws generic error', async () => {
+      mocks.settlementService.bobPostSettlement.mockRejectedValue(
+        new Error('Settlement processing failed')
+      )
+
+      const message = JSON.stringify({ eventType: 3, orderId: 'order-1', txHash: '0xTx' })
+      await processMessage(message)
+
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to process message:',
+        expect.any(String)
+      )
+    })
+
+    it('should log wallet-not-found error when bobPostSettlement throws wallet error', async () => {
+      mocks.settlementService.bobPostSettlement.mockRejectedValue(
+        new Error('No wallet found for address: 0xGone')
+      )
+
+      const message = JSON.stringify({ eventType: 3, orderId: 'order-1', txHash: '0xTx' })
+      await processMessage(message)
+
+      expect(logger.error).toHaveBeenCalledWith(
+        'Wallet not found during event processing. Ensure the wallet is configured and core is reloaded.',
+        expect.objectContaining({
+          error: 'No wallet found for address: 0xGone'
+        })
+      )
+    })
+
+    it('should log info message with orderId for OrderSettled', async () => {
+      const message = JSON.stringify({ eventType: 3, orderId: 'order-77', txHash: '0xTx' })
+      await processMessage(message)
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Event for order settled: ',
+        'order-77'
+      )
+    })
+  })
+
+  // =========================================================
+  // General error handling
+  // =========================================================
   describe('processMessage - error handling', () => {
     it('should handle invalid JSON gracefully', async () => {
       await processMessage('not-valid-json')
@@ -221,6 +370,31 @@ describe('WebSocketClient', () => {
 
     it('should handle non-Error thrown objects', async () => {
       mocks.settlementService.aliceSwap.mockRejectedValue('string-error')
+
+      const message = JSON.stringify({ eventType: 2, orderId: 'order-1' })
+      await processMessage(message)
+
+      expect(logger.error).toHaveBeenCalledWith(
+        'Caught non-standard error:',
+        expect.any(String)
+      )
+    })
+
+    it('should handle Error with empty message', async () => {
+      mocks.settlementService.bobConfirm.mockRejectedValue(new Error(''))
+
+      const message = JSON.stringify({ eventType: 1, orderId: 'order-1' })
+      await processMessage(message)
+
+      // Empty message should not match wallet-not-found pattern
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to process message:',
+        expect.any(String)
+      )
+    })
+
+    it('should handle error thrown as object (not Error instance)', async () => {
+      mocks.settlementService.aliceSwap.mockRejectedValue({ code: 500, msg: 'internal' })
 
       const message = JSON.stringify({ eventType: 2, orderId: 'order-1' })
       await processMessage(message)
