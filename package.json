@@ -6,9 +6,9 @@
     "// dev": "=========== DEVELOPMENT MODE ===========",
     "dev:remove-old": "rm -rf dist && rm -rf renderer/.next renderer/next-env.d.ts",
     "dev:next": "cross-env NODE_ENV=development next dev renderer",
-    "dev:electron:testnet": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js config=config/testnet/config.yaml",
-    "dev:electron:prod": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js config=config/prod/config.yaml",
-    "dev:electron:dev": "tsc -p . && cross-env NODE_ENV=development electron ./dist/electron/main/main.js config=config/dev/config.yaml",
+    "dev:electron:testnet": "tsc -p . && cross-env NODE_ENV=development electron ./dist/main/main.js config=config/testnet/config.yaml",
+    "dev:electron:prod": "tsc -p . && cross-env NODE_ENV=development electron ./dist/main/main.js config=config/prod/config.yaml",
+    "dev:electron:dev": "tsc -p . && cross-env NODE_ENV=development electron ./dist/main/main.js config=config/dev/config.yaml",
     "dev:testnet": "npm run dev:remove-old && concurrently \"npm run dev:next\" \"npm run dev:electron:testnet\"",
     "dev:prod": "npm run dev:remove-old && concurrently \"npm run dev:next\" \"npm run dev:electron:prod\"",
     "dev:dev": "npm run dev:remove-old && concurrently \"npm run dev:next\" \"npm run dev:electron:dev\"",
@@ -71,5 +71,6 @@
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
-  }
+  },
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }
