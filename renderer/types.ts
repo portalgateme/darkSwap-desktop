@@ -1,4 +1,4 @@
-import { OrderDto, OrderEventDto } from '../darkSwap-client-core/src'
+import { OrderDto, OrderEventDto } from '../electron/core'
 
 export interface Network {
   name: string

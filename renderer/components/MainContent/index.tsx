@@ -15,7 +15,7 @@ import { DepositModal } from '../Modal/DepositModal'
 import { WithdrawModal } from '../Modal/WithdrawModal'
 import { ethers } from 'ethers'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
-import { MyAssetsDto } from '../../../darkSwap-client-core/src'
+import { MyAssetsDto } from '../../../electron/core'
 import { getTokenFromContract } from '../../utils/getToken'
 import {
   getMarketPriceFromBinance,
@@ -24,6 +24,7 @@ import {
 import { useGetAssets } from '../../hooks/useGetAssets'
 import SyncIcon from '@mui/icons-material/Sync'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline'
 import { useConfigContext } from '../../contexts/ConfigContext/hooks'
 import { useToast } from '../../contexts/ToastContext'
@@ -43,6 +44,7 @@ export const MainContent = () => {
 
   const { selectedAccount, setOpenAddModal } = useAccountContext()
   const { chainId, currentChain } = useChainContext()
+  const { tokens } = useAssetPairContext()
   const { listData, fetchAssets, syncAssets } = useGetAssets()
   const { isAuthenticated } = useConfigContext()
   const { showSuccess, showError, showLoading, hideToast } = useToast()
@@ -54,9 +56,10 @@ export const MainContent = () => {
       ? 'ethereum'
       : currentChain.name.toLowerCase()
     for (const asset of assets.assets) {
-      const token = await getTokenFromContract(
+      const token = getTokenFromContract(
         asset.asset,
-        currentChain.chainId
+        currentChain.chainId,
+        tokens
       )
       if (!token) continue
       const balance = ethers.formatUnits(asset.amount, token.decimals)

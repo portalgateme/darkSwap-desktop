@@ -8,7 +8,8 @@ import { SelectAccountModal } from '../Modal/SelectAccountModal'
 import { useAccountContext } from '../../contexts/AccountContext/hooks'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { useTokenBalance } from '../../hooks/useTokenBalance'
-import { nativeToken, tokenConfig } from '../../constants/tokenConfig'
+import { nativeToken } from '../../constants/tokenConfig'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 import { ethers } from 'ethers'
 import { ChainId } from '../../constants/networkConfig'
 import { TokenLabel } from '../Label/TokenLabel'
@@ -27,6 +28,7 @@ export const Header = ({ title }: HeaderProps) => {
   const { selectedAccount, setSelectedAccount, setOpenAddModal } =
     useAccountContext()
   const { onChangeChain, currentChain, chainId } = useChainContext()
+  const { tokens } = useAssetPairContext()
 
   const onOpenSelectAccount = () => {
     setOpenModal(true)
@@ -46,11 +48,11 @@ export const Header = ({ title }: HeaderProps) => {
     getBalances(
       chainId,
       selectedAccount.address,
-      tokenConfig[chainId].map((token) => token.address)
+      tokens.map((token) => token.address)
     ).then((bal) => {
       const formattedBalances: Record<string, string> = {}
       for (const [tokenAddress, balance] of Object.entries(bal)) {
-        const token = getTokenFromContract(tokenAddress, chainId)
+        const token = getTokenFromContract(tokenAddress, chainId, tokens)
         if (token) {
           const formattedBalance = ethers.formatUnits(balance, token.decimals)
           formattedBalances[tokenAddress] = new Intl.NumberFormat('en-US', {
@@ -189,7 +191,7 @@ export const Header = ({ title }: HeaderProps) => {
           <Box sx={{ p: 2, backgroundColor: '#1E2128', overflow: 'hidden' }}>
             {chainId &&
               Object.entries(balances).map(([tokenAddress, balance]) => {
-                const token = getTokenFromContract(tokenAddress, chainId)
+                const token = getTokenFromContract(tokenAddress, chainId, tokens)
                 if (!token) return null
                 return (
                   <Stack

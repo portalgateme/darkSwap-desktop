@@ -1,25 +1,24 @@
-import { ethers } from 'ethers'
 import React, {
   createContext,
-  useContext,
   ReactNode,
   useState,
   useEffect
 } from 'react'
 import { useChainContext } from '../ChainContext/hooks'
-import { AssetPairDto } from '../../types'
-import { set } from 'zod'
+import { AssetPairDto, Token } from '../../types'
 
 interface AssetPairContextType {
   list: AssetPairDto[]
   assetPair?: AssetPairDto
   onChangeAssetPair?: (pair: AssetPairDto) => void
+  tokens: Token[]
 }
 
 export const AssetPairContext = createContext<AssetPairContextType>({
   list: [],
   assetPair: undefined,
-  onChangeAssetPair: () => {}
+  onChangeAssetPair: () => {},
+  tokens: []
 })
 
 export const AssetPairProvider: React.FC<{ children: ReactNode }> = ({
@@ -27,6 +26,7 @@ export const AssetPairProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [list, setList] = useState<AssetPairDto[]>([])
   const [assetPair, setAssetPair] = useState<AssetPairDto>()
+  const [tokens, setTokens] = useState<Token[]>([])
   const { chainId } = useChainContext()
 
   const fetchAssetPairs = async (chainId: number) => {
@@ -40,6 +40,12 @@ export const AssetPairProvider: React.FC<{ children: ReactNode }> = ({
     const currentPair = assetPairs[0]
     if (!currentPair) return
     setAssetPair(currentPair)
+
+    // @ts-ignore
+    const dynamicTokens = (await window.assetPairAPI.getTokensByChainId(
+      chainId
+    )) as Token[]
+    setTokens(dynamicTokens)
   }
 
   useEffect(() => {
@@ -52,7 +58,8 @@ export const AssetPairProvider: React.FC<{ children: ReactNode }> = ({
       value={{
         list,
         assetPair,
-        onChangeAssetPair: setAssetPair
+        onChangeAssetPair: setAssetPair,
+        tokens
       }}
     >
       {children}

@@ -4,7 +4,7 @@ import * as path from 'path'
 describe('Project integration checks', () => {
   const projectRoot = path.resolve(__dirname, '..')
 
-  describe('darkswap-client-core imports are relative (not package imports)', () => {
+  describe('electron/core imports are relative (not package imports)', () => {
     const filesToCheck = [
       'electron/preload/preload.ts',
       'electron/main/utils/coreReloader.ts',
@@ -20,13 +20,15 @@ describe('Project integration checks', () => {
       'renderer/components/MainContent/index.tsx'
     ]
 
-    it.each(filesToCheck)('%s should not import from "darkswap-client-core" package', (filePath) => {
+    it.each(filesToCheck)('%s should import from electron/core via relative path', (filePath) => {
       const fullPath = path.join(projectRoot, filePath)
       const content = fs.readFileSync(fullPath, 'utf-8')
       // Should NOT have bare package imports
       expect(content).not.toMatch(/from\s+['"]darkswap-client-core['"]/)
-      // Should have relative path imports to the core source
-      expect(content).toMatch(/from\s+['"].*darkSwap-client-core\/src['"]/)
+      // Should NOT have old darkSwap-client-core path imports
+      expect(content).not.toMatch(/from\s+['"].*darkSwap-client-core\/src['"]/)
+      // Should have relative path imports to electron/core
+      expect(content).toMatch(/from\s+['"].*\/core['"]/)
     })
   })
 
@@ -56,11 +58,11 @@ describe('Project integration checks', () => {
     })
   })
 
-  describe('tsconfig includes darkSwap-client-core source', () => {
-    it('should include darkSwap-client-core/src in compilation', () => {
+  describe('tsconfig includes electron source', () => {
+    it('should include electron/**/* in compilation', () => {
       const tsconfigPath = path.join(projectRoot, 'tsconfig.json')
       const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf-8'))
-      expect(tsconfig.include).toContain('darkSwap-client-core/src/**/*')
+      expect(tsconfig.include).toContain('electron/**/*')
     })
 
     it('should exclude test files from main compilation', () => {

@@ -2,6 +2,7 @@ import { Stack, Typography } from '@mui/material'
 import Image from 'next/image'
 import { getTokenFromContract } from '../../utils/getToken'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 
 interface TokenLabelProps {
   token?: string
@@ -13,7 +14,8 @@ export const TokenLabel: React.FC<TokenLabelProps> = ({
   showSymbol = true
 }) => {
   const { chainId } = useChainContext()
-  const asset = getTokenFromContract(token, chainId)
+  const { tokens } = useAssetPairContext()
+  const asset = getTokenFromContract(token, chainId, tokens)
   return (
     <Stack
       direction={'row'}

@@ -1,16 +1,5 @@
 import { Token } from '../types'
 import { ChainId } from './networkConfig'
-import { baseTokens } from './tokens/base'
-import { hardhatTokens } from './tokens/hardhat'
-import { horizenTestnetTokens } from './tokens/horizenTestnet'
-import { sepoliaTokens } from './tokens/sepolia'
-
-export const tokenConfig: Record<number, Token[]> = {
-  [ChainId.SEPOLIA]: sepoliaTokens,
-  [ChainId.HORIZEN_TESTNET]: horizenTestnetTokens,
-  [ChainId.BASE]: baseTokens,
-  [ChainId.HARDHAT]: hardhatTokens
-}
 
 export const nativeToken: Record<number, Token> = {
   [ChainId.SEPOLIA]: {

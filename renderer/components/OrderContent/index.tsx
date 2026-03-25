@@ -20,7 +20,7 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import React, { use, useEffect, useState } from 'react'
 import { PlaceOrderModal } from '../Modal/PlaceOrderModal'
-import { OrderDto } from '../../../darkSwap-client-core/src'
+import { OrderDto } from '../../../electron/core'
 import { useChainContext } from '../../contexts/ChainContext/hooks'
 import { OrderStatusLabel } from '../Label/OrderStatusLabel'
 import {

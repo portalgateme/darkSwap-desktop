@@ -6,7 +6,7 @@ const nextConfig = {
   distDir: '../dist/renderer/out',
   images: { unoptimized: true },
   webpack: (config) => {
-    // Allow importing TypeScript files from darkSwap-client-core/src
+    // Allow importing TypeScript files from electron/core
     config.module.rules.forEach((rule) => {
       if (rule.oneOf) {
         rule.oneOf.forEach((oneOfRule) => {
@@ -19,7 +19,7 @@ const nextConfig = {
                 ...(Array.isArray(oneOfRule.include)
                   ? oneOfRule.include
                   : [oneOfRule.include]),
-                path.resolve(__dirname, '../darkSwap-client-core/src')
+                path.resolve(__dirname, '../electron/core')
               ]
             }
           }

@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { config, db, dbPath } from '../database'
-import { DarkSwapClientCore, DarkSwapConfig } from '../../../darkSwap-client-core/src'
+import { DarkSwapClientCore, DarkSwapConfig } from '../../core'
 import { reloadCore } from '../utils/coreReloader'
 
 export function registerConfigHandlers() {

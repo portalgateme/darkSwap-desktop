@@ -1,4 +1,4 @@
-import { CancelOrderDto, OrderDto, UpdatePriceDto } from '../../darkSwap-client-core/src'
+import { CancelOrderDto, OrderDto, UpdatePriceDto } from '../core'
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -49,7 +49,9 @@ contextBridge.exposeInMainWorld('assetPairAPI', {
   syncAssetPair: (assetPairId: string, chainId: number) =>
     ipcRenderer.invoke('assetPair:syncAssetPair', assetPairId, chainId),
   getAssetPairs: (chainId: number) =>
-    ipcRenderer.invoke('assetPair:getAssetPairs', chainId)
+    ipcRenderer.invoke('assetPair:getAssetPairs', chainId),
+  getTokensByChainId: (chainId: number) =>
+    ipcRenderer.invoke('assetPair:getTokensByChainId', chainId)
 })
 
 // Order APIs

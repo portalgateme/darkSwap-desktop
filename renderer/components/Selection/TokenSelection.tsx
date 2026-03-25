@@ -12,9 +12,8 @@ import {
 import { Account, Token } from '../../types'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { shorterAddress } from '../../utils/format'
-import { tokenConfig } from '../../constants/tokenConfig'
 import Image from 'next/image'
-import { useChainContext } from '../../contexts/ChainContext/hooks'
+import { useAssetPairContext } from '../../contexts/AssetPairContext/hooks'
 
 interface TokenSelection {
   selectedToken?: Token
@@ -33,7 +32,7 @@ const TokenSelection: React.FC<TokenSelection> = ({
   menuSx,
   sx
 }) => {
-  const { chainId } = useChainContext()
+  const { tokens } = useAssetPairContext()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -107,9 +106,8 @@ const TokenSelection: React.FC<TokenSelection> = ({
           horizontal: 'left'
         }}
       >
-        {chainId &&
-          tokenConfig[chainId] &&
-          tokenConfig[chainId].map((token, index) => (
+        {tokens &&
+          tokens.map((token, index) => (
             <MenuItem
               key={index}
               onClick={() => onSelectToken(token)}
