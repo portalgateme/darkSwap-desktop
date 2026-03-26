@@ -53,12 +53,17 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
   })
   const [marketPrice, setMarketPrice] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
+  const [feeRatio, setFeeRatio] = useState<string>('')
 
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!chainId || !selectedAccount) return
     fetchAssets(chainId, selectedAccount.address)
+    // @ts-ignore
+    window.orderAPI.getFeeRatio(chainId, selectedAccount.address)
+      .then((ratio: any) => setFeeRatio(ratio?.toString() ?? ''))
+      .catch(() => setFeeRatio(''))
   }, [selectedAccount, chainId])
 
   const balanceTokenOut = useMemo(() => {
@@ -192,7 +197,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
         amountOut: amountOutBN,
         amountIn: amountInBN,
         partialAmountIn: partialAmountInBN,
-        feeRatio: '0.001'
+        feeRatio: feeRatio || '0.001'
       }
 
       console.log('Placing order with params:', params)
@@ -223,6 +228,19 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
       amountOut: ''
     }))
   }
+
+  const serviceFeeDisplay = useMemo(() => {
+    if (!feeRatio || !formData.amountIn || !formData.assetIn) return '--'
+    try {
+      const amountBN = ethers.parseUnits(formData.amountIn, formData.assetIn.decimals)
+      const ratioBN = BigInt(feeRatio)
+      const precision = BigInt(1000000)
+      const feeAmount = (amountBN * ratioBN + precision - 1n) / precision
+      return `${ethers.formatUnits(feeAmount, formData.assetIn.decimals)} ${formData.assetIn.symbol}`
+    } catch {
+      return '--'
+    }
+  }, [feeRatio, formData.amountIn, formData.assetIn])
 
   const btnDisabled =
     !formData.amountOut || !formData.price || loading || !!error
@@ -383,7 +401,7 @@ export const LimitOrderForm: React.FC<LimitOrderFormProps> = ({ onClose }) => {
             variant='body1'
             color='#BDC1CA'
           >
-            1 USDC
+            {serviceFeeDisplay}
           </Typography>
         </Stack>
         <Stack

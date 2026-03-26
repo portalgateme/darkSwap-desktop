@@ -113,7 +113,7 @@ export const WithdrawModal = ({
     !data.amount ||
     loading ||
     Number(data.amount) === 0 ||
-    data.amount > balanceToken ||
+    Number(data.amount) > Number(balanceToken) ||
     error !== null
 
   useEffect(() => {

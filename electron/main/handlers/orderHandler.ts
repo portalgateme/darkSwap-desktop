@@ -1,5 +1,7 @@
 import { ipcMain } from 'electron'
 import { getCurrentInstance } from '../utils/coreReloader'
+import { getFeeRatio } from '@thesingularitynetwork/darkswap-sdk'
+import { getDarkSwap } from '../../core/utils/darkSwap'
 
 export const registerOrderHandlers = () => {
   ipcMain.handle('order:createOrder', async (event, orderDto) => {
@@ -87,6 +89,17 @@ export const registerOrderHandlers = () => {
       return await dbInstance
         .getOrderManager()
         .getOrderEventsByPage(chainId, page, limit, sort, status, search)
+    }
+  )
+
+  // getFeeRatio from DarkSwapFeeManager contract
+  ipcMain.handle(
+    'order:getFeeRatio',
+    async (event, chainId: number, wallet: string) => {
+      const dbInstance = getCurrentInstance()
+      const [signer] = dbInstance.getRpcManager().getSignerAndPublicKey(wallet, chainId)
+      const darkSwap = getDarkSwap(chainId, signer)
+      return await getFeeRatio(wallet, darkSwap)
     }
   )
 }

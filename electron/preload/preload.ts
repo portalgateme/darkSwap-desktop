@@ -103,7 +103,9 @@ contextBridge.exposeInMainWorld('orderAPI', {
       sort,
       status,
       search
-    )
+    ),
+  getFeeRatio: (chainId: number, wallet: string) =>
+    ipcRenderer.invoke('order:getFeeRatio', chainId, wallet)
 })
 
 // Auto order APIs
