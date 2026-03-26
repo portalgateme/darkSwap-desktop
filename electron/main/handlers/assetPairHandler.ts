@@ -37,7 +37,13 @@ export const registerAssetPairHandlers = () => {
         quoteDecimal: number
       }>
 
-    const tokenMap = new Map<string, { address: string; symbol: string; name: string; decimals: number }>()
+    const knownLogos: Record<string, string> = {
+      ETH: '/tokens/ETH.png',
+      USDC: '/tokens/USDC.png',
+      USDT: '/tokens/USDT.png'
+    }
+
+    const tokenMap = new Map<string, { address: string; symbol: string; name: string; decimals: number; logoURI?: string }>()
 
     for (const pair of assetPairs) {
       const baseKey = pair.baseAddress.toLowerCase()
@@ -46,7 +52,8 @@ export const registerAssetPairHandlers = () => {
           address: pair.baseAddress,
           symbol: pair.baseSymbol,
           name: pair.baseSymbol,
-          decimals: pair.baseDecimal
+          decimals: pair.baseDecimal,
+          logoURI: knownLogos[pair.baseSymbol]
         })
       }
 
@@ -56,7 +63,8 @@ export const registerAssetPairHandlers = () => {
           address: pair.quoteAddress,
           symbol: pair.quoteSymbol,
           name: pair.quoteSymbol,
-          decimals: pair.quoteDecimal
+          decimals: pair.quoteDecimal,
+          logoURI: knownLogos[pair.quoteSymbol]
         })
       }
     }
