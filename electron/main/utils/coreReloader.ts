@@ -154,9 +154,6 @@ export async function reloadCore(
 
     // Start services
     try {
-      currentInstance.getAutoOrderManager().start()
-      console.log('Auto order manager started')
-
       if (apiKey) {
         currentInstance.getWebSocketClient().startWebSocket()
         currentInstance.getAssetPairService().syncAssetPairs()
@@ -195,8 +192,6 @@ export function getOrCreateCoreInstance(
 
     // Start services
     try {
-      currentInstance.getAutoOrderManager().start()
-
       if (apiKey) {
         currentInstance.getWebSocketClient().startWebSocket()
         currentInstance.getAssetPairService().syncAssetPairs()
