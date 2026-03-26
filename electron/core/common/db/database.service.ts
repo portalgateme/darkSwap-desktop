@@ -215,7 +215,8 @@ export class DatabaseService {
       walletAddress.toLowerCase(),
       chainId,
       NoteStatus.ACTIVE,
-      NoteStatus.CREATED
+      NoteStatus.CREATED,
+      NoteStatus.LOCKED
     ) as NoteEntity[]
 
     const notes = rows.map((row) => ({

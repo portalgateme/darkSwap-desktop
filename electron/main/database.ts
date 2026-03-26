@@ -62,8 +62,6 @@ const configs = db.prepare('SELECT * FROM configs').all() as Array<{
   value: string
 }>
 
-console.log('Loaded wallets from DB:', wallets)
-console.log('Loaded configs from DB:', configs)
 
 const apiKey = configs.find((c) => c.key === 'api_key')?.value || ''
 
