@@ -16,7 +16,7 @@ export const chains: Network[] = [
   {
     name: 'Base',
     chainId: 8453,
-    rpcUrl: 'https://base-mainnet.public.blastapi.io',
+    rpcUrl: 'https://base-rpc.publicnode.com',
     icon: '/chain/base.svg'
   },
   {
@@ -35,7 +35,7 @@ export const chains: Network[] = [
   {
     name: 'Hardhat',
     chainId: 31337,
-    rpcUrl: 'http://app.dev.portalgate.me:18544',
+    rpcUrl: 'https://app.dev.portalgate.me:18545',
     icon: '/chain/ethereum.png',
     isTestnet: true
   },
