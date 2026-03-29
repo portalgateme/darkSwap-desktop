@@ -9,7 +9,7 @@ export function buildCsp(isDev: boolean): string {
   if (isDev) {
     return [
       "default-src 'self'",
-      "script-src 'self'",
+      "script-src 'self' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
       "img-src 'self' data: https:",
