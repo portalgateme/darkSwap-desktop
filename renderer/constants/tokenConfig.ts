@@ -20,7 +20,7 @@ export const nativeToken: Record<number, Token> = {
   },
   [ChainId.BASE]: {
     name: 'Base Ether',
-    symbol: 'BaseETH',
+    symbol: 'ETH',
     decimals: 18,
     address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
     logoURI:
@@ -28,7 +28,7 @@ export const nativeToken: Record<number, Token> = {
   },
   [ChainId.HARDHAT]: {
     name: 'Hardhat Ether',
-    symbol: 'HTH',
+    symbol: 'ETH',
     decimals: 18,
     address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
     logoURI: '/tokens/ETH.png'
