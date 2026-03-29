@@ -53,6 +53,44 @@ export function registerConfigHandlers() {
     }
   )
 
+  // RPC URL overlay: DB custom value > yaml fallback
+  ipcMain.handle('config:getRpcUrl', async (_event, chainId: number) => {
+    const dbRow = db
+      .prepare('SELECT value FROM configs WHERE key = ?')
+      .get(`rpc_url_${chainId}`) as { value: string } | undefined
+
+    if (dbRow) {
+      return { rpcUrl: dbRow.value, isCustom: true }
+    }
+
+    const yamlEntry = config?.chainRpcs?.find(
+      (r: { chainId: number; rpcUrl: string }) => r.chainId === chainId
+    )
+    if (yamlEntry) {
+      return { rpcUrl: yamlEntry.rpcUrl, isCustom: false }
+    }
+
+    return { rpcUrl: '', isCustom: false }
+  })
+
+  ipcMain.handle(
+    'config:setRpcUrl',
+    async (_event, chainId: number, rpcUrl: string) => {
+      const stmt = db.prepare(
+        'INSERT OR REPLACE INTO configs (key, value) VALUES (?, ?)'
+      )
+      stmt.run(`rpc_url_${chainId}`, rpcUrl)
+      await reloadCore(db, dbPath)
+      return { success: true }
+    }
+  )
+
+  ipcMain.handle('config:resetRpcUrl', async (_event, chainId: number) => {
+    db.prepare('DELETE FROM configs WHERE key = ?').run(`rpc_url_${chainId}`)
+    await reloadCore(db, dbPath)
+    return { success: true }
+  })
+
   // Heathcheck config handler
   ipcMain.handle('config:healthCheck', async (event, apiKey: string) => {
     try {

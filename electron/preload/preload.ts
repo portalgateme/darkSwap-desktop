@@ -170,7 +170,13 @@ contextBridge.exposeInMainWorld('configAPI', {
   setConfigs: (configs: { [key: string]: string }) =>
     ipcRenderer.invoke('config:setConfigs', configs),
   healthCheck: (apiKey: string) =>
-    ipcRenderer.invoke('config:healthCheck', apiKey)
+    ipcRenderer.invoke('config:healthCheck', apiKey),
+  getRpcUrl: (chainId: number) =>
+    ipcRenderer.invoke('config:getRpcUrl', chainId),
+  setRpcUrl: (chainId: number, rpcUrl: string) =>
+    ipcRenderer.invoke('config:setRpcUrl', chainId, rpcUrl),
+  resetRpcUrl: (chainId: number) =>
+    ipcRenderer.invoke('config:resetRpcUrl', chainId)
 })
 
 // Core APIs
