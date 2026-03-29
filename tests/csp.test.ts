@@ -34,14 +34,19 @@ describe('buildCsp', () => {
       expect(csp).toMatch(/script-src\s+'self'\s+'unsafe-eval'/)
     })
 
+    it('allows Google Fonts in style-src and font-src', () => {
+      expect(csp).toMatch(/style-src[^;]*https:\/\/fonts\.googleapis\.com/)
+      expect(csp).toMatch(/font-src[^;]*https:\/\/fonts\.gstatic\.com/)
+    })
+
+    it('allows http: and https: for connect-src (RPC endpoints)', () => {
+      expect(csp).toMatch(/connect-src[^;]*http:/)
+      expect(csp).toMatch(/connect-src[^;]*https:/)
+    })
+
     it('allows data: URIs for fonts and images', () => {
       expect(csp).toMatch(/font-src[^;]*data:/)
       expect(csp).toMatch(/img-src[^;]*data:/)
-    })
-
-    it('allows https: for connect-src and img-src', () => {
-      expect(csp).toMatch(/connect-src[^;]*https:/)
-      expect(csp).toMatch(/img-src[^;]*https:/)
     })
   })
 
@@ -77,14 +82,19 @@ describe('buildCsp', () => {
       expect(csp).toMatch(/connect-src[^;]*\bwss:/)
     })
 
+    it('allows Google Fonts in style-src and font-src', () => {
+      expect(csp).toMatch(/style-src[^;]*https:\/\/fonts\.googleapis\.com/)
+      expect(csp).toMatch(/font-src[^;]*https:\/\/fonts\.gstatic\.com/)
+    })
+
+    it('allows http: and https: for connect-src (RPC endpoints)', () => {
+      expect(csp).toMatch(/connect-src[^;]*http:/)
+      expect(csp).toMatch(/connect-src[^;]*https:/)
+    })
+
     it('allows data: URIs for fonts and images', () => {
       expect(csp).toMatch(/font-src[^;]*data:/)
       expect(csp).toMatch(/img-src[^;]*data:/)
-    })
-
-    it('allows https: for connect-src and img-src', () => {
-      expect(csp).toMatch(/connect-src[^;]*https:/)
-      expect(csp).toMatch(/img-src[^;]*https:/)
     })
   })
 })

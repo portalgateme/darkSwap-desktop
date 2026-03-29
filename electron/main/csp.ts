@@ -10,19 +10,19 @@ export function buildCsp(isDev: boolean): string {
     return [
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
-      "font-src 'self' data:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: https:",
-      "connect-src 'self' http://localhost:3000 ws://localhost:3000 ws: wss: https:",
+      "connect-src 'self' http://localhost:3000 ws://localhost:3000 http: https: ws: wss:",
     ].join('; ')
   }
 
   return [
     "default-src 'self' app:",
     "script-src 'self' app:",
-    "style-src 'self' 'unsafe-inline' app:",
-    "font-src 'self' data: app:",
+    "style-src 'self' 'unsafe-inline' app: https://fonts.googleapis.com",
+    "font-src 'self' data: app: https://fonts.gstatic.com",
     "img-src 'self' data: https: app:",
-    "connect-src 'self' app: ws: wss: https:",
+    "connect-src 'self' app: http: https: ws: wss:",
   ].join('; ')
 }
