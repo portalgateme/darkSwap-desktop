@@ -1,4 +1,4 @@
-import { DarkSwapClientCore, DarkSwapConfig } from '../../core'
+import { DarkSwapClientCore, DarkSwapConfig, ChainRpcConfig } from '../../core'
 import { Database } from 'better-sqlite3'
 
 import { ipcMain } from 'electron'
@@ -38,6 +38,41 @@ export function initializeCoreReloader(options: CoreReloaderOptions) {
 }
 
 /**
+ * Merge yaml chainRpcs with DB rpc_url_* overrides.
+ * DB keys follow the pattern rpc_url_{chainId} (e.g. rpc_url_8453).
+ * When a DB override exists for a chainId, its value replaces the yaml rpcUrl.
+ */
+function mergeChainRpcsWithDbOverrides(
+  db: Database,
+  yamlChainRpcs: ChainRpcConfig[]
+): ChainRpcConfig[] {
+  const dbRpcConfigs = db
+    .prepare("SELECT key, value FROM configs WHERE key LIKE 'rpc_url_%'")
+    .all() as Array<{ key: string; value: string }>
+
+  if (dbRpcConfigs.length === 0) {
+    return yamlChainRpcs
+  }
+
+  const overrideMap = new Map<number, string>()
+  for (const row of dbRpcConfigs) {
+    const chainIdStr = row.key.replace('rpc_url_', '')
+    const chainId = Number(chainIdStr)
+    if (!Number.isNaN(chainId) && row.value) {
+      overrideMap.set(chainId, row.value)
+    }
+  }
+
+  return yamlChainRpcs.map((entry) => {
+    const override = overrideMap.get(entry.chainId)
+    if (override) {
+      return { ...entry, rpcUrl: override }
+    }
+    return entry
+  })
+}
+
+/**
  * Create a new DarkSwapClientCore instance with current config and wallets
  */
 function createCoreInstance(
@@ -61,7 +96,7 @@ function createCoreInstance(
 
   const darkSwapConfig: DarkSwapConfig = {
     wallets: [...(latestConfig.wallets || []), ...dbWallets],
-    chainRpcs: latestConfig.chainRpcs || [],
+    chainRpcs: mergeChainRpcsWithDbOverrides(db, latestConfig.chainRpcs || []),
     dbFilePath: dbPath,
     bookNodeSocketUrl:
       latestConfig.bookNodeSocketUrl || 'wss://socket.darknode.io',
@@ -136,7 +171,7 @@ export async function reloadCore(
     // Create updated config with fresh file config + db wallets
     const updatedConfig: DarkSwapConfig = {
       wallets: [...(latestConfig.wallets || []), ...dbWallets],
-      chainRpcs: latestConfig.chainRpcs || [],
+      chainRpcs: mergeChainRpcsWithDbOverrides(db, latestConfig.chainRpcs || []),
       dbFilePath: dbPath,
       bookNodeSocketUrl:
         latestConfig.bookNodeSocketUrl || 'wss://socket.darknode.io',

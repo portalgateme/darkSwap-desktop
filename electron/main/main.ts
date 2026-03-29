@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, session } from 'electron'
 import * as path from 'path'
 import serve from 'electron-serve'
 import { registerAccountHandlers } from './handlers/accountHandler'
@@ -8,6 +8,7 @@ import { registerRPCManagerHandlers } from './handlers/rpcManagerHandler'
 import { registerConfigHandlers } from './handlers/configHandler'
 import { registerAppHandlers } from './handlers/appHandler'
 import { registerAutoOrderHandlers } from './handlers/autoOrderHandler'
+import { buildCsp } from './csp'
 
 const appServe = app.isPackaged
   ? serve({ directory: path.join(__dirname, '../../renderer/out') })
@@ -25,7 +26,19 @@ async function createWindow() {
     autoHideMenuBar: true
   })
 
-  if (process.env.NODE_ENV === 'development') {
+  const isDev = process.env.NODE_ENV === 'development'
+  const cspHeader = buildCsp(isDev)
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [cspHeader],
+      },
+    })
+  })
+
+  if (isDev) {
     await mainWindow.loadURL('http://localhost:3000')
     mainWindow.webContents.openDevTools()
   } else {
