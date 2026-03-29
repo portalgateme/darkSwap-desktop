@@ -18,8 +18,8 @@ describe('buildCsp', () => {
       expect(csp).toMatch(/style-src[^;]*'unsafe-inline'/)
     })
 
-    it('does not allow unsafe-eval anywhere', () => {
-      expect(csp).not.toContain('unsafe-eval')
+    it('allows unsafe-eval in script-src for Next.js React Refresh', () => {
+      expect(csp).toMatch(/script-src[^;]*'unsafe-eval'/)
     })
 
     it('does not include app: protocol', () => {
@@ -30,9 +30,8 @@ describe('buildCsp', () => {
       expect(csp).toMatch(/default-src\s+'self'/)
     })
 
-    it('includes script-src self without unsafe-eval', () => {
-      expect(csp).toMatch(/script-src\s+'self'/)
-      expect(csp).not.toMatch(/script-src[^;]*'unsafe-eval'/)
+    it('includes script-src self with unsafe-eval for dev HMR', () => {
+      expect(csp).toMatch(/script-src\s+'self'\s+'unsafe-eval'/)
     })
 
     it('allows data: URIs for fonts and images', () => {
